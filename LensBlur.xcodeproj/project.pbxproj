@@ -1,0 +1,472 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		54C1653E19073AFF005E20F8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653D19073AFF005E20F8 /* Foundation.framework */; };
+		54C1654019073AFF005E20F8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653F19073AFF005E20F8 /* CoreGraphics.framework */; };
+		54C1654219073AFF005E20F8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1654119073AFF005E20F8 /* UIKit.framework */; };
+		54C1654819073AFF005E20F8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 54C1654619073AFF005E20F8 /* InfoPlist.strings */; };
+		54C1654A19073AFF005E20F8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1654919073AFF005E20F8 /* main.m */; };
+		54C1654E19073AFF005E20F8 /* TKDAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */; };
+		54C1655119073AFF005E20F8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 54C1654F19073AFF005E20F8 /* Main.storyboard */; };
+		54C1655419073AFF005E20F8 /* TKDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1655319073AFF005E20F8 /* TKDViewController.m */; };
+		54C1655619073AFF005E20F8 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 54C1655519073AFF005E20F8 /* Images.xcassets */; };
+		54C1655D19073B00005E20F8 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1655C19073B00005E20F8 /* XCTest.framework */; };
+		54C1655E19073B00005E20F8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653D19073AFF005E20F8 /* Foundation.framework */; };
+		54C1655F19073B00005E20F8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1654119073AFF005E20F8 /* UIKit.framework */; };
+		54C1656719073B00005E20F8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 54C1656519073B00005E20F8 /* InfoPlist.strings */; };
+		54C1656919073B00005E20F8 /* LensBlurTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1656819073B00005E20F8 /* LensBlurTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		54C1656019073B00005E20F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 54C1653219073AFF005E20F8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 54C1653919073AFF005E20F8;
+			remoteInfo = LensBlur;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		54C1653A19073AFF005E20F8 /* LensBlur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LensBlur.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		54C1653D19073AFF005E20F8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		54C1653F19073AFF005E20F8 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		54C1654119073AFF005E20F8 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		54C1654519073AFF005E20F8 /* LensBlur-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LensBlur-Info.plist"; sourceTree = "<group>"; };
+		54C1654719073AFF005E20F8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		54C1654919073AFF005E20F8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		54C1654B19073AFF005E20F8 /* LensBlur-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LensBlur-Prefix.pch"; sourceTree = "<group>"; };
+		54C1654C19073AFF005E20F8 /* TKDAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TKDAppDelegate.h; sourceTree = "<group>"; };
+		54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TKDAppDelegate.m; sourceTree = "<group>"; };
+		54C1655019073AFF005E20F8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		54C1655219073AFF005E20F8 /* TKDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TKDViewController.h; sourceTree = "<group>"; };
+		54C1655319073AFF005E20F8 /* TKDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TKDViewController.m; sourceTree = "<group>"; };
+		54C1655519073AFF005E20F8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		54C1655B19073B00005E20F8 /* LensBlurTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LensBlurTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		54C1655C19073B00005E20F8 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		54C1656419073B00005E20F8 /* LensBlurTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LensBlurTests-Info.plist"; sourceTree = "<group>"; };
+		54C1656619073B00005E20F8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		54C1656819073B00005E20F8 /* LensBlurTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LensBlurTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		54C1653719073AFF005E20F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54C1654019073AFF005E20F8 /* CoreGraphics.framework in Frameworks */,
+				54C1654219073AFF005E20F8 /* UIKit.framework in Frameworks */,
+				54C1653E19073AFF005E20F8 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		54C1655819073B00005E20F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54C1655D19073B00005E20F8 /* XCTest.framework in Frameworks */,
+				54C1655F19073B00005E20F8 /* UIKit.framework in Frameworks */,
+				54C1655E19073B00005E20F8 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		54C1653119073AFF005E20F8 = {
+			isa = PBXGroup;
+			children = (
+				54C1654319073AFF005E20F8 /* LensBlur */,
+				54C1656219073B00005E20F8 /* LensBlurTests */,
+				54C1653C19073AFF005E20F8 /* Frameworks */,
+				54C1653B19073AFF005E20F8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		54C1653B19073AFF005E20F8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				54C1653A19073AFF005E20F8 /* LensBlur.app */,
+				54C1655B19073B00005E20F8 /* LensBlurTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		54C1653C19073AFF005E20F8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				54C1653D19073AFF005E20F8 /* Foundation.framework */,
+				54C1653F19073AFF005E20F8 /* CoreGraphics.framework */,
+				54C1654119073AFF005E20F8 /* UIKit.framework */,
+				54C1655C19073B00005E20F8 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		54C1654319073AFF005E20F8 /* LensBlur */ = {
+			isa = PBXGroup;
+			children = (
+				54C1654C19073AFF005E20F8 /* TKDAppDelegate.h */,
+				54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */,
+				54C1654F19073AFF005E20F8 /* Main.storyboard */,
+				54C1655219073AFF005E20F8 /* TKDViewController.h */,
+				54C1655319073AFF005E20F8 /* TKDViewController.m */,
+				54C1655519073AFF005E20F8 /* Images.xcassets */,
+				54C1654419073AFF005E20F8 /* Supporting Files */,
+			);
+			path = LensBlur;
+			sourceTree = "<group>";
+		};
+		54C1654419073AFF005E20F8 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				54C1654519073AFF005E20F8 /* LensBlur-Info.plist */,
+				54C1654619073AFF005E20F8 /* InfoPlist.strings */,
+				54C1654919073AFF005E20F8 /* main.m */,
+				54C1654B19073AFF005E20F8 /* LensBlur-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		54C1656219073B00005E20F8 /* LensBlurTests */ = {
+			isa = PBXGroup;
+			children = (
+				54C1656819073B00005E20F8 /* LensBlurTests.m */,
+				54C1656319073B00005E20F8 /* Supporting Files */,
+			);
+			path = LensBlurTests;
+			sourceTree = "<group>";
+		};
+		54C1656319073B00005E20F8 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				54C1656419073B00005E20F8 /* LensBlurTests-Info.plist */,
+				54C1656519073B00005E20F8 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		54C1653919073AFF005E20F8 /* LensBlur */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 54C1656C19073B00005E20F8 /* Build configuration list for PBXNativeTarget "LensBlur" */;
+			buildPhases = (
+				54C1653619073AFF005E20F8 /* Sources */,
+				54C1653719073AFF005E20F8 /* Frameworks */,
+				54C1653819073AFF005E20F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LensBlur;
+			productName = LensBlur;
+			productReference = 54C1653A19073AFF005E20F8 /* LensBlur.app */;
+			productType = "com.apple.product-type.application";
+		};
+		54C1655A19073B00005E20F8 /* LensBlurTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 54C1656F19073B00005E20F8 /* Build configuration list for PBXNativeTarget "LensBlurTests" */;
+			buildPhases = (
+				54C1655719073B00005E20F8 /* Sources */,
+				54C1655819073B00005E20F8 /* Frameworks */,
+				54C1655919073B00005E20F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				54C1656119073B00005E20F8 /* PBXTargetDependency */,
+			);
+			name = LensBlurTests;
+			productName = LensBlurTests;
+			productReference = 54C1655B19073B00005E20F8 /* LensBlurTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		54C1653219073AFF005E20F8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = TKD;
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Yuichi Takeda";
+				TargetAttributes = {
+					54C1655A19073B00005E20F8 = {
+						TestTargetID = 54C1653919073AFF005E20F8;
+					};
+				};
+			};
+			buildConfigurationList = 54C1653519073AFF005E20F8 /* Build configuration list for PBXProject "LensBlur" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 54C1653119073AFF005E20F8;
+			productRefGroup = 54C1653B19073AFF005E20F8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				54C1653919073AFF005E20F8 /* LensBlur */,
+				54C1655A19073B00005E20F8 /* LensBlurTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		54C1653819073AFF005E20F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54C1655619073AFF005E20F8 /* Images.xcassets in Resources */,
+				54C1654819073AFF005E20F8 /* InfoPlist.strings in Resources */,
+				54C1655119073AFF005E20F8 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		54C1655919073B00005E20F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54C1656719073B00005E20F8 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		54C1653619073AFF005E20F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54C1654E19073AFF005E20F8 /* TKDAppDelegate.m in Sources */,
+				54C1654A19073AFF005E20F8 /* main.m in Sources */,
+				54C1655419073AFF005E20F8 /* TKDViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		54C1655719073B00005E20F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54C1656919073B00005E20F8 /* LensBlurTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		54C1656119073B00005E20F8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 54C1653919073AFF005E20F8 /* LensBlur */;
+			targetProxy = 54C1656019073B00005E20F8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		54C1654619073AFF005E20F8 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				54C1654719073AFF005E20F8 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		54C1654F19073AFF005E20F8 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				54C1655019073AFF005E20F8 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		54C1656519073B00005E20F8 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				54C1656619073B00005E20F8 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		54C1656A19073B00005E20F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		54C1656B19073B00005E20F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		54C1656D19073B00005E20F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LensBlur/LensBlur-Prefix.pch";
+				INFOPLIST_FILE = "LensBlur/LensBlur-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		54C1656E19073B00005E20F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LensBlur/LensBlur-Prefix.pch";
+				INFOPLIST_FILE = "LensBlur/LensBlur-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		54C1657019073B00005E20F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/LensBlur.app/LensBlur";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LensBlur/LensBlur-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "LensBlurTests/LensBlurTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		54C1657119073B00005E20F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/LensBlur.app/LensBlur";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LensBlur/LensBlur-Prefix.pch";
+				INFOPLIST_FILE = "LensBlurTests/LensBlurTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		54C1653519073AFF005E20F8 /* Build configuration list for PBXProject "LensBlur" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				54C1656A19073B00005E20F8 /* Debug */,
+				54C1656B19073B00005E20F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		54C1656C19073B00005E20F8 /* Build configuration list for PBXNativeTarget "LensBlur" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				54C1656D19073B00005E20F8 /* Debug */,
+				54C1656E19073B00005E20F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		54C1656F19073B00005E20F8 /* Build configuration list for PBXNativeTarget "LensBlurTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				54C1657019073B00005E20F8 /* Debug */,
+				54C1657119073B00005E20F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 54C1653219073AFF005E20F8 /* Project object */;
+}
