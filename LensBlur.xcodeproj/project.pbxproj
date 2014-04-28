@@ -14,13 +14,14 @@
 		54C1654A19073AFF005E20F8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1654919073AFF005E20F8 /* main.m */; };
 		54C1654E19073AFF005E20F8 /* TKDAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */; };
 		54C1655119073AFF005E20F8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 54C1654F19073AFF005E20F8 /* Main.storyboard */; };
-		54C1655419073AFF005E20F8 /* TKDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1655319073AFF005E20F8 /* TKDViewController.m */; };
+		54C1655419073AFF005E20F8 /* TKDViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 54C1655319073AFF005E20F8 /* TKDViewController.mm */; };
 		54C1655619073AFF005E20F8 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 54C1655519073AFF005E20F8 /* Images.xcassets */; };
 		54C1655D19073B00005E20F8 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1655C19073B00005E20F8 /* XCTest.framework */; };
 		54C1655E19073B00005E20F8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653D19073AFF005E20F8 /* Foundation.framework */; };
 		54C1655F19073B00005E20F8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1654119073AFF005E20F8 /* UIKit.framework */; };
 		54C1656719073B00005E20F8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 54C1656519073B00005E20F8 /* InfoPlist.strings */; };
 		54C1656919073B00005E20F8 /* LensBlurTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1656819073B00005E20F8 /* LensBlurTests.m */; };
+		F17195FE04E7458894F756F4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9161F61295AC46938A6786B2 /* libPods.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		34823DE6731B465DA94B0273 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		54C1653A19073AFF005E20F8 /* LensBlur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LensBlur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C1653D19073AFF005E20F8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		54C1653F19073AFF005E20F8 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -46,13 +48,14 @@
 		54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TKDAppDelegate.m; sourceTree = "<group>"; };
 		54C1655019073AFF005E20F8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		54C1655219073AFF005E20F8 /* TKDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TKDViewController.h; sourceTree = "<group>"; };
-		54C1655319073AFF005E20F8 /* TKDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TKDViewController.m; sourceTree = "<group>"; };
+		54C1655319073AFF005E20F8 /* TKDViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TKDViewController.mm; sourceTree = "<group>"; };
 		54C1655519073AFF005E20F8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		54C1655B19073B00005E20F8 /* LensBlurTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LensBlurTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C1655C19073B00005E20F8 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		54C1656419073B00005E20F8 /* LensBlurTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LensBlurTests-Info.plist"; sourceTree = "<group>"; };
 		54C1656619073B00005E20F8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		54C1656819073B00005E20F8 /* LensBlurTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LensBlurTests.m; sourceTree = "<group>"; };
+		9161F61295AC46938A6786B2 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +66,7 @@
 				54C1654019073AFF005E20F8 /* CoreGraphics.framework in Frameworks */,
 				54C1654219073AFF005E20F8 /* UIKit.framework in Frameworks */,
 				54C1653E19073AFF005E20F8 /* Foundation.framework in Frameworks */,
+				F17195FE04E7458894F756F4 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +90,7 @@
 				54C1656219073B00005E20F8 /* LensBlurTests */,
 				54C1653C19073AFF005E20F8 /* Frameworks */,
 				54C1653B19073AFF005E20F8 /* Products */,
+				34823DE6731B465DA94B0273 /* Pods.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -105,6 +110,7 @@
 				54C1653F19073AFF005E20F8 /* CoreGraphics.framework */,
 				54C1654119073AFF005E20F8 /* UIKit.framework */,
 				54C1655C19073B00005E20F8 /* XCTest.framework */,
+				9161F61295AC46938A6786B2 /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -116,7 +122,7 @@
 				54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */,
 				54C1654F19073AFF005E20F8 /* Main.storyboard */,
 				54C1655219073AFF005E20F8 /* TKDViewController.h */,
-				54C1655319073AFF005E20F8 /* TKDViewController.m */,
+				54C1655319073AFF005E20F8 /* TKDViewController.mm */,
 				54C1655519073AFF005E20F8 /* Images.xcassets */,
 				54C1654419073AFF005E20F8 /* Supporting Files */,
 			);
@@ -159,9 +165,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 54C1656C19073B00005E20F8 /* Build configuration list for PBXNativeTarget "LensBlur" */;
 			buildPhases = (
+				F0CF36E5D1414342A56034B9 /* Check Pods Manifest.lock */,
 				54C1653619073AFF005E20F8 /* Sources */,
 				54C1653719073AFF005E20F8 /* Frameworks */,
 				54C1653819073AFF005E20F8 /* Resources */,
+				6572633E6B054EE3B6851DEC /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -245,6 +253,39 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		6572633E6B054EE3B6851DEC /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F0CF36E5D1414342A56034B9 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		54C1653619073AFF005E20F8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -252,7 +293,7 @@
 			files = (
 				54C1654E19073AFF005E20F8 /* TKDAppDelegate.m in Sources */,
 				54C1654A19073AFF005E20F8 /* main.m in Sources */,
-				54C1655419073AFF005E20F8 /* TKDViewController.m in Sources */,
+				54C1655419073AFF005E20F8 /* TKDViewController.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -374,6 +415,7 @@
 		};
 		54C1656D19073B00005E20F8 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34823DE6731B465DA94B0273 /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -387,6 +429,7 @@
 		};
 		54C1656E19073B00005E20F8 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34823DE6731B465DA94B0273 /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -457,6 +500,7 @@
 				54C1656E19073B00005E20F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		54C1656F19073B00005E20F8 /* Build configuration list for PBXNativeTarget "LensBlurTests" */ = {
 			isa = XCConfigurationList;
@@ -465,6 +509,7 @@
 				54C1657119073B00005E20F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
