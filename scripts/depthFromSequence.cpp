@@ -23,78 +23,15 @@ int main(int argc, char* argv[]) {
   
   img_size = input_images[0].size();  
 
-  vector<Mat> pano;
-  Stitcher stitcher = Stitcher::createDefault();
-  Stitcher::Status status = stitcher.estimateTransform(input_images);
-
-  if ( status != Stitcher::OK ) {
-    cout << "stitch failed " << status << ";;" << endl;
-    return -1;
-  }
-
-  for( int i = 0; i < stitcher.cameras_.size(); ++i ) {
-    detail::CameraParams cam = stitcher.cameras_[i];
-    cout << i << endl;
-    cout << " f = " << cam.focal << ", aspect = " << cam.aspect << endl;
-    cout << cam.R << endl; 
-    cout << cam.t << endl;
-    cout << cam.K() << endl;
-    cout << cam.R.type() << "," << cam.K().type() << endl;
-  }
-
-  detail::CameraParams cam1 = stitcher.cameras_.front();
-  detail::CameraParams cam2 = stitcher.cameras_.back();
-  Mat1d R, T, R1, P1, R2, P2, Q;
-  Mat1d distCoeffs(4,1);
-  distCoeffs.setTo(0);
-  R = cam1.R.inv() *cam2.R;
-  T = cam1.t;
-  cout << " R = " << R << endl;
-  cout << " T = " << T << endl;
-  cout << " R = " << R.type() << endl;
-  cout << " T = " << T .type()<< endl;
-
-
-  stereoRectify( cam1.K(), distCoeffs, cam2.K(), distCoeffs, img_size, 
-		 R, T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY, -1, img_size);
-  cout << R1 << endl;
-  cout << R2 << endl;
-
-  Mat map11, map12, map21, map22;
-  initUndistortRectifyMap(cam1.K(), distCoeffs, R1, P1, img_size, CV_16SC2, map11, map12);
-  initUndistortRectifyMap(cam2.K(), distCoeffs, R2, P2, img_size, CV_16SC2, map21, map22);
-
-  Mat img1r, img2r;
-  remap(input_images.front(), img1r, map11, map12, INTER_LINEAR);
-  remap(input_images.back() , img2r, map21, map22, INTER_LINEAR);
-
-  imwrite("tmp/img_00.png", img1r);
-  imwrite("tmp/img_01.png", img2r);
-
-  {
-    Mat disp_map( img1r.size(), CV_32F );
-    cv::StereoBM stereo;
-    stereo( img1r, img2r, disp_map);
-    disp_map /= 16.0;
-    Mat1b disp_1b(disp_map.size());
-    disp_map.convertTo(disp_1b, CV_8UC1);
-    imwrite("tmp/disp.png", disp_1b);
-  }
-
-
-  return 0;
-
   // initialize trackers
   {
     vector<Point2f> points;
     cv::goodFeaturesToTrack( input_images[0], points, MAX_CORNERS, 0.01, 10);
     cv::cornerSubPix(input_images[0], points, sub_pix_win_size, cv::Size(-1,-1), term_crit );
     track_points.push_back(points);
-    img_size = input_images[0].size();
   }
 
   std::vector<uchar> total_status(track_points[0].size(), 1);
-
 
   // tracking sequence
   for( int i = 1; i < input_images.size(); ++i ) {
@@ -126,8 +63,15 @@ int main(int argc, char* argv[]) {
 
     }
 
-    std::vector<Mat> camera_mats;
-    bundle_adjustment( track_points, camera_mats);
+    std::vector<uchar> find_fund_mat_status;
+    fund_mat = findFundamentalMat( points1, points2, find_fund_mat_status );
+
+    Mat H1, H2;
+    stereoRectifyUncalibrated( points1, points2, fund_mat, img_size, H1, H2);
+
+    warpPerspective( input_images.front(), rectified[0], H1, img_size, INTER_LINEAR, BORDER_REPLICATE);
+    warpPerspective( input_images.back() , rectified[1], H2, img_size, INTER_LINEAR, BORDER_REPLICATE);
+
     imwrite("tmp/img_00.png", rectified[0]);
     imwrite("tmp/img_01.png", rectified[1]);
 
@@ -137,6 +81,14 @@ int main(int argc, char* argv[]) {
   Mat disp_map( rectified[0].size(), CV_32F );
   {
     cv::StereoSGBM stereo;
+    stereo.minDisparity = 0.0;
+    stereo.numberOfDisparities = 96;
+    stereo.SADWindowSize = 11;
+    stereo.uniquenessRatio = 12.0;
+    stereo.P1 = 16 * 10 * 10;
+    stereo.P2 = 64 * 10 * 10;
+    stereo.preFilterCap = 20.0;
+    stereo.disp12MaxDiff = 0;
     stereo( rectified[0], rectified[1], disp_map);
     disp_map /= 16.0;
   }
