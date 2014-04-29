@@ -14,6 +14,11 @@ bin/main.out: bin/main.o
 bin/main.o: $(MAIN)
 	g++ $(MAIN) -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
 
+bin/calib.o: calibration.cpp
+	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS)
+
+bin/imagelist_creator.o: imagelist_creator.cpp
+	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS)
 
 ## command
 run: 

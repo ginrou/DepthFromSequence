@@ -66,10 +66,36 @@ int main(int argc, char* argv[]) {
     std::vector<uchar> find_fund_mat_status;
     fund_mat = findFundamentalMat( points1, points2, find_fund_mat_status );
 
-    stereoRectifyUncalibrated( points1, points2, fund_mat, img_size, H1, H2);
+    // fundmat -> P = [R|t]
+    Mat K;
+    cv::FileStorage fs;
+    fs.open("out_camera_data.yml", cv::FileStorage::READ);
+    fs["camera_matrix"] >> K;
 
-    warpPerspective( input_images.front(), rectified[0], H1, img_size, INTER_LINEAR, BORDER_REPLICATE);
-    warpPerspective( input_images.back() , rectified[1], H2, img_size, INTER_LINEAR, BORDER_REPLICATE);
+    Mat E = K.t() * fund_mat * K;
+
+    cv::SVD svd(E, SVD::FULL_UV);
+
+    Mat1d W = (Mat1d(3,3) << 0, -1, 0, 1, 0, 0, 0, 0, 1);
+    Mat1d R = svd.u * W.inv() * svd.vt;
+    Mat1d t = svd.u.col(2);
+
+    cout << K << endl;
+    cout << fund_mat << endl;
+    cout << E << endl;
+    cout << R << endl;
+    cout << t << endl;
+
+    Mat distCoeffs(4,1,CV_64FC1,Scalar(0));
+    Mat R1, P1, R2, P2, Q;
+    stereoRectify( K, distCoeffs, K, distCoeffs, img_size, R, t, R1, R2, P1, P2, Q, 0, -1, img_size);
+
+    Mat map11, map12, map21, map22;
+    initUndistortRectifyMap(K, distCoeffs, R1, P1, img_size, CV_16SC2, map11, map12);
+    initUndistortRectifyMap(K, distCoeffs, R2, P2, img_size, CV_16SC2, map21, map22);
+
+    remap(input_images.front(), rectified[0], map11, map12, INTER_LINEAR);
+    remap(input_images.back() , rectified[1], map21, map22, INTER_LINEAR);
 
     imwrite("tmp/img_00.png", rectified[0]);
     imwrite("tmp/img_01.png", rectified[1]);
@@ -99,6 +125,39 @@ int main(int argc, char* argv[]) {
 
     }
 
+    // draw epi line
+    {
+      Mat1b img( img_size.height, img_size.width*2);
+      cout << img.size() << endl;
+      input_images.front().copyTo( img(Rect(0,0,img_size.width, img_size.height)));
+      input_images.back().copyTo( img(Rect(img_size.width,0,img_size.width, img_size.height)));
+
+      cv::Scalar white( 255, 255, 255);
+      
+      std::vector<Vec3f> lines;
+      computeCorrespondEpilines(points1, 1, fund_mat, lines);
+
+      for( int i = 0; i < lines.size(); ++i ) {
+
+	Point2f pt1 = points1[i];
+	circle(img, pt1, 2.0, white, 1, 8, 0);
+
+	Vec3f line = lines[i];
+	
+	Point2f st, ed;
+	st.x = img_size.width;
+	st.y = -line[2]/line[1];
+	ed.x = img_size.width*2-1;;
+	ed.y = -(line[0]*img_size.width+line[2])/line[1];
+	cv::line(img, st, ed, white);
+
+      }
+      
+      imwrite("tmp/match-line.png", img);
+
+    }
+
+
   }
 				   
   // calc disparity
@@ -113,7 +172,7 @@ int main(int argc, char* argv[]) {
     stereo.P2 = 64 * 10 * 10;
     stereo.preFilterCap = 20.0;
     stereo.disp12MaxDiff = 0;
-    stereo( input_images[0], input_images[1], disp_map);
+    stereo( rectified[0], rectified[1], disp_map);
     disp_map /= 16.0;
     Mat warped_disp_map;
     warpPerspective( disp_map , warped_disp_map, H1.inv(), img_size, INTER_LINEAR, BORDER_REPLICATE);
