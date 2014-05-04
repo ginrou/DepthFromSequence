@@ -1,5 +1,5 @@
-MAIN=depthFromSequence.cpp
-INPUT_IMAGES= img/*.jpg
+MAIN=factorization_orthographic.cpp
+INPUT_IMAGES= img/*.png
 DST_IMAGE= disp.png
 ## AKAZE_LIBS= /usr/local/akaze/lib/libAKAZE.a
 ## AKAZE_FLAG= -I/usr/local/akaze/include

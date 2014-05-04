@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
   // initialize trackers
   {
     vector<Point2f> points;
-    cv::goodFeaturesToTrack( input_images[0], points, MAX_CORNERS, 0.01, 10, noArray(), 5, true, 0.04);
+    cv::goodFeaturesToTrack( input_images[0], points, MAX_CORNERS, 0.001, 10, noArray(), 5, true, 0.04);
     cv::cornerSubPix(input_images[0], points, sub_pix_win_size, cv::Size(-1,-1), term_crit );
     track_points.push_back(points);
   }
@@ -90,15 +90,15 @@ int main(int argc, char* argv[]) {
     Mat R1, P1, R2, P2, Q;
     stereoRectify( K, distCoeffs, K, distCoeffs, img_size, R, t, R1, R2, P1, P2, Q, 0, -1, img_size);
 
-    Mat map11, map12, map21, map22;
-    initUndistortRectifyMap(K, distCoeffs, R1, P1, img_size, CV_16SC2, map11, map12);
-    initUndistortRectifyMap(K, distCoeffs, R2, P2, img_size, CV_16SC2, map21, map22);
+    // Mat map11, map12, map21, map22;
+    // initUndistortRectifyMap(K, distCoeffs, R1, P1, img_size, CV_16SC2, map11, map12);
+    // initUndistortRectifyMap(K, distCoeffs, R2, P2, img_size, CV_16SC2, map21, map22);
 
-    remap(input_images.front(), rectified[0], map11, map12, INTER_LINEAR);
-    remap(input_images.back() , rectified[1], map21, map22, INTER_LINEAR);
+    // remap(input_images.front(), rectified[0], map11, map12, INTER_LINEAR);
+    // remap(input_images.back() , rectified[1], map21, map22, INTER_LINEAR);
 
-    imwrite("tmp/img_00.png", rectified[0]);
-    imwrite("tmp/img_01.png", rectified[1]);
+    // imwrite("tmp/img_00.png", rectified[0]);
+    // imwrite("tmp/img_01.png", rectified[1]);
 
     // draw correspondences
     {
@@ -153,6 +153,7 @@ int main(int argc, char* argv[]) {
 
       }
       
+      cout << "num of lines : " << lines.size() << endl;
       imwrite("tmp/match-line.png", img);
 
     }
