@@ -115,11 +115,6 @@ int main(int argc, char* argv[]) {
     Mat1d T;
     {
       Mat1d Ut = U.t();
-      // for( int n = 0; n < Ut.cols/2; ++n ) {
-      // 	int k1 = 2*n, k2 = 2*n+1;
-      // 	cout << k1 << " : " << Ut.at<double>(k1,0) << ", "<< Ut.at<double>(k1,1) << ", "<< Ut.at<double>(k1,2) << endl;
-      // 	cout << k2 << " : " << Ut.at<double>(k2,0) << ", "<< Ut.at<double>(k2,1) << ", "<< Ut.at<double>(k2,2) << endl;
-      // }
       cout << "Ut\n" << Ut << endl;
 
       double sq2 = sqrt(2.0);
@@ -149,14 +144,46 @@ int main(int argc, char* argv[]) {
     // 計量行列の特異値分解を行い固有値と固有ベクトルを求める
     Mat1d v_e_value, v;
     cv::eigen(T, v_e_value, v);
-    cout << v << endl;
+    cout << "eigen values = " << v_e_value << endl;
+    cout << "v = " << v << endl;
 
     // 並進ベクトルの計算
     // 特に不要？
 
-    // 行列Mの算出
-
     // 回転行列を求める
+    std::vector<Mat1d> R_vec;
+    {
+      // 行列M_の算出
+      Mat1d M_(2*M,3);
+      for( int i = 0; i < 3; ++i ) {
+	for( int j = 0; j < 2*M; ++j ) {
+	  Mat1d v_ = v.col(i), u_ = U.row(j);
+	  M_.at<double>(j,i) = sqrt(v_e_value(i,0)) * v_.dot(u_.t());
+	}
+      }
+      Mat1d Mt(3, 2*M);
+      Mt = M_.t();
+      cout << "Mt =" << Mt << endl;
+
+      for( int j = 0; j < M; ++j ) {
+	int k1 = 2*j, k2 = 2*j+1;
+	Mat1d M__(3,3);
+	M__.setTo(0);
+
+	Mt.col(k1).copyTo(M__.col(0));
+	Mt.col(k2).copyTo(M__.col(1));
+
+	cv::SVD svd(M__);
+	Mat1d d = Mat::eye(3,3,CV_64FC1); 
+	d.at<double>(2,2) = determinant(svd.u * svd.vt);
+	Mat1d R = svd.vt.t() * d * svd.u.t();
+	R_vec.push_back(R);
+	cout << endl;
+	cout << "svd.u = " << svd.u << endl;
+	cout << "svd.vt = " << svd.vt << endl;
+	cout << "R =" << R << endl;
+      }
+    }
 
     // 形状の更新
 
@@ -184,18 +211,6 @@ double t_e( Mat1d Ut, int i, int j, int k, int l) {
     sum += Ut.at<double>(i,k2) * Ut.at<double>(j,k2) * Ut.at<double>(k,k2) * Ut.at<double>(l,k2);
     sum += ( Ut.at<double>(i,k1) * Ut.at<double>(j,k2) + Ut.at<double>(j,k1) * Ut.at<double>(i,k2) )
       * (Ut.at<double>(k,k1) * Ut.at<double>(l,k2) + Ut.at<double>(l,k1) * Ut.at<double>(k,k2) )/ 4.0;
-
-    // sum += Ut.at<double>(k1,i) * Ut.at<double>(k1,j) * Ut.at<double>(k1,k) * Ut.at<double>(k1,l);
-    // sum += Ut.at<double>(k2,i) * Ut.at<double>(k2,j) * Ut.at<double>(k2,k) * Ut.at<double>(k2,l);
-    // sum += (Ut.at<double>(k1,i) * Ut.at<double>(k2,j) + Ut.at<double>(k1,j) * Ut.at<double>(k2,i) )
-    //   * (Ut.at<double>(k1,k) * Ut.at<double>(k2,l) + Ut.at<double>(k1,l) * Ut.at<double>(k2,k) )/ 4.0;
-
-    // cout << "k = " << k1 << ", " << k2 << "  ijkl = " << i << j << k << l << endl;
-    // cout << Ut.at<double>(k1,i) * Ut.at<double>(k1,j) * Ut.at<double>(k1,k) * Ut.at<double>(k1,l) << endl;
-    // cout << Ut.at<double>(k2,i) * Ut.at<double>(k2,j) * Ut.at<double>(k2,k) * Ut.at<double>(k2,l) << endl;
-    // cout << (Ut.at<double>(k1,i) * Ut.at<double>(k2,j) + Ut.at<double>(k1,j) * Ut.at<double>(k2,i) )
-    //   * (Ut.at<double>(k1,k) * Ut.at<double>(k2,l) + Ut.at<double>(k1,l) * Ut.at<double>(k2,k) )/ 4.0 << endl;
-
   }
 
   return sum;
