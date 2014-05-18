@@ -1,4 +1,5 @@
 MAIN=factorization_orthographic.cpp
+##MAIN=bundleAdjustment.cpp
 INPUT_IMAGES= img/*.png
 DST_IMAGE= disp.png
 ## AKAZE_LIBS= /usr/local/akaze/lib/libAKAZE.a
