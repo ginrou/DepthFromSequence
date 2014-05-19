@@ -1,5 +1,4 @@
-MAIN=factorization_orthographic.cpp
-##MAIN=bundleAdjustment.cpp
+MAIN=bundleAdjustment_script.cpp
 INPUT_IMAGES= img/*.png
 DST_IMAGE= disp.png
 ## AKAZE_LIBS= /usr/local/akaze/lib/libAKAZE.a
@@ -9,7 +8,7 @@ AKAZE_FLAG=
 CFLAGS= -O0 $(AKAZE_FLAG)
 
 ## build rules
-bin/main.out: bin/main.o
+bin/main.out: bin/main.o bin/bundle_adjustment.o bin/bundle_adjustment_functions.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
 bin/main.o: $(MAIN)
@@ -21,9 +20,20 @@ bin/calib.o: calibration.cpp
 bin/imagelist_creator.o: imagelist_creator.cpp
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS)
 
+bin/bundle_adjustment.o: bundle_adjustment.cpp
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
+
+bin/bundle_adjustment_functions.o: bundle_adjustment_functions.cpp
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
+
+
+
 ## command
 run: 
 	./bin/main.out $(INPUT_IMAGES) $(DST_IMAGE)
 and_run: $(MAIN) bin/main.o
 	make
 	make run
+
+clean:
+	rm bin/main.out bin/main.o bin/bundle_adjustment.o
