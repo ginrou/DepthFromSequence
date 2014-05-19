@@ -3,8 +3,9 @@
 #include <opencv2/stitching/detail/matchers.hpp>
 #include <opencv2/stitching/stitcher.hpp>
 
-//#include "Eigen/Core"
-//using namespace Eigen;
+#include "Eigen/Core"
+#include "Eigen/LU"
+using namespace Eigen;
 
 #include "bundle_adjustment.hpp"
 

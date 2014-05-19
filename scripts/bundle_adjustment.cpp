@@ -1,7 +1,10 @@
 #include "bundle_adjustment.hpp"
 
+#include "Eigen/Core"
+
 using namespace std;
 using namespace cv;
+using namespace Eigen;
 
 
 /* Solverの初期化
@@ -69,4 +72,31 @@ void bundleAdjustment::Solver::run_one_step() {
   }
 
   // 更新幅を求める
+  Eigen::VectorXd v = ba_get_update_for_step( *this, hessian_matrix, gradient_vector);
+
+  // 各変数を更新
+  for( int i = 0; i < Nc; ++i ) { 
+    cam_t_x[i] += v[i];
+    cam_t_y[i] += v[ i+Nc ];
+    cam_t_y[i] += v[ i+2*Nc ];
+    cam_pose_x[i] += v[ i+3*Nc ];
+    cam_pose_y[i] += v[ i+4*Nc ];
+    cam_pose_z[i] += v[ i+5*Nc ];
+
+    printf("camera %d : t = (%lf, %lf, %lf), pose = (%lf, %lf, %lf)\n", i, 
+	   cam_t_x[i], cam_t_y[i], cam_t_z[i], 
+	   cam_pose_x[i], cam_pose_y[i], cam_pose_z[i]);
+
+  }
+
+  for( int j = 0; j < Np; ++j ) {
+    int offset = 6*Nc;
+    point_x[j] += v[ j + 6*Nc ];
+    point_y[j] += v[ j + Np + 6*Nc ];
+    point_z[j] += v[ j + 2*Np + 6*Nc ];
+
+    printf("point %d : (%lf, %lf, %lf)\n", j, point_x[j],point_y[j],point_z[j]);
+
+  }
+
 }

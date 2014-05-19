@@ -1,4 +1,5 @@
 #include "bundle_adjustment.hpp"
+#include "Eigen/LU"
 
 inline double square(double a) { return a*a; }
 
@@ -202,4 +203,24 @@ double ba_get_hessian_matrix( bundleAdjustment::Solver &s, int k, int l) {
     }
   }
   return 4.0 * ret;
+}
+
+Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s, vector< vector<double> > hessian_matrix, vector<double> gradient_vector)
+{
+  Eigen::MatrixXd H(s.K, s.K);
+  for(int k1 = 0; k1 < s.K; ++k1 ) {
+    for(int k2 = 0; k2 < s.K; ++k2 ) {
+      H(k1, k2) = hessian_matrix[k1][k2];
+    }
+  }
+
+  Eigen::VectorXd grad(s.K);
+  for(int k = 0; k < s.K; ++k ) {
+    grad(k) = -gradient_vector[k];
+  }
+
+  cout << "|H| = " << H.determinant() << endl;
+
+  return H.fullPivLu().solve(grad);
+
 }
