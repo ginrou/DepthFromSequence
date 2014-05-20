@@ -2,6 +2,7 @@
 #include "Eigen/LU"
 
 inline double square(double a) { return a*a; }
+inline double delta(int i, int j) { return i == j; }
 
 double ba_reproject_x( bundleAdjustment::Solver &s, int i, int j) {
   return ( s.point_x[j] - s.cam_pose_z[i] * s.point_y[j] + s.cam_pose_y[i] ) / s.point_z[j] + s.cam_t_x[i];
@@ -12,148 +13,108 @@ double ba_reproject_y( bundleAdjustment::Solver &s, int i, int j) {
 }
 
 double ba_reproject_z( bundleAdjustment::Solver &s, int i, int j) {
-  return -s.point_x[j] * s.cam_pose_y[i] + s.cam_pose_z[i] * s.point_y[j] + 1 + s.cam_t_z[i];
+  return (-s.point_x[j] * s.cam_pose_y[i] + s.cam_pose_z[i] * s.point_y[j] + 1) / s.point_z[j] + s.cam_t_z[i];
 }
 
 double ba_get_reproject_gradient_x( bundleAdjustment::Solver &s, int i, int j, int k) {
 
-  if ( k < s.Nc ) { // Txでの微分
+  double xj = s.point_x[j], yj = s.point_y[j], zj = s.point_z[j];
+  double pose_x_i = s.cam_pose_x[i], pose_y_i = s.cam_pose_y[i], pose_z_i = s.cam_pose_z[i];
 
-    return ( i == k ) ? 1.0 : 0.0;
+  if ( k < s.Nc ) // Txでの微分
+    return delta(i,k); 
 
-  } else if ( k < 2*s.Nc ) { // Tyでの微分
+  else if ( k < 2*s.Nc ) // Tyでの微分
+    return 0; 
 
+  else if ( k < 3*s.Nc ) // Tzでの微分
     return 0;
 
-  } else if ( k < 3*s.Nc ) { // Tzでの微分
-
+  else if ( k < 4*s.Nc ) // pose_xでの微分
     return 0;
 
-  } else if ( k < 4*s.Nc ) { // pose_xでの微分
+  else if ( k < 5*s.Nc ) // pose_yでの微分
+    return delta(i,k -4*s.Nc) / zj; 
 
-    return 0;
+  else if ( k < 6*s.Nc ) // pose_zでの微分
+    return -delta(i,k-5*s.Nc) * yj / zj;
 
-  } else if ( k < 5*s.Nc ) { // pose_yでの微分
+  else if ( k < 6*s.Nc + s.Np ) // point_xでの微分
+    return delta(j,k-6*s.Nc) / zj; 
 
-    k = k - 4*s.Nc;
-    return ( i == k ) ? 1.0 / s.point_z[j] : 0.0;
-
-  } else if ( k < 6*s.Nc ) { // pose_zでの微分
-
-    k = k - 5*s.Nc;
-    return ( i == k ) ? - s.point_y[j] / s.point_z[j] : 0.0;
-
-  } else if ( k < 6*s.Nc + s.Np ) { // point_xでの微分
-
-    k = k - 6*s.Nc;
-    return ( j == k ) ? 1.0 / s.point_z[j] : 0.0;
-
-  } else if ( k < 6*s.Nc + 2 * s.Np ) { // point_yでの微分
-
-    k = k - 6*s.Nc - s.Np;
-    return ( j == k ) ? - s.cam_pose_z[i] / s.point_z[j] : 0.0;
-
-  } else { // point_zでの微分
-
-    k = k - 6*s.Nc - 2*s.Np;
-    return ( j == k ) ? ( s.point_x[j] - s.cam_pose_z[i] * s.point_y[j] + s.cam_pose_y[i] ) / ( s.point_z[j] * s.point_z[j] ) : 0.0;
-
-  }
+  else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
+    return - delta(j, k - 6*s.Nc - s.Np) * pose_z_i / zj; 
+  
+  else // point_zでの微分
+    return -delta(j, k - 6*s.Nc - 2*s.Np) *  ( xj - pose_z_i*yj + pose_y_i ) / ( zj*zj );
 
 }
 
 double ba_get_reproject_gradient_y( bundleAdjustment::Solver &s, int i, int j, int k) {
 
-  if ( k < s.Nc ) { // Txでの微分
+  double xj = s.point_x[j], yj = s.point_y[j], zj = s.point_z[j];
+  double pose_x_i = s.cam_pose_x[i], pose_y_i = s.cam_pose_y[i], pose_z_i = s.cam_pose_z[i];
 
+  if ( k < s.Nc ) // Txでの微分
     return 0;
 
-  } else if ( k < 2*s.Nc ) { // Tyでの微分
-
-    k = k - s.Nc;
-    return ( i == k ) ? 1.0 : 0.0;
-
-  } else if ( k < 3*s.Nc ) { // Tzでの微分
-
+  else if ( k < 2*s.Nc ) // Tyでの微分
+    return delta(i, k - s.Nc );
+  
+  else if ( k < 3*s.Nc ) // Tzでの微分
     return 0;
 
-  } else if ( k < 4*s.Nc ) { // pose_xでの微分
+  else if ( k < 4*s.Nc ) // pose_xでの微分
+    return -delta(i, k - 3*s.Nc) / zj;
 
-    k = k - 3*s.Nc;
-    return ( i == k ) ? -1.0 / s.point_z[j] : 0.0;
-
-  } else if ( k < 5*s.Nc ) { // pose_yでの微分
-
+  else if ( k < 5*s.Nc ) // pose_yでの微分
     return 0.0;
 
-  } else if ( k < 6*s.Nc ) { // pose_zでの微分
+  else if ( k < 6*s.Nc ) // pose_zでの微分
+    return delta(i, k - 5*s.Nc) * xj / zj;
 
-    k = k - 5*s.Nc;
-    return ( i == k ) ? s.point_x[j] / s.point_z[j] : 0.0;
+  else if ( k < 6*s.Nc + s.Np ) // point_xでの微分
+    return delta(j, k - 6*s.Nc) * pose_z_i / zj;
 
-  } else if ( k < 6*s.Nc + s.Np ) { // point_xでの微分
+  else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
+    return delta(j, k - 6*s.Nc - s.Np) / zj;
 
-    k = k - 6*s.Nc;
-    return ( j == k ) ? s.cam_pose_z[i] / s.point_z[j] : 0.0;
-
-  } else if ( k < 6*s.Nc + 2 * s.Np ) { // point_yでの微分
-
-    k = k - 6*s.Nc - s.Np;
-    return ( j == k ) ? 1.0 / s.point_z[j] : 0.0;
-
-  } else { // point_zでの微分
-
-    k = k - 6*s.Nc - 2*s.Np;
-    return ( j == k ) ? - ( s.cam_pose_z[i] * s.point_x[j] + s.point_y[j] - s.cam_pose_x[i] ) / (s.point_z[j] * s.point_z[j] ) : 0.0;
-
-  }
+  else // point_zでの微分
+    return -delta(j, k - 6*s.Nc - 2*s.Np) * ( pose_z_i*xj + yj - pose_x_i) / (zj*zj);
 
 }
 
 double ba_get_reproject_gradient_z( bundleAdjustment::Solver &s, int i, int j, int k) {
 
-  if ( k < s.Nc ) { // Txでの微分
+  double xj = s.point_x[j], yj = s.point_y[j], zj = s.point_z[j];
+  double pose_x_i = s.cam_pose_x[i], pose_y_i = s.cam_pose_y[i], pose_z_i = s.cam_pose_z[i];
 
+  if ( k < s.Nc ) // Txでの微分
     return 0;
 
-  } else if ( k < 2*s.Nc ) { // Tyでの微分
-
+  else if ( k < 2*s.Nc ) // Tyでの微分
     return 0;
 
-  } else if ( k < 3*s.Nc ) { // Tzでの微分
+  else if ( k < 3*s.Nc ) // Tzでの微分
+    return delta(i, k - 2*s.Nc);
 
-    k = k - 2*s.Nc;
-    return ( i == k ) ? 1.0 : 0.0;
+  else if ( k < 4*s.Nc ) // pose_xでの微分
+    return delta(i, k - 3*s.Nc) * yj / zj;
 
-  } else if ( k < 4*s.Nc ) { // pose_xでの微分
+  else if ( k < 5*s.Nc ) // pose_yでの微分
+    return -delta(i, k - 4*s.Nc) * xj / zj;
 
-    k = k - 3*s.Nc;
-    return ( i == k ) ? s.point_y[j] : 0.0;
-
-  } else if ( k < 5*s.Nc ) { // pose_yでの微分
-
-    k = k - 4*s.Nc;
-    return ( i == k ) ? -s.point_x[j] : 0.0;
-
-  } else if ( k < 6*s.Nc ) { // pose_zでの微分
-
+  else if ( k < 6*s.Nc ) // pose_zでの微分
     return 0;
 
-  } else if ( k < 6*s.Nc + s.Np ) { // point_xでの微分
+  else if ( k < 6*s.Nc + s.Np ) // point_xでの微分
+    return - delta(j, k - 6*s.Nc) * pose_y_i / zj;
 
-    k = k - 6*s.Nc;
-    return ( j == k ) ? -s.cam_pose_y[i] : 0.0;
+  else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
+    return delta(j, k - 6*s.Nc - s.Np) * pose_x_i / zj;
 
-  } else if ( k < 6*s.Nc + 2 * s.Np ) { // point_yでの微分
-
-    k = k - 6*s.Nc - s.Np;
-    return ( j == k ) ? s.cam_pose_x[i] : 0.0;
-
-  } else { // point_zでの微分
-
-    return 0.0;
-
-  }
+  else // point_zでの微分
+    return -delta(j, k - 6*s.Nc - 2*s.Np) * ( -pose_y_i*xj + pose_x_i*yj +1 ) / (zj*zj);
 
 }
 

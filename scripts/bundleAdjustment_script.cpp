@@ -12,15 +12,6 @@ using namespace Eigen;
 using namespace std;
 using namespace cv;
 
-void func( bundleAdjustment::Solver &s){
-  cout << "HERE!!" << endl;
-  for(int i = 0; i < s.Nc; ++i ) { 
-    s.cam_t_x[i] = i;
-    cout << i << " -> "<< s.cam_t_x[i] << endl;
-  }
-}
-
-
 int main(int argc, char* argv[]) {
 
   static int MAX_CORNERS = 200;
