@@ -2,7 +2,7 @@
 #include "Eigen/LU"
 
 inline double square(double a) { return a*a; }
-inline double delta(int i, int j) { return i == j; }
+inline double delta(int i, int j) { return i == j ? 1.0 : 0.0; }
 
 double ba_reproject_x( bundleAdjustment::Solver &s, int i, int j) {
   return ( s.point_x[j] - s.cam_pose_z[i] * s.point_y[j] + s.cam_pose_y[i] ) / s.point_z[j] + s.cam_t_x[i];
@@ -114,7 +114,7 @@ double ba_get_reproject_gradient_z( bundleAdjustment::Solver &s, int i, int j, i
     return delta(j, k - 6*s.Nc - s.Np) * pose_x_i / zj;
 
   else // point_zでの微分
-    return -delta(j, k - 6*s.Nc - 2*s.Np) * ( -pose_y_i*xj + pose_x_i*yj +1 ) / (zj*zj);
+    return -delta(j, k - 6*s.Nc - 2*s.Np) * ( -pose_y_i*xj + pose_x_i*yj + 1.0 ) / (zj*zj);
 
 }
 
@@ -157,13 +157,13 @@ double ba_get_hessian_matrix( bundleAdjustment::Solver &s, int k, int l) {
       double grad_y_l = s.grad_reproject_y[i][j][l];
       double grad_z_l = s.grad_reproject_z[i][j][l];
 
-      ret += ( ( qx*grad_z_k - qz*grad_x_k ) * ( qx*grad_z_l - qz*grad_x_l )
+      ret += -( ( qx*grad_z_k - qz*grad_x_k ) * ( qx*grad_z_l - qz*grad_x_l )
 	       + ( qy*grad_z_k - qz*grad_y_k ) * ( qy*grad_z_l - qz*grad_y_l )
 	       ) / square(square(qz));
 
     }
   }
-  return 4.0 * ret;
+  return 2.0 * ret;
 }
 
 Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s, vector< vector<double> > hessian_matrix, vector<double> gradient_vector)
@@ -181,6 +181,19 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s, vector< vec
   }
 
   cout << "|H| = " << H.determinant() << endl;
+  //  cout << H << endl;
+
+  printf("\nall 0 rows\n");
+  for( int k = 0; k < s.K; ++k ) {
+    bool flag = true;
+    for( int l = 0; l < s.K; ++l ) {
+      if ( H(k,l) != 0 ) flag = false;
+    }
+
+    if(flag) cout << k << endl;
+
+  }
+  printf("Nc = %d, Ns = %d\n", s.Nc, s.Np);
 
   return H.fullPivLu().solve(grad);
 

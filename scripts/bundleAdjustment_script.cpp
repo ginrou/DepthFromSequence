@@ -68,6 +68,15 @@ int main(int argc, char* argv[]) {
 
   bundleAdjustment::Solver solver(stable_track_points, cv::Size(512, 512));
   solver.initialize();
+
+  for( int i = 0; i < solver.Nc; ++i ) {
+    printf("%03d : cam_t = [%lf, %lf, %lf]\n", i, solver.cam_t_x[i],solver.cam_t_y[i],solver.cam_t_z[i]);
+  }
+
+  for( int j = 0; j < solver.Np; ++j ) {
+    printf("%03d : point = [%lf, %lf, %lf]\n", j, solver.point_x[j], solver.point_y[j],1.0/solver.point_z[j]);
+  }
+
   solver.run_one_step();
 
   return 0;

@@ -1,5 +1,7 @@
-#include "bundle_adjustment.hpp"
+#include <cstdlib>
+#include <ctime>
 
+#include "bundle_adjustment.hpp"
 #include "Eigen/Core"
 
 using namespace std;
@@ -15,15 +17,19 @@ using namespace Eigen;
 void bundleAdjustment::Solver::initialize() {
   cout << "initialzie" << endl;
 
+  std::srand(std::time(0));
+
   for( int i = 0; i < Nc; ++i ) {
-    cam_t_x[i] = 0; cam_t_y[i] = 0; cam_t_z[i] = 0;
+    cam_t_x[i] = 0.001 * ((1000.0 / RAND_MAX) *(double)std::rand() - 500.0);
+    cam_t_y[i] = 0.001 * ((1000.0 / RAND_MAX) *(double)std::rand() - 500.0);
+    cam_t_z[i] = 0.001 * ((1000.0 / RAND_MAX) *(double)std::rand() - 500.0);
     cam_pose_x[i] = 0; cam_pose_y[i] = 0; cam_pose_z[i] = 0;
   }
   
   for( int j = 0; j < Np; ++j ) {
-    point_x[j] = 0;
-    point_y[j] = 0;
-    point_z[j] = 1.0/1000;
+    point_z[j] = (1.0 / 500.0) * ((2.0 / RAND_MAX) *(double)std::rand() + 2.0);
+    point_x[j] = 0.5 * ((1000.0 / RAND_MAX) *(double)std::rand() - 500.0) / point_z[j];
+    point_y[j] = 0.5 * ((1000.0 / RAND_MAX) *(double)std::rand() - 500.0) / point_z[j];
   }
 
 }
@@ -62,6 +68,31 @@ void bundleAdjustment::Solver::run_one_step() {
     //printf("gradient_vector[%03d] = %lf\n", k, gradient_vector[k]);
   }
 
+  for( int k = 0; k < K; ++k ) {
+    printf("k = %3d -> ", k);
+
+    if ( k < this->Nc ) // Txでの微分
+      printf("Tx");
+    else if ( k < 2*this->Nc ) // Tyでの微分
+      printf("Ty");
+    else if ( k < 3*this->Nc ) // Tzでの微分
+      printf("Tz");
+    else if ( k < 4*this->Nc ) // pose_xでの微分
+      printf("pose_x");
+    else if ( k < 5*this->Nc ) // pose_yでの微分
+      printf("pose_y");
+    else if ( k < 6*this->Nc ) // pose_zでの微分
+      printf("pose_z");
+    else if ( k < 6*this->Nc + this->Np ) // point_xでの微分
+      printf("px");
+    else if ( k < 6*this->Nc + 2 * this->Np ) // point_yでの微分
+      printf("py");
+    else // point_zでの微分
+      printf("pz");
+
+    printf("\t%lf\n", gradient_vector[k] );
+  }
+
   // コスト関数のヘッセ行列を計算
   for( int k1 = 0; k1 < K; ++k1 ) {
     for( int k2 = 0; k2 < K; ++k2 ) {
@@ -73,7 +104,7 @@ void bundleAdjustment::Solver::run_one_step() {
 
   // 更新幅を求める
   Eigen::VectorXd v = ba_get_update_for_step( *this, hessian_matrix, gradient_vector);
-
+  cout << v << endl;
   // 各変数を更新
   for( int i = 0; i < Nc; ++i ) { 
     cam_t_x[i] += v[i];
