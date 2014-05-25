@@ -107,6 +107,7 @@ namespace bundleAdjustment {
 
     void initialize();
     void run_one_step();
+    double reprojection_error();
 
   }; // class Solver
 
@@ -122,6 +123,9 @@ double ba_reproject_x( bundleAdjustment::Solver &s, int i, int j);
 double ba_reproject_y( bundleAdjustment::Solver &s, int i, int j);
 double ba_reproject_z( bundleAdjustment::Solver &s, int i, int j);
 
+// 再投影誤差
+double ba_reprojection_error( bundleAdjustment::Solver &s );
+
 // 再投影点の勾配
 double ba_get_reproject_gradient_x( bundleAdjustment::Solver &s, int i, int j, int k);
 double ba_get_reproject_gradient_y( bundleAdjustment::Solver &s, int i, int j, int k);
@@ -133,6 +137,7 @@ double ba_get_hessian_matrix( bundleAdjustment::Solver &s, int k, int l);
 
 // 連立方程式を解いて反復幅を求める
 Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s, vector< vector<double> > hessian_matrix, vector<double> gradient_vector);
+Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s);
 
 #endif // __BUNDLE_ADJUTMENT_HPP__
 

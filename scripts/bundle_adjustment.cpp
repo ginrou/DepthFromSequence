@@ -28,10 +28,14 @@ void bundleAdjustment::Solver::initialize() {
   
   for( int j = 0; j < Np; ++j ) {
     point_z[j] = (1.0 / 500.0) * ((2.0 / RAND_MAX) *(double)std::rand() + 2.0);
-    point_x[j] = 0.5 * ((1000.0 / RAND_MAX) *(double)std::rand() - 500.0) / point_z[j];
-    point_y[j] = 0.5 * ((1000.0 / RAND_MAX) *(double)std::rand() - 500.0) / point_z[j];
+    point_x[j] = captured_x[0][j] / point_z[j];
+    point_y[j] = captured_y[0][j] / point_z[j];
   }
 
+}
+
+double bundleAdjustment::Solver::reprojection_error() {
+  return ba_reprojection_error( *this );
 }
 
 /* Solverの計算を1ステップ進める。１ステップは以下の手順
@@ -68,30 +72,30 @@ void bundleAdjustment::Solver::run_one_step() {
     //printf("gradient_vector[%03d] = %lf\n", k, gradient_vector[k]);
   }
 
-  for( int k = 0; k < K; ++k ) {
-    printf("k = %3d -> ", k);
+  // for( int k = 0; k < K; ++k ) {
+  //   printf("k = %3d -> ", k);
 
-    if ( k < this->Nc ) // Txでの微分
-      printf("Tx");
-    else if ( k < 2*this->Nc ) // Tyでの微分
-      printf("Ty");
-    else if ( k < 3*this->Nc ) // Tzでの微分
-      printf("Tz");
-    else if ( k < 4*this->Nc ) // pose_xでの微分
-      printf("pose_x");
-    else if ( k < 5*this->Nc ) // pose_yでの微分
-      printf("pose_y");
-    else if ( k < 6*this->Nc ) // pose_zでの微分
-      printf("pose_z");
-    else if ( k < 6*this->Nc + this->Np ) // point_xでの微分
-      printf("px");
-    else if ( k < 6*this->Nc + 2 * this->Np ) // point_yでの微分
-      printf("py");
-    else // point_zでの微分
-      printf("pz");
+  //   if ( k < this->Nc ) // Txでの微分
+  //     printf("Tx");
+  //   else if ( k < 2*this->Nc ) // Tyでの微分
+  //     printf("Ty");
+  //   else if ( k < 3*this->Nc ) // Tzでの微分
+  //     printf("Tz");
+  //   else if ( k < 4*this->Nc ) // pose_xでの微分
+  //     printf("pose_x");
+  //   else if ( k < 5*this->Nc ) // pose_yでの微分
+  //     printf("pose_y");
+  //   else if ( k < 6*this->Nc ) // pose_zでの微分
+  //     printf("pose_z");
+  //   else if ( k < 6*this->Nc + this->Np ) // point_xでの微分
+  //     printf("px");
+  //   else if ( k < 6*this->Nc + 2 * this->Np ) // point_yでの微分
+  //     printf("py");
+  //   else // point_zでの微分
+  //     printf("pz");
 
-    printf("\t%lf\n", gradient_vector[k] );
-  }
+  //   printf("\t%lf\n", gradient_vector[k] );
+  // }
 
   // コスト関数のヘッセ行列を計算
   for( int k1 = 0; k1 < K; ++k1 ) {
@@ -103,8 +107,9 @@ void bundleAdjustment::Solver::run_one_step() {
   }
 
   // 更新幅を求める
-  Eigen::VectorXd v = ba_get_update_for_step( *this, hessian_matrix, gradient_vector);
-  cout << v << endl;
+  //  Eigen::VectorXd v = ba_get_update_for_step( *this, hessian_matrix, gradient_vector);
+  Eigen::VectorXd v = ba_get_update_for_step2( *this);
+
   // 各変数を更新
   for( int i = 0; i < Nc; ++i ) { 
     cam_t_x[i] += v[i];
@@ -114,9 +119,9 @@ void bundleAdjustment::Solver::run_one_step() {
     cam_pose_y[i] += v[ i+4*Nc ];
     cam_pose_z[i] += v[ i+5*Nc ];
 
-    printf("camera %d : t = (%lf, %lf, %lf), pose = (%lf, %lf, %lf)\n", i, 
-	   cam_t_x[i], cam_t_y[i], cam_t_z[i], 
-	   cam_pose_x[i], cam_pose_y[i], cam_pose_z[i]);
+    // printf("camera %d : t = (%lf, %lf, %lf), pose = (%lf, %lf, %lf)\n", i, 
+    // 	   cam_t_x[i], cam_t_y[i], cam_t_z[i], 
+    // 	   cam_pose_x[i], cam_pose_y[i], cam_pose_z[i]);
 
   }
 
@@ -126,7 +131,12 @@ void bundleAdjustment::Solver::run_one_step() {
     point_y[j] += v[ j + Np + 6*Nc ];
     point_z[j] += v[ j + 2*Np + 6*Nc ];
 
-    printf("point %d : (%lf, %lf, %lf)\n", j, point_x[j],point_y[j],point_z[j]);
+    // printf("point %d : (%lf, %lf, %lf)\n", 
+    // 	   j, 
+    // 	   point_x[j] * point_z[j],
+    // 	   point_y[j] * point_z[j],
+    // 	   1.0/point_z[j]
+    // 	   );
 
   }
 

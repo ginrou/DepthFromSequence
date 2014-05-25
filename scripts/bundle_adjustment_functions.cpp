@@ -198,3 +198,76 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s, vector< vec
   return H.fullPivLu().solve(grad);
 
 }
+
+Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
+
+  Eigen::MatrixXd Jacobian( s.Nc * s.Np, s.K );
+
+  for( int i = 0; i < s.Nc; ++i ) {
+    for( int j = 0; j < s.Np; ++j ) {
+      for( int k = 0; k < s.K; ++k ) { 
+
+	double px = s.captured_x[i][j];
+	double py = s.captured_y[i][j];
+	double qx = s.reproject_x[i][j];
+	double qy = s.reproject_y[i][j];
+	double qz = s.reproject_z[i][j];
+	double grad_x = s.grad_reproject_x[i][j][k];
+	double grad_y = s.grad_reproject_y[i][j][k];
+	double grad_z = s.grad_reproject_z[i][j][k];
+
+	int n = i*s.Np + j;
+	Jacobian(n, k) = 2.0 *( ( px - qx/qz) * ( qz * grad_x - qx * grad_z )
+				+ ( py - qy/qz) * ( qz * grad_y - qy * grad_z )
+				) / (qz*qz);
+
+      }
+    }
+  }
+
+  Eigen::VectorXd target_error(s.Nc*s.Np);
+
+  for( int i = 0; i < s.Nc; ++i ) {
+    for( int j = 0; j < s.Np; ++j ) {
+
+      double px = s.captured_x[i][j];
+      double py = s.captured_y[i][j];
+      double qx = s.reproject_x[i][j];
+      double qy = s.reproject_y[i][j];
+      double qz = s.reproject_z[i][j];
+
+      int n = i*s.Np + j;
+      target_error(n) = square(px - qx/qz) + square(py - qy/qz);
+
+    }
+  }
+
+  Eigen::VectorXd gradient = Jacobian.transpose() * target_error;
+  Eigen::MatrixXd Hessian = Jacobian.transpose() * Jacobian + 0.00001 * Eigen::MatrixXd::Identity(s.K,s.K);
+
+  //  cout << "|H| = " << Hessian.determinant() << endl;
+
+  return Hessian.fullPivLu().solve(gradient);
+
+}
+
+double ba_reprojection_error( bundleAdjustment::Solver &s ) {
+
+  double err = 0.0;
+
+  for( int i = 0; i < s.Nc; ++i ) {
+    for( int j = 0; j < s.Np; ++j ) {
+
+      double px = s.captured_x[i][j];
+      double py = s.captured_y[i][j];
+      double qx = s.reproject_x[i][j];
+      double qy = s.reproject_y[i][j];
+      double qz = s.reproject_z[i][j];
+
+      err += square(px - qx/qz) + square(py - qy/qz);
+
+    }
+  }
+
+  return err;
+}

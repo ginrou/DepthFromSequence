@@ -77,7 +77,11 @@ int main(int argc, char* argv[]) {
     printf("%03d : point = [%lf, %lf, %lf]\n", j, solver.point_x[j], solver.point_y[j],1.0/solver.point_z[j]);
   }
 
-  solver.run_one_step();
+  for( int i = 0; i < 150; ++i ) {
+    solver.run_one_step();
+    cout << "error = " << solver.reprojection_error() << endl;
+  }
+
 
   return 0;
 }
