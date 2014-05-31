@@ -1,6 +1,7 @@
 MAIN=bundleAdjustment_script.cpp
 INPUT_IMAGES= img/*.png
 DST_IMAGE= disp.png
+DST_POINT= points.txt
 ## AKAZE_LIBS= /usr/local/akaze/lib/libAKAZE.a
 ## AKAZE_FLAG= -I/usr/local/akaze/include
 AKAZE_LIBS=
@@ -30,7 +31,7 @@ bin/bundle_adjustment_functions.o: bundle_adjustment_functions.cpp
 
 ## command
 run: 
-	./bin/main.out $(INPUT_IMAGES) $(DST_IMAGE)
+	./bin/main.out $(INPUT_IMAGES) $(DST_POINT)
 and_run: $(MAIN) bin/main.o
 	make
 	make run

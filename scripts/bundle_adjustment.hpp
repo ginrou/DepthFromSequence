@@ -37,7 +37,13 @@ namespace bundleAdjustment {
     vector< vector<double> > hessian_matrix;
     vector<double> update_for_step; // 更新幅
 
+    // LM法の正則化項の強さのパラメータ
+    double c;
+    double reprojection_error;
+
     Solver(std::vector< vector< cv::Point2f > > captured, cv::Size img_size) {
+      c = 0.00001;
+
       Nc = captured.size();
       Np = captured[0].size();
       K  =  6*Nc + 3*Np;
@@ -107,7 +113,6 @@ namespace bundleAdjustment {
 
     void initialize();
     void run_one_step();
-    double reprojection_error();
 
   }; // class Solver
 

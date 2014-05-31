@@ -27,15 +27,17 @@ void bundleAdjustment::Solver::initialize() {
   }
   
   for( int j = 0; j < Np; ++j ) {
-    point_z[j] = (1.0 / 500.0) * ((2.0 / RAND_MAX) *(double)std::rand() + 2.0);
-    point_x[j] = captured_x[0][j] / point_z[j];
-    point_y[j] = captured_y[0][j] / point_z[j];
+
+    double depth = ((2.0 / RAND_MAX) *(double)std::rand() + 2.0);
+
+    point_x[j] = captured_x[0][j] / depth;
+    point_y[j] = captured_y[0][j] / depth;
+    point_z[j] = 1.0 / depth;
+
   }
 
-}
+  reprojection_error = ba_reprojection_error( *this );
 
-double bundleAdjustment::Solver::reprojection_error() {
-  return ba_reprojection_error( *this );
 }
 
 /* Solverの計算を1ステップ進める。１ステップは以下の手順
@@ -100,7 +102,7 @@ void bundleAdjustment::Solver::run_one_step() {
   // コスト関数のヘッセ行列を計算
   for( int k1 = 0; k1 < K; ++k1 ) {
     for( int k2 = 0; k2 < K; ++k2 ) {
-      double c = ( k1 == k2 ) ? 1.00001 : 1.0;
+      double c = ( k1 == k2 ) ? this->c : 1.0;
       hessian_matrix[k1][k2] = c * ba_get_hessian_matrix( *this, k1, k2);
       //printf("hessian_matrix[%03d][%03d] = %lf\n", k1, k2, hessian_matrix[k1][k2]);
     }
@@ -108,7 +110,9 @@ void bundleAdjustment::Solver::run_one_step() {
 
   // 更新幅を求める
   //  Eigen::VectorXd v = ba_get_update_for_step( *this, hessian_matrix, gradient_vector);
+  printf("start update caliculating\n");
   Eigen::VectorXd v = ba_get_update_for_step2( *this);
+  printf("finish update caliculating\n");
 
   // 各変数を更新
   for( int i = 0; i < Nc; ++i ) { 
@@ -138,6 +142,15 @@ void bundleAdjustment::Solver::run_one_step() {
     // 	   1.0/point_z[j]
     // 	   );
 
+  }
+
+  double prev_reprojection_error = this->reprojection_error;
+  this->reprojection_error = ba_reprojection_error( *this );
+  
+  if( prev_reprojection_error - this->reprojection_error > 0 ) {
+    this->c /= 10.0;
+  } else {
+    this->c *= 10.0;
   }
 
 }
