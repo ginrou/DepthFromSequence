@@ -1,5 +1,5 @@
 MAIN=bundleAdjustment_script.cpp
-INPUT_IMAGES= img/*.png
+INPUT_IMAGES= img/*
 DST_IMAGE= disp.png
 DST_POINT= points.txt
 ## AKAZE_LIBS= /usr/local/akaze/lib/libAKAZE.a

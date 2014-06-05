@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
   // initialize trackers
   {
     vector<Point2f> points;
-    cv::goodFeaturesToTrack( input_images[0], points, MAX_CORNERS, 0.033, 10, noArray(), 5, true, 0.04);
+    cv::goodFeaturesToTrack( input_images[0], points, MAX_CORNERS, 0.05, 10, noArray(), 5, true, 0.04);
     cv::cornerSubPix(input_images[0], points, sub_pix_win_size, cv::Size(-1,-1), term_crit );
     track_points.push_back(points);
   }
@@ -77,20 +77,32 @@ int main(int argc, char* argv[]) {
     printf("%03d : point = [%lf, %lf, %lf]\n", j, solver.point_x[j], solver.point_y[j],1.0/solver.point_z[j]);
   }
 
-  for( int i = 0; i < 20; ++i ) {
+  for( int i = 0; i < 10; ++i ) {
     solver.run_one_step();
     cout << i << "  c = " << solver.c << " error = " << solver.reprojection_error << endl;
   }
 
   FILE *fp = fopen(argv[argc-1], "w");
   for( int i = 0; i < solver.Np; ++i ) {
-    double s = 0.1;
+    double s = 0.02;
     double z = 1.0 / solver.point_z[i];
     double x = solver.point_x[i] / solver.point_z[i];
     double y = solver.point_y[i] / solver.point_z[i];
     fprintf(fp, "%lf,%lf,%lf\n", x*s, y*s, z*s);
   }
   fclose(fp);
+
+  for ( int i = 0; i < solver.Nc; ++i ) {
+    printf("camera %02d : trans = %lf, %lf, %lf\n", i
+	   , solver.cam_t_x[i]
+	   , solver.cam_t_y[i]
+	   , solver.cam_t_z[i]);
+    printf("            : pose = %lf, %lf, %lf\n"
+	   , solver.cam_pose_x[i]
+	   , solver.cam_pose_y[i]
+	   , solver.cam_pose_z[i]);
+
+  }
 
   return 0;
 }

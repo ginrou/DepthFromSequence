@@ -4,6 +4,8 @@
 inline double square(double a) { return a*a; }
 inline double delta(int i, int j) { return i == j ? 1.0 : 0.0; }
 
+void test_hessian(Eigen::MatrixXd &hessian);
+
 double ba_reproject_x( bundleAdjustment::Solver &s, int i, int j) {
   return ( s.point_x[j] - s.cam_pose_z[i] * s.point_y[j] + s.cam_pose_y[i] ) / s.point_z[j] + s.cam_t_x[i];
 }
@@ -158,8 +160,8 @@ double ba_get_hessian_matrix( bundleAdjustment::Solver &s, int k, int l) {
       double grad_z_l = s.grad_reproject_z[i][j][l];
 
       ret += -( ( qx*grad_z_k - qz*grad_x_k ) * ( qx*grad_z_l - qz*grad_x_l )
-	       + ( qy*grad_z_k - qz*grad_y_k ) * ( qy*grad_z_l - qz*grad_y_l )
-	       ) / square(square(qz));
+		+ ( qy*grad_z_k - qz*grad_y_k ) * ( qy*grad_z_l - qz*grad_y_l )
+		) / square(square(qz));
 
     }
   }
@@ -201,11 +203,23 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s, vector< vec
 
 Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
 
-  Eigen::MatrixXd Jacobian( s.Nc * s.Np, s.K );
+  // 最初のカメラの位置を原点、回転をゼロとして、次のカメラとのx方向の平行移動を1で固定
+  // するので更新するのは変数が7に減る
+  int K = s.K - 7;
+
+  Eigen::MatrixXd Jacobian( s.Nc * s.Np, K );
 
   for( int i = 0; i < s.Nc; ++i ) {
     for( int j = 0; j < s.Np; ++j ) {
-      for( int k = 0; k < s.K; ++k ) { 
+      for( int k = 0,  l = 0; k < s.K; ++k ) { 
+
+	if ( k == 0 ) continue; // １つ目のカメラのx方向の平行移動
+	if ( k == 1 ) continue; // １つ目のと２つ目のカメラの平行移動
+	if ( k == s.Nc ) continue; // １つ目のカメラのy方向の平行移動
+	if ( k == 2*s.Nc ) continue; // １つ目のカメラのz方向の平行移動
+	if ( k == 3*s.Nc ) continue; // １つ目のカメラのx方向の回転
+	if ( k == 4*s.Nc ) continue; // １つ目のカメラのy方向の回転
+	if ( k == 5*s.Nc ) continue; // １つ目のカメラのz方向の回転
 
 	double px = s.captured_x[i][j];
 	double py = s.captured_y[i][j];
@@ -217,10 +231,10 @@ Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
 	double grad_z = s.grad_reproject_z[i][j][k];
 
 	int n = i*s.Np + j;
-	Jacobian(n, k) = 2.0 *( ( px - qx/qz) * ( qz * grad_x - qx * grad_z )
+	Jacobian(n, l) = 2.0 *( ( px - qx/qz) * ( qz * grad_x - qx * grad_z )
 				+ ( py - qy/qz) * ( qz * grad_y - qy * grad_z )
 				) / (qz*qz);
-
+	l++;
       }
     }
   }
@@ -238,16 +252,47 @@ Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
 
       int n = i*s.Np + j;
       target_error(n) = square(px - qx/qz) + square(py - qy/qz);
-
     }
   }
 
   Eigen::VectorXd gradient = Jacobian.transpose() * target_error;
-  Eigen::MatrixXd Hessian = Jacobian.transpose() * Jacobian + 0.00001 * Eigen::MatrixXd::Identity(s.K,s.K);
+  Eigen::MatrixXd Hessian = Jacobian.transpose() * Jacobian + s.c * Eigen::MatrixXd::Identity(K,K);
 
-  //  cout << "|H| = " << Hessian.determinant() << endl;
+  cout << "|H| = " << Hessian.determinant() << endl;
+  Eigen::FullPivLU<Eigen::MatrixXd> lu(Hessian);
+  cout << "rank = " << lu.rank() << endl;
+  
+  Eigen::VectorXd update = Hessian.fullPivLu().solve(gradient);
+  Eigen::VectorXd ret = Eigen::VectorXd::Zero(s.K);
+  for ( int k = 0, l = 0; k < K; ++ k ) {
 
-  return Hessian.fullPivLu().solve(gradient);
+    if ( k == 0 ) continue; // １つ目のカメラのx方向の平行移動
+    if ( k == 1 ) continue; // １つ目のと２つ目のカメラの平行移動
+    if ( k == s.Nc ) continue; // １つ目のカメラのy方向の平行移動
+    if ( k == 2*s.Nc ) continue; // １つ目のカメラのz方向の平行移動
+    if ( k == 3*s.Nc ) continue; // １つ目のカメラのx方向の回転
+    if ( k == 4*s.Nc ) continue; // １つ目のカメラのy方向の回転
+    if ( k == 5*s.Nc ) continue; // １つ目のカメラのz方向の回転
+
+    ret(k) = update(l);
+    l++;
+  }
+  return ret;
+
+}
+
+void test_hessian(Eigen::MatrixXd &hessian) {
+
+  int rows = hessian.rows();
+
+  for( int r0 = 0; r0 < rows; ++r0 ) {
+    for(int r1 = r0+1; r1 < rows; ++r1 ) {
+      double norm = (hessian.row(r0) - hessian.row(r1)).norm();
+      if ( norm < 0.0000001 ) {
+	printf("row %d <--> %d : norm = %lf\n", r0, r1, norm);
+      }
+    }
+  }
 
 }
 
