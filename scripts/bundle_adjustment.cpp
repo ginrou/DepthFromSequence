@@ -78,7 +78,7 @@ void bundleAdjustment::Solver::run_one_step() {
     }
   }
   
-  Eigen::VectorXd v = ba_get_update_for_step2( *this);
+  Eigen::VectorXd v = ba_get_update_for_step( *this);
 
   // 各変数を更新
   for( int i = 0; i < Nc; ++i ) { 

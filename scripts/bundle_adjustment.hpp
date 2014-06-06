@@ -138,13 +138,8 @@ double ba_get_reproject_gradient_x( bundleAdjustment::Solver &s, int i, int j, i
 double ba_get_reproject_gradient_y( bundleAdjustment::Solver &s, int i, int j, int k);
 double ba_get_reproject_gradient_z( bundleAdjustment::Solver &s, int i, int j, int k);
 
-// コスト関数の勾配とヘッセ行列
-double ba_get_gradient( bundleAdjustment::Solver &s, int k);
-double ba_get_hessian_matrix( bundleAdjustment::Solver &s, int k, int l);
-
 // 連立方程式を解いて反復幅を求める
-Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s, vector< vector<double> > hessian_matrix, vector<double> gradient_vector);
-Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s);
+Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s);
 
 #endif // __BUNDLE_ADJUTMENT_HPP__
 
