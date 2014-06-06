@@ -84,7 +84,7 @@ void bundleAdjustment::Solver::run_one_step() {
   for( int i = 0; i < Nc; ++i ) { 
     cam_t_x[i] += v[i];
     cam_t_y[i] += v[ i+Nc ];
-    cam_t_y[i] += v[ i+2*Nc ];
+    cam_t_z[i] += v[ i+2*Nc ];
     cam_pose_x[i] += v[ i+3*Nc ];
     cam_pose_y[i] += v[ i+4*Nc ];
     cam_pose_z[i] += v[ i+5*Nc ];

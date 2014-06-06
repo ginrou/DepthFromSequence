@@ -180,7 +180,7 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s, vector< vec
     grad(k) = -gradient_vector[k];
   }
 
-  cout << "|H| = " << H.determinant() << endl;
+  // cout << "|H| = " << H.determinant() << endl;
   //  cout << H << endl;
 
   printf("\nall 0 rows\n");
@@ -258,6 +258,7 @@ Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
 
   cout << "|H| = " << Hessian.determinant() << endl;
   
+  // solve:  Hessian * update = gradient
   Eigen::VectorXd update = Hessian.fullPivLu().solve(gradient);
   Eigen::VectorXd ret = Eigen::VectorXd::Zero(s.K);
   for ( int k = 0, l = 0; k < K; ++ k ) {
