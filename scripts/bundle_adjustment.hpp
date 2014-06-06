@@ -114,6 +114,8 @@ namespace bundleAdjustment {
     void initialize();
     void run_one_step();
 
+    static cv::Mat depth_drawn( cv::Mat img, vector<Point2f> points, vector<double> depth);
+
   }; // class Solver
 
 }; // namespace bundleAdjustment

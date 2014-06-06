@@ -106,3 +106,26 @@ void bundleAdjustment::Solver::run_one_step() {
   }
 
 }
+
+
+cv::Mat bundleAdjustment::Solver::depth_drawn( cv::Mat img, 
+					       vector<Point2f> points, 
+					       vector<double> depth)
+{
+  Mat dst = img.clone();
+  for( int i = 0; i < points.size(); ++i ) {
+    cv::Point2f pt = points[i];
+    double s = 0.0002;
+    double z = 1.0 / fabs(depth[i]);
+
+    cv::Scalar color = cv::Scalar::all(255);
+    cv::circle(img, pt, 2, color, 1, 8, 0);
+
+    char buf[256];
+    sprintf(buf, "%2.3lf", z*s);
+    std::string str = buf;
+    cv::putText(dst, str, pt, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.6, color, 1, 1, false);
+
+  }
+  return dst;
+}
