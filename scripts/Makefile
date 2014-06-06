@@ -9,7 +9,7 @@ AKAZE_FLAG=
 CFLAGS= -O0 $(AKAZE_FLAG)
 
 ## build rules
-bin/main.out: bin/main.o bin/bundle_adjustment.o bin/bundle_adjustment_functions.o
+bin/main.out: bin/main.o bin/bundle_adjustment.o bin/bundle_adjustment_functions.o bin/feature_tracking.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
 bin/main.o: $(MAIN)
@@ -27,6 +27,8 @@ bin/bundle_adjustment.o: bundle_adjustment.cpp
 bin/bundle_adjustment_functions.o: bundle_adjustment_functions.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
 
+bin/feature_tracking.o: feature_tracking.cpp
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
 
 
 ## command

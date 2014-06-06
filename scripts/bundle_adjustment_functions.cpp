@@ -4,8 +4,6 @@
 inline double square(double a) { return a*a; }
 inline double delta(int i, int j) { return i == j ? 1.0 : 0.0; }
 
-void test_hessian(Eigen::MatrixXd &hessian);
-
 double ba_reproject_x( bundleAdjustment::Solver &s, int i, int j) {
   return ( s.point_x[j] - s.cam_pose_z[i] * s.point_y[j] + s.cam_pose_y[i] ) / s.point_z[j] + s.cam_t_x[i];
 }
@@ -207,7 +205,7 @@ Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
   // するので更新するのは変数が7に減る
   int K = s.K - 7;
 
-  Eigen::MatrixXd Jacobian( s.Nc * s.Np, K );
+  Eigen::MatrixXd Jacobian( 2 * s.Nc * s.Np, K );
 
   for( int i = 0; i < s.Nc; ++i ) {
     for( int j = 0; j < s.Np; ++j ) {
@@ -230,16 +228,15 @@ Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
 	double grad_y = s.grad_reproject_y[i][j][k];
 	double grad_z = s.grad_reproject_z[i][j][k];
 
-	int n = i*s.Np + j;
-	Jacobian(n, l) = 2.0 *( ( px - qx/qz) * ( qz * grad_x - qx * grad_z )
-				+ ( py - qy/qz) * ( qz * grad_y - qy * grad_z )
-				) / (qz*qz);
+	int nx = i*s.Np + j, ny = i*s.Np + j + s.Np*s.Nc;
+	Jacobian(nx, l) = (qx*grad_z - qz*grad_x) / (qz*qz);
+	Jacobian(ny, l) = (qy*grad_z - qz*grad_y) / (qz*qz);
 	l++;
       }
     }
   }
 
-  Eigen::VectorXd target_error(s.Nc*s.Np);
+  Eigen::VectorXd target_error(2 * s.Nc*s.Np);
 
   for( int i = 0; i < s.Nc; ++i ) {
     for( int j = 0; j < s.Np; ++j ) {
@@ -250,17 +247,16 @@ Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
       double qy = s.reproject_y[i][j];
       double qz = s.reproject_z[i][j];
 
-      int n = i*s.Np + j;
-      target_error(n) = square(px - qx/qz) + square(py - qy/qz);
+      int nx = i*s.Np + j, ny = i*s.Np + j + s.Np*s.Nc;
+      target_error(nx) = px - qx/qz;
+      target_error(ny) = py - qy/qz;
     }
   }
 
-  Eigen::VectorXd gradient = Jacobian.transpose() * target_error;
+  Eigen::VectorXd gradient = -Jacobian.transpose() * target_error;
   Eigen::MatrixXd Hessian = Jacobian.transpose() * Jacobian + s.c * Eigen::MatrixXd::Identity(K,K);
 
   cout << "|H| = " << Hessian.determinant() << endl;
-  Eigen::FullPivLU<Eigen::MatrixXd> lu(Hessian);
-  cout << "rank = " << lu.rank() << endl;
   
   Eigen::VectorXd update = Hessian.fullPivLu().solve(gradient);
   Eigen::VectorXd ret = Eigen::VectorXd::Zero(s.K);
@@ -278,21 +274,6 @@ Eigen::VectorXd ba_get_update_for_step2( bundleAdjustment::Solver &s) {
     l++;
   }
   return ret;
-
-}
-
-void test_hessian(Eigen::MatrixXd &hessian) {
-
-  int rows = hessian.rows();
-
-  for( int r0 = 0; r0 < rows; ++r0 ) {
-    for(int r1 = r0+1; r1 < rows; ++r1 ) {
-      double norm = (hessian.row(r0) - hessian.row(r1)).norm();
-      if ( norm < 0.0000001 ) {
-	printf("row %d <--> %d : norm = %lf\n", r0, r1, norm);
-      }
-    }
-  }
 
 }
 

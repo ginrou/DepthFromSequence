@@ -27,8 +27,8 @@ void bundleAdjustment::Solver::initialize() {
       cam_t_y[i] = 0;
       cam_t_z[i] = 0;
     } else if ( i == 1 ) {
-      cam_t_x[i] = cam_scale;
-      cam_t_y[i] = cam_scale * ( (double)std::rand() / RAND_MAX - 0.5 );
+      cam_t_x[i] = cam_scale * ( (double)std::rand() / RAND_MAX - 0.5 );
+      cam_t_y[i] = cam_scale;
       cam_t_z[i] = cam_scale * ( (double)std::rand() / RAND_MAX - 0.5 );
     } else {
       cam_t_x[i] = cam_scale * ( (double)std::rand() / RAND_MAX - 0.5 );

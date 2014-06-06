@@ -8,6 +8,7 @@
 using namespace Eigen;
 
 #include "bundle_adjustment.hpp"
+#include "feature_tracking.hpp"
 
 using namespace std;
 using namespace cv;
@@ -30,7 +31,7 @@ int main(int argc, char* argv[]) {
   // initialize trackers
   {
     vector<Point2f> points;
-    cv::goodFeaturesToTrack( input_images[0], points, MAX_CORNERS, 0.05, 10, noArray(), 5, true, 0.04);
+    cv::goodFeaturesToTrack( input_images[0], points, MAX_CORNERS, 0.075, 10, noArray(), 5, true, 0.04);
     cv::cornerSubPix(input_images[0], points, sub_pix_win_size, cv::Size(-1,-1), term_crit );
     track_points.push_back(points);
   }
@@ -66,29 +67,27 @@ int main(int argc, char* argv[]) {
     stable_track_points.push_back(points);
   }
 
+  bundleAdjustment::FeatureTracker tracker(input_images);
+  tracker.track();
+  tracker.draw_correspondences("tmp/match-");
+  return 0;
+
   bundleAdjustment::Solver solver(stable_track_points, cv::Size(512, 512));
   solver.initialize();
 
-  for( int i = 0; i < solver.Nc; ++i ) {
-    printf("%03d : cam_t = [%lf, %lf, %lf]\n", i, solver.cam_t_x[i],solver.cam_t_y[i],solver.cam_t_z[i]);
-  }
-
-  for( int j = 0; j < solver.Np; ++j ) {
-    printf("%03d : point = [%lf, %lf, %lf]\n", j, solver.point_x[j], solver.point_y[j],1.0/solver.point_z[j]);
-  }
-
-  for( int i = 0; i < 10; ++i ) {
+  for( int i = 0; i < 50; ++i ) {
     solver.run_one_step();
     cout << i << "  c = " << solver.c << " error = " << solver.reprojection_error << endl;
   }
 
   FILE *fp = fopen(argv[argc-1], "w");
   for( int i = 0; i < solver.Np; ++i ) {
-    double s = 0.02;
-    double z = 1.0 / solver.point_z[i];
+    double s = 0.0075;
+    double z = 1.0 / fabs(solver.point_z[i]);
     double x = solver.point_x[i] / solver.point_z[i];
     double y = solver.point_y[i] / solver.point_z[i];
     fprintf(fp, "%lf,%lf,%lf\n", x*s, y*s, z*s);
+    printf("%lf,\t%lf,\t%lf\n", x*s, y*s, z*s);
   }
   fclose(fp);
 
@@ -97,12 +96,32 @@ int main(int argc, char* argv[]) {
 	   , solver.cam_t_x[i]
 	   , solver.cam_t_y[i]
 	   , solver.cam_t_z[i]);
-    printf("            : pose = %lf, %lf, %lf\n"
+    printf("          : pose = %lf, %lf, %lf\n"
 	   , solver.cam_pose_x[i]
 	   , solver.cam_pose_y[i]
 	   , solver.cam_pose_z[i]);
 
   }
+
+
+  // draw to circle
+  Mat img = input_images[0].clone();
+  
+  for( int i = 0; i < solver.Np; ++i ) {
+    cv::Point pt = stable_track_points[0][i];
+    double s = 0.0002;
+    double z = 1.0 / fabs(solver.point_z[i]);
+
+    cv::Scalar color = cv::Scalar::all(255);
+    cv::circle(img, pt, 2, color, 1, 8, 0);
+
+    char buf[256];
+    sprintf(buf, "%2.3lf", z*s);
+    std::string str = buf;
+    cv::putText(img, str, pt, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.6, color, 1, 1, false);
+
+  }
+  imwrite("tmp/depth.png", img);
 
   return 0;
 }
