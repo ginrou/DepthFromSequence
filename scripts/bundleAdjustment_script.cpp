@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
   FILE *fp = fopen(argv[argc-1], "w");
   for( int i = 0; i < solver.Np; ++i ) {
-    double s = 0.0075;
+    double s = 0.004;
     double z = 1.0 / fabs(solver.point_z[i]);
     double x = solver.point_x[i] / solver.point_z[i];
     double y = solver.point_y[i] / solver.point_z[i];

@@ -39,7 +39,7 @@ void bundleAdjustment::Solver::initialize() {
     cam_pose_x[i] = 0; cam_pose_y[i] = 0; cam_pose_z[i] = 0;
   }
   
-  double f = 0.1;
+  double f = 1.0;
 
   for( int j = 0; j < Np; ++j ) {
     double depth = 1000.0 * ((2.0 / RAND_MAX) *(double)std::rand() + 2.0);
@@ -79,6 +79,7 @@ void bundleAdjustment::Solver::run_one_step() {
   }
   
   Eigen::VectorXd v = ba_get_update_for_step( *this);
+  cout << "update norm = " << v.norm() << endl;
 
   // 各変数を更新
   for( int i = 0; i < Nc; ++i ) { 

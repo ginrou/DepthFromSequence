@@ -13,7 +13,7 @@ double ba_reproject_y( bundleAdjustment::Solver &s, int i, int j) {
 }
 
 double ba_reproject_z( bundleAdjustment::Solver &s, int i, int j) {
-  return (-s.point_x[j] * s.cam_pose_y[i] + s.cam_pose_z[i] * s.point_y[j] + 1) / s.point_z[j] + s.cam_t_z[i];
+  return (-s.point_x[j] * s.cam_pose_y[i] + s.cam_pose_z[i] * s.point_y[j] + 1.0) / s.point_z[j] + s.cam_t_z[i];
 }
 
 double ba_get_reproject_gradient_x( bundleAdjustment::Solver &s, int i, int j, int k) {
@@ -125,36 +125,6 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s) {
   int K = s.K - 7;
 
   Eigen::MatrixXd Jacobian( 2 * s.Nc * s.Np, K );
-
-  for( int i = 0; i < s.Nc; ++i ) {
-    for( int j = 0; j < s.Np; ++j ) {
-      for( int k = 0,  l = 0; k < s.K; ++k ) { 
-
-	if ( k == 0 ) continue; // １つ目のカメラのx方向の平行移動
-	if ( k == 1 ) continue; // １つ目のと２つ目のカメラの平行移動
-	if ( k == s.Nc ) continue; // １つ目のカメラのy方向の平行移動
-	if ( k == 2*s.Nc ) continue; // １つ目のカメラのz方向の平行移動
-	if ( k == 3*s.Nc ) continue; // １つ目のカメラのx方向の回転
-	if ( k == 4*s.Nc ) continue; // １つ目のカメラのy方向の回転
-	if ( k == 5*s.Nc ) continue; // １つ目のカメラのz方向の回転
-
-	double px = s.captured_x[i][j];
-	double py = s.captured_y[i][j];
-	double qx = s.reproject_x[i][j];
-	double qy = s.reproject_y[i][j];
-	double qz = s.reproject_z[i][j];
-	double grad_x = s.grad_reproject_x[i][j][k];
-	double grad_y = s.grad_reproject_y[i][j][k];
-	double grad_z = s.grad_reproject_z[i][j][k];
-
-	int nx = i*s.Np + j, ny = i*s.Np + j + s.Np*s.Nc;
-	Jacobian(nx, l) = (qx*grad_z - qz*grad_x) / (qz*qz);
-	Jacobian(ny, l) = (qy*grad_z - qz*grad_y) / (qz*qz);
-	l++;
-      }
-    }
-  }
-
   Eigen::VectorXd target_error(2 * s.Nc*s.Np);
 
   for( int i = 0; i < s.Nc; ++i ) {
@@ -165,10 +135,28 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s) {
       double qx = s.reproject_x[i][j];
       double qy = s.reproject_y[i][j];
       double qz = s.reproject_z[i][j];
-
       int nx = i*s.Np + j, ny = i*s.Np + j + s.Np*s.Nc;
-      target_error(nx) = px - qx/qz;
-      target_error(ny) = py - qy/qz;
+      target_error[nx] = px - qx/qz;
+      target_error[ny] = py - qy/qz;
+
+      for( int k = 0,  l = 0; k < s.K; ++k ) { 
+
+	if ( k == 0 ) continue; // １つ目のカメラのx方向の平行移動
+	if ( k == s.Nc+1 ) continue; // １つ目のと２つ目のカメラの平行移動
+	if ( k == s.Nc ) continue; // １つ目のカメラのy方向の平行移動
+	if ( k == 2*s.Nc ) continue; // １つ目のカメラのz方向の平行移動
+	if ( k == 3*s.Nc ) continue; // １つ目のカメラのx方向の回転
+	if ( k == 4*s.Nc ) continue; // １つ目のカメラのy方向の回転
+	if ( k == 5*s.Nc ) continue; // １つ目のカメラのz方向の回転
+
+	double grad_x = s.grad_reproject_x[i][j][k];
+	double grad_y = s.grad_reproject_y[i][j][k];
+	double grad_z = s.grad_reproject_z[i][j][k];
+
+	Jacobian(nx, l) = (qx*grad_z - qz*grad_x) / (qz*qz);
+	Jacobian(ny, l) = (qy*grad_z - qz*grad_y) / (qz*qz);
+	l++;
+      }
     }
   }
 
@@ -180,17 +168,17 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s) {
   // solve:  Hessian * update = gradient
   Eigen::VectorXd update = Hessian.fullPivLu().solve(gradient);
   Eigen::VectorXd ret = Eigen::VectorXd::Zero(s.K);
-  for ( int k = 0, l = 0; k < K; ++ k ) {
+  for ( int k = 0, l = 0; k < K; ++k ) {
 
     if ( k == 0 ) continue; // １つ目のカメラのx方向の平行移動
-    if ( k == 1 ) continue; // １つ目のと２つ目のカメラの平行移動
+    if ( k == s.Nc+1 ) continue; // １つ目のと２つ目のカメラの平行移動
     if ( k == s.Nc ) continue; // １つ目のカメラのy方向の平行移動
     if ( k == 2*s.Nc ) continue; // １つ目のカメラのz方向の平行移動
     if ( k == 3*s.Nc ) continue; // １つ目のカメラのx方向の回転
     if ( k == 4*s.Nc ) continue; // １つ目のカメラのy方向の回転
     if ( k == 5*s.Nc ) continue; // １つ目のカメラのz方向の回転
 
-    ret(k) = update(l);
+    ret[k] = update[l];
     l++;
   }
   return ret;
