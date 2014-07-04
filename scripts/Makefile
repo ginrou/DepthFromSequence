@@ -1,4 +1,4 @@
-MAIN=bundleAdjustment_script.cpp
+MAIN=bundleAdjustment_mock_test.cpp
 INPUT_IMAGES= img/*
 DST_IMAGE= disp.png
 DST_POINT= points.txt
@@ -9,7 +9,7 @@ AKAZE_FLAG=
 CFLAGS= -O0 $(AKAZE_FLAG)
 
 ## build rules
-bin/main.out: bin/main.o bin/bundle_adjustment.o bin/bundle_adjustment_functions.o bin/feature_tracking.o
+bin/main.out: bin/main.o bin/bundle_adjustment.o bin/bundle_adjustment_functions.o bin/feature_tracking.o bin/mock_data_factroy.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
 bin/main.o: $(MAIN)
@@ -28,6 +28,9 @@ bin/bundle_adjustment_functions.o: bundle_adjustment_functions.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
 
 bin/feature_tracking.o: feature_tracking.cpp
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
+
+bin/mock_data_factroy.o: mock_data_factory.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
 
 

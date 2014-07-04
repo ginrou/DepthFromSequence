@@ -52,8 +52,8 @@ namespace bundleAdjustment {
 	vector<double> pt_x, pt_y;
 	for( int j = 0; j < Np; ++j ) {
 	  cv::Point2f pt = captured[i][j];
-	  pt_x.push_back(2.0 * pt.x / img_size.width  - 1.0); // [-1,1] におさまるようにする
-	  pt_y.push_back(2.0 * pt.y / img_size.height - 1.0);
+	  pt_x.push_back(pt.x);
+	  pt_y.push_back(pt.y);
 	}
 	captured_x.push_back(pt_x);
 	captured_y.push_back(pt_y);
@@ -114,6 +114,8 @@ namespace bundleAdjustment {
     void initialize();
     void run_one_step();
 
+    void mock_init( vector<Point3f> pt_vec, vector<Point3f> cam_t_vec, vector<Point3f> cam_rot_vec);
+
     static cv::Mat depth_drawn( cv::Mat img, vector<Point2f> points, vector<double> depth);
 
   }; // class Solver
@@ -140,6 +142,15 @@ double ba_get_reproject_gradient_z( bundleAdjustment::Solver &s, int i, int j, i
 
 // 連立方程式を解いて反復幅を求める
 Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s);
+
+// 適当な解を作る
+std::vector<Point3f> gen_3d_points(int N, cv::Point3f min, cv::Point3f max);
+std::vector<Point3f> gen_3d_cam_t(int N);
+std::vector<Point3f> gen_3d_cam_rot(int N);
+std::vector<Point2f> project_3d_to_2d( Point3f cam_t, Point3f cam_rot, std::vector<Point3f> &points);
+
+std::vector<Point3f> reduce( vector<Point3f> vec, int N ); // i%N == 0 のものを入れる
+cv::Mat1b print_point_to_image( vector<Point2f> pt_list,  cv::Size img_size ); // 適当に正規化する
 
 #endif // __BUNDLE_ADJUTMENT_HPP__
 

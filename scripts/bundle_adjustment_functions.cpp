@@ -124,8 +124,8 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s) {
   // するので更新するのは変数が7に減る
   int K = s.K - 7;
 
-  Eigen::MatrixXd Jacobian( 2 * s.Nc * s.Np, K );
-  Eigen::VectorXd target_error(2 * s.Nc*s.Np);
+  Eigen::MatrixXd Jacobian = Eigen::MatrixXd::Zero( 2 * s.Nc * s.Np, K );
+  Eigen::VectorXd target_error = Eigen::VectorXd::Zero(2 * s.Nc*s.Np);
 
   for( int i = 0; i < s.Nc; ++i ) {
     for( int j = 0; j < s.Np; ++j ) {
@@ -159,6 +159,8 @@ Eigen::VectorXd ba_get_update_for_step( bundleAdjustment::Solver &s) {
       }
     }
   }
+
+  cout << "hoge fuga piyo " << endl;
 
   Eigen::VectorXd gradient = -Jacobian.transpose() * target_error;
   Eigen::MatrixXd Hessian = Jacobian.transpose() * Jacobian + s.c * Eigen::MatrixXd::Identity(K,K);
@@ -197,8 +199,9 @@ double ba_reprojection_error( bundleAdjustment::Solver &s ) {
       double qx = s.reproject_x[i][j];
       double qy = s.reproject_y[i][j];
       double qz = s.reproject_z[i][j];
-
       err += square(px - qx/qz) + square(py - qy/qz);
+
+      cout << square(px - qx/qz) + square(py - qy/qz) << endl;
 
     }
   }
