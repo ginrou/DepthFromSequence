@@ -6,6 +6,8 @@ int main(int argc, char* argv[]) {
   vector<Point3f> cam_t_vec = mock_3d_cam_t(3);
   vector<Point3f> cam_rot_vec = mock_3d_cam_rot(3);
 
+  if( cam_t_vec.size() != cam_rot_vec.size() ) exit(1);
+
   // 初期解をファイルへ書き込む
   FILE *fp = fopen(argv[argc-1], "w");
   for( int i = 0; i < points_in_world.size(); ++i ) {
@@ -14,7 +16,14 @@ int main(int argc, char* argv[]) {
   }
   fclose(fp);
 
+  vector< vector<Point2f> > project_points;
+  for( int j = 0; j < cam_t_vec.size(); ++j ) {
+    project_points.push_back( project_3d_to_2d( cam_t_vec[j], cam_rot_vec[j], points_in_world) );
+    char filename[256];
+    sprintf(filename, "tmp/projected-%02d.png", j);
+    imwrite(filename, print_point_to_image( project_points[j], Size(512, 512)));
+  }
+
   return 0;
   
 }
-

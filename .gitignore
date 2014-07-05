@@ -22,3 +22,5 @@ DerivedData
 Pods/
 
 scripts/img/*
+scripts/tmp/*
+scripts/points.txt
