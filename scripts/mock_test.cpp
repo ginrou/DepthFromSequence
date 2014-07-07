@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
   }
   fclose(fp);
 
+  // 投影点を計算。画像に書き込む
   vector< vector<Point2f> > project_points;
   for( int j = 0; j < cam_t_vec.size(); ++j ) {
     project_points.push_back( project_3d_to_2d( cam_t_vec[j], cam_rot_vec[j], points_in_world) );
@@ -23,6 +24,13 @@ int main(int argc, char* argv[]) {
     sprintf(filename, "tmp/projected-%02d.png", j);
     imwrite(filename, print_point_to_image( project_points[j], Size(512, 512)));
   }
+
+  // Solver を初期化
+  BundleAdjustment::Solver solver( project_points );
+  solver.init( points_in_world, cam_t_vec, cam_rot_vec );
+
+  // 再投影誤差が0になることを確認する
+  printf("reprojection error = %e\n", solver.reprojection_error());
 
   return 0;
   
