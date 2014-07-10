@@ -54,6 +54,7 @@ namespace BundleAdjustment {
 */
 
 Point2d ba_reproject( Point3d pt, Point3d cam_t, Point3d cam_rot);
+Point3d ba_reproject3d( Point3d pt, Point3d cam_t, Point3d cam_rot);
 double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k);
 double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k);
 double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k);

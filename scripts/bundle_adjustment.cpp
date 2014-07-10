@@ -1,4 +1,5 @@
 #include "bundle_adjustment.hpp"
+#include "Eigen/LU"
 
 void BundleAdjustment::Solver::init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in) {
 
@@ -29,13 +30,99 @@ double BundleAdjustment::Solver::reprojection_error() {
 
 }
 
+void BundleAdjustment::Solver::run_one_step() {
+
+  // 領域確保
+  int K = this->K -7;
+  Eigen::MatrixXd Jacobian = Eigen::MatrixXd::Zero(2*Nc*Np, K);
+  Eigen::VectorXd target_error = Eigen::VectorXd::Zero(2*Nc*Np);
+
+  printf("K = %d -> %d\n", (int)this->K, K);
+
+  // Jacobianと誤差を計算
+  for ( int i = 0; i < Nc; ++i ) {
+    for ( int j = 0; j < Np; ++j ) {
+      int nx = i*Np + j, ny = i*Np + j + Np*Nc;
+
+      Point2d p = captured[i][j];
+      Point3d q = ba_reproject3d(points[j],  cam_t_vec[i], cam_rot_vec[i]);
+      target_error[nx] = p.x - q.x/q.z;
+      target_error[ny] = p.y - q.y/q.z;
+
+      for ( int k = 0, l = 0; k < this->K; ++k ) {
+	if ( k == 0 ) continue;
+	if ( k == 1 ) continue;
+	if ( k == Nc ) continue;
+	if ( k == 2*Nc ) continue;
+	if ( k == 3*Nc ) continue;
+	if ( k == 4*Nc ) continue;
+	if ( k == 5*Nc ) continue;
+
+	Point3d grad;
+	grad.x = ba_get_reproject_gradient_x( *this, i, j, k );
+	grad.y = ba_get_reproject_gradient_y( *this, i, j, k );
+	grad.z = ba_get_reproject_gradient_z( *this, i, j, k );
+
+	Jacobian(nx, l) = (q.x * grad.z - q.z * grad.x ) / (q.z*q.z);
+	Jacobian(ny, l) = (q.y * grad.z - q.z * grad.y ) / (q.z*q.z);
+	l++;
+      }
+    }
+  }
+
+  // 更新方向の計算
+  cout << "get update direction" << endl;
+  Eigen::VectorXd gradient = -Jacobian.transpose() * target_error;
+  Eigen::MatrixXd Hessian = Jacobian.transpose() * Jacobian + this->c * Eigen::MatrixXd::Identity(K, K);
+
+  cout << "|H| = " << Hessian.determinant() << endl;
+
+  Eigen::VectorXd sol = Hessian.fullPivLu().solve(gradient);
+  Eigen::VectorXd update = Eigen::VectorXd::Zero(this->K);
+
+  // 更新
+  for ( int k = 0, l = 0; k < this->K; ++k ) {
+    if ( k == 0 ) continue;
+    if ( k == 1 ) continue;
+    if ( k == Nc ) continue;
+    if ( k == 2*Nc ) continue;
+    if ( k == 3*Nc ) continue;
+    if ( k == 4*Nc ) continue;
+    if ( k == 5*Nc ) continue;
+
+    update[k] = sol[l];
+    l++;
+  }
+
+  for ( int i = 0; i < Nc; ++i ) {
+    cam_t_vec[i].x += update[i];
+    cam_t_vec[i].y += update[ i+Nc ];
+    cam_t_vec[i].z += update[ i+2*Nc ];
+    cam_rot_vec[i].x += update[ i+3*Nc ];
+    cam_rot_vec[i].y += update[ i+4*Nc ];
+    cam_rot_vec[i].z += update[ i+5*Nc ];
+  }
+
+  for ( int j = 0; j < Np; ++j ) {
+    points[j].x += update[ j + 0*Np + 6*Nc ];
+    points[j].y += update[ j + 1*Np + 6*Nc ];
+    points[j].z += update[ j + 2*Np + 6*Nc ];
+  }
+
+
+}
+
 // 単体の関数ここから
-Point2d ba_reproject( Point3d pt, Point3d cam_t, Point3d cam_rot) {
+Point3d ba_reproject3d( Point3d pt, Point3d cam_t, Point3d cam_rot) {
   Point3d ret;
   ret.x = ( pt.x - cam_rot.z * pt.y + cam_rot.y ) / pt.z + cam_t.x;
   ret.y = ( pt.x * cam_rot.z + pt.y - cam_rot.x ) / pt.z + cam_t.y;
   ret.z = (-pt.x * cam_rot.y + pt.y * cam_rot.x +1.0 ) / pt.z + cam_t.z;
+  return ret;
+}
 
+Point2d ba_reproject( Point3d pt, Point3d cam_t, Point3d cam_rot) {
+  Point3d ret = ba_reproject3d(pt, cam_t, cam_rot);
   return Point2d( ret.x / ret.z, ret.y / ret.z );
 }
 
@@ -45,10 +132,10 @@ double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, i
   Point3d pt = s.points[j], cam_rot = s.cam_rot_vec[i];
 
   if ( k < s.Nc ) // Txでの微分
-    return delta(i,k); 
+    return delta(i,k);
 
   else if ( k < 2*s.Nc ) // Tyでの微分
-    return 0; 
+    return 0;
 
   else if ( k < 3*s.Nc ) // Tzでの微分
     return 0;
@@ -57,17 +144,17 @@ double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, i
     return 0;
 
   else if ( k < 5*s.Nc ) // pose_yでの微分
-    return delta(i,k -4*s.Nc) / pt.z; 
+    return delta(i,k -4*s.Nc) / pt.z;
 
   else if ( k < 6*s.Nc ) // pose_zでの微分
     return -delta(i,k-5*s.Nc) * pt.y / pt.z;
 
   else if ( k < 6*s.Nc + s.Np ) // point_xでの微分
-    return delta(j,k-6*s.Nc) / pt.z; 
+    return delta(j,k-6*s.Nc) / pt.z;
 
   else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
-    return - delta(j, k - 6*s.Nc - s.Np) * cam_rot.z / pt.z; 
-  
+    return - delta(j, k - 6*s.Nc - s.Np) * cam_rot.z / pt.z;
+
   else // point_zでの微分
     return -delta(j, k - 6*s.Nc - 2*s.Np) *  ( pt.x - cam_rot.z * pt.y + cam_rot.y ) / ( pt.z*pt.z );
 
@@ -81,7 +168,7 @@ double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, i
 
   else if ( k < 2*s.Nc ) // Tyでの微分
     return delta(i, k - s.Nc );
-  
+
   else if ( k < 3*s.Nc ) // Tzでの微分
     return 0;
 

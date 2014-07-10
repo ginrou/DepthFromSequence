@@ -42,6 +42,9 @@ int main(int argc, char* argv[]) {
 
   printf("ba_get_reproject_gradient ok\n");
 
+  solver.run_one_step();
+  printf("reprojection error = %e\n", solver.reprojection_error());
+
   return 0;
 
 }
