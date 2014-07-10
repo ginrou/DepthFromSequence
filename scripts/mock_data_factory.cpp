@@ -8,16 +8,17 @@ std::vector<Point3d> mock_3d_points(int N, cv::Point3d min, cv::Point3d max, int
   std::srand(std::time(0));
 
   std::vector<Point3d> points;
-  for(int i = 0; i <= N; ++i ) {
-    for(int j = 0; j <= N; ++j ) {
-      for(int k = 0; k <= N; ++k ) {
+  for(int i = 0; i <= N; i+=3 ) {
+    for(int j = 0; j <= N; j+=3 ) {
+      for(int k = 0; k <= N; k+=3 ) {
 
 	Point3d pt;
 	pt.z = 1.0  / (min.z + (max.z - min.z) * (double)k / (double)N);
 	pt.x = pt.z * (min.x + (max.x - min.x) * (double)i / (double)N);
 	pt.y = pt.z * (min.y + (max.y - min.y) * (double)j / (double)N);
 
-	if( rand() % reduced_by == 0 ) points.push_back(pt);
+	//if( (i*j*k) % reduced_by == 0 ) points.push_back(pt);
+	points.push_back(pt);
 
       }
     }

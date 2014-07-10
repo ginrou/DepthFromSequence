@@ -1,15 +1,33 @@
 #include "bundle_adjustment.hpp"
 #include "Eigen/LU"
 
+#include <cstdlib>
+#include <ctime>
+
 void BundleAdjustment::Solver::init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in) {
 
   for(int i = 0; i < Nc; ++i ) {
-    cam_t_vec[i] = cam_t_in[i];
-    cam_rot_vec[i] = cam_rot_in[i];
+    Point3d pt = cam_t_in[i];
+    pt.x += 0.005 * ((double)rand()/RAND_MAX -0.5);
+    pt.y += 0.005 * ((double)rand()/RAND_MAX -0.5);
+    pt.z += 0.00005 * ((double)rand()/RAND_MAX -0.5);
+    cam_t_vec[i] = pt;
+  }
+
+  for(int i = 0; i < Nc; ++i ) {
+    Point3d pt = cam_rot_in[i];
+    pt.x += 0.001 * ((double)rand()/RAND_MAX -0.5);
+    pt.y += 0.001 * ((double)rand()/RAND_MAX -0.5);
+    pt.z += 0.00001 * ((double)rand()/RAND_MAX -0.5);
+    cam_rot_vec[i] = pt;
   }
 
   for(int j = 0; j < Np; ++j ) {
-    points[j] = points_in[j];
+    Point3d pt = points_in[j];
+    pt.x += ((double)rand()/RAND_MAX -0.5);
+    pt.y += ((double)rand()/RAND_MAX -0.5);
+    pt.z += ((double)rand()/RAND_MAX -0.5);
+    points[j] = pt;
   }
 
 }

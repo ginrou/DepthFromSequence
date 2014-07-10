@@ -42,8 +42,30 @@ int main(int argc, char* argv[]) {
 
   printf("ba_get_reproject_gradient ok\n");
 
-  solver.run_one_step();
-  printf("reprojection error = %e\n", solver.reprojection_error());
+  imwrite("tmp/ground_truth.png", print_point_to_image( project_points[0], Size(512, 512)));
+  imwrite("tmp/before.png", print_point_to_image( project_3d_to_2d( solver.cam_t_vec[0], solver.cam_rot_vec[0], solver.points ), Size(512, 512) ));
+
+  fp = fopen("before.txt", "w");
+  for( int i = 0; i < points_in_world.size(); ++i ) {
+    Point3d pt = solver.points[i];
+    fprintf(fp, "%lf,%lf,%lf\n", pt.x/pt.z, pt.y/pt.z, 1.0/pt.z);
+  }
+  fclose(fp);
+
+
+  for ( int ittr = 0; ittr < 5; ++ittr ) {
+    solver.run_one_step();
+    printf("reprojection error = %e\n", solver.reprojection_error());
+  }
+
+  fp = fopen("after.txt", "w");
+  for( int i = 0; i < points_in_world.size(); ++i ) {
+    Point3d pt = solver.points[i];
+    fprintf(fp, "%lf,%lf,%lf\n", pt.x/pt.z, pt.y/pt.z, 1.0/pt.z);
+  }
+  fclose(fp);
+
+  imwrite("tmp/after.png", print_point_to_image( project_3d_to_2d( solver.cam_t_vec[0], solver.cam_rot_vec[0], solver.points ), Size(512, 512) ));
 
   return 0;
 
