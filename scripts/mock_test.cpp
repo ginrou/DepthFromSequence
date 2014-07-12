@@ -52,8 +52,7 @@ int main(int argc, char* argv[]) {
   }
   fclose(fp);
 
-
-  for ( int ittr = 0; ittr < 5; ++ittr ) {
+  while ( solver.should_continue ) {
     solver.run_one_step();
     printf("reprojection error = %e\n", solver.reprojection_error());
   }

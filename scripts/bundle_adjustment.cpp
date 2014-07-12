@@ -57,6 +57,9 @@ void BundleAdjustment::Solver::run_one_step() {
 
   printf("K = %d -> %d\n", (int)this->K, K);
 
+  // 更新前の再投影エラー
+  double error_before = this->reprojection_error();
+
   // Jacobianと誤差を計算
   for ( int i = 0; i < Nc; ++i ) {
     for ( int j = 0; j < Np; ++j ) {
@@ -127,7 +130,9 @@ void BundleAdjustment::Solver::run_one_step() {
     points[j].z += update[ j + 2*Np + 6*Nc ];
   }
 
-
+  double error_after = this->reprojection_error();
+  error_before < error_after ? this->c *= 10.0 : this->c *= 0.1;
+  this->should_continue = ba_should_continue( error_before, error_after, update.norm() );
 }
 
 // 単体の関数ここから
@@ -244,3 +249,8 @@ double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, i
 }
 
 
+bool ba_should_continue( double error_before, double error_after, double update_norm ) {
+  if ( update_norm < 0.1 ) return false;
+  if ( error_after / error_before > 10.0 ) return false;
+  return error_before > error_after;
+}

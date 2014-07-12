@@ -28,6 +28,9 @@ namespace BundleAdjustment {
     // 更新幅の正則化パラメータ
     double c;
 
+    // run_one_stepのたびに更新される
+    bool should_continue;
+
     Solver( vector< vector<Point2d> > captured_in )
       :captured( captured_in )
     {
@@ -39,6 +42,7 @@ namespace BundleAdjustment {
       K = Nc*6 + Np*3;
 
       c = 0.00001;
+      should_continue = true;
     }
 
     void init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in);
@@ -58,7 +62,7 @@ Point3d ba_reproject3d( Point3d pt, Point3d cam_t, Point3d cam_rot);
 double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k);
 double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k);
 double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k);
-
+bool ba_should_continue( double error_before, double error_after, double update_norm );
 
 cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ); // 適当に正規化する
 
