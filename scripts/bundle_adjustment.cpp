@@ -8,25 +8,16 @@ void BundleAdjustment::Solver::init( vector<Point3d> points_in, vector<Point3d> 
 
   for(int i = 0; i < Nc; ++i ) {
     Point3d pt = cam_t_in[i];
-    pt.x += 0.005 * ((double)rand()/RAND_MAX -0.5);
-    pt.y += 0.005 * ((double)rand()/RAND_MAX -0.5);
-    pt.z += 0.00005 * ((double)rand()/RAND_MAX -0.5);
     cam_t_vec[i] = pt;
   }
 
   for(int i = 0; i < Nc; ++i ) {
     Point3d pt = cam_rot_in[i];
-    pt.x += 0.001 * ((double)rand()/RAND_MAX -0.5);
-    pt.y += 0.001 * ((double)rand()/RAND_MAX -0.5);
-    pt.z += 0.00001 * ((double)rand()/RAND_MAX -0.5);
     cam_rot_vec[i] = pt;
   }
 
   for(int j = 0; j < Np; ++j ) {
     Point3d pt = points_in[j];
-    pt.x += ((double)rand()/RAND_MAX -0.5);
-    pt.y += ((double)rand()/RAND_MAX -0.5);
-    pt.z += ((double)rand()/RAND_MAX -0.5);
     points[j] = pt;
   }
 
@@ -131,7 +122,10 @@ void BundleAdjustment::Solver::run_one_step() {
   }
 
   double error_after = this->reprojection_error();
-  error_before < error_after ? this->c *= 10.0 : this->c *= 0.1;
+
+  // 正則化パラメータは更新しないほうが収束が早い
+  //  error_before < error_after ? this->c *= 10.0 : this->c *= 0.1;
+
   this->should_continue = ba_should_continue( error_before, error_after, update.norm() );
 }
 
@@ -250,6 +244,10 @@ double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, i
 
 
 bool ba_should_continue( double error_before, double error_after, double update_norm ) {
+  printf("error_before = %lf\n", error_before);
+  printf("error_after = %lf\n", error_after);
+  printf("update_norm = %lf\n", update_norm);
+
   if ( update_norm < 0.1 ) return false;
   if ( error_after / error_before > 10.0 ) return false;
   return error_before > error_after;

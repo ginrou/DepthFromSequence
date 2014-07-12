@@ -112,3 +112,20 @@ cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ) {
   return img;
 }
 
+void add_noise_to_init_values( BundleAdjustment::Solver &s ) {
+  for ( int i = 0; i < s.Nc; ++i ) {
+    s.cam_t_vec[i].x += 0.005 * ((double)rand()/RAND_MAX -0.5);
+    s.cam_t_vec[i].y += 0.005 * ((double)rand()/RAND_MAX -0.5);
+    s.cam_t_vec[i].z += 0.00005 * ((double)rand()/RAND_MAX -0.5);
+
+    s.cam_rot_vec[i].x += 0.001 * ((double)rand()/RAND_MAX -0.5);
+    s.cam_rot_vec[i].y += 0.001 * ((double)rand()/RAND_MAX -0.5);
+    s.cam_rot_vec[i].x += 0.00001 * ((double)rand()/RAND_MAX -0.5);
+  }
+
+  for ( int j = 0; j < s.Np; ++j ) {
+    s.points[j].x += ((double)rand()/RAND_MAX -0.5);
+    s.points[j].y += ((double)rand()/RAND_MAX -0.5);
+    s.points[j].z += ((double)rand()/RAND_MAX -0.5);
+  }
+}
