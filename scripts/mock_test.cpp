@@ -42,6 +42,8 @@ int main(int argc, char* argv[]) {
 
   printf("ba_get_reproject_gradient ok\n");
 
+  add_noise_to_init_values(solver);
+
   imwrite("tmp/ground_truth.png", print_point_to_image( project_points[0], Size(512, 512)));
   imwrite("tmp/before.png", print_point_to_image( project_3d_to_2d( solver.cam_t_vec[0], solver.cam_rot_vec[0], solver.points ), Size(512, 512) ));
 

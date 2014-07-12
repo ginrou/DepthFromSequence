@@ -8,28 +8,37 @@ void BundleAdjustment::Solver::init( vector<Point3d> points_in, vector<Point3d> 
 
   for(int i = 0; i < Nc; ++i ) {
     Point3d pt = cam_t_in[i];
-    pt.x += 0.005 * ((double)rand()/RAND_MAX -0.5);
-    pt.y += 0.005 * ((double)rand()/RAND_MAX -0.5);
-    pt.z += 0.00005 * ((double)rand()/RAND_MAX -0.5);
     cam_t_vec[i] = pt;
   }
 
   for(int i = 0; i < Nc; ++i ) {
     Point3d pt = cam_rot_in[i];
-    pt.x += 0.001 * ((double)rand()/RAND_MAX -0.5);
-    pt.y += 0.001 * ((double)rand()/RAND_MAX -0.5);
-    pt.z += 0.00001 * ((double)rand()/RAND_MAX -0.5);
     cam_rot_vec[i] = pt;
   }
 
   for(int j = 0; j < Np; ++j ) {
     Point3d pt = points_in[j];
-    pt.x += ((double)rand()/RAND_MAX -0.5);
-    pt.y += ((double)rand()/RAND_MAX -0.5);
-    pt.z += ((double)rand()/RAND_MAX -0.5);
     points[j] = pt;
   }
 
+}
+
+void add_noise_to_init_values( BundleAdjustment::Solver &s ) {
+  for ( int i = 0; i < s.Nc; ++i ) {
+    s.cam_t_vec[i].x += 0.005 * ((double)rand()/RAND_MAX -0.5);
+    s.cam_t_vec[i].y += 0.005 * ((double)rand()/RAND_MAX -0.5);
+    s.cam_t_vec[i].z += 0.00005 * ((double)rand()/RAND_MAX -0.5);
+
+    s.cam_rot_vec[i].x += 0.001 * ((double)rand()/RAND_MAX -0.5);
+    s.cam_rot_vec[i].y += 0.001 * ((double)rand()/RAND_MAX -0.5);
+    s.cam_rot_vec[i].x += 0.00001 * ((double)rand()/RAND_MAX -0.5);
+  }
+
+  for ( int j = 0; j < s.Np; ++j ) {
+    s.points[j].x += ((double)rand()/RAND_MAX -0.5);
+    s.points[j].y += ((double)rand()/RAND_MAX -0.5);
+    s.points[j].z += ((double)rand()/RAND_MAX -0.5);
+  }
 }
 
 double BundleAdjustment::Solver::reprojection_error() {
