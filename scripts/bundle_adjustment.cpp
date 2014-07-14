@@ -94,7 +94,6 @@ void BundleAdjustment::Solver::init_with_first_image(double base_depth) {
 
 }
 
-
 double BundleAdjustment::Solver::reprojection_error() {
 
   double error = 0.0;
