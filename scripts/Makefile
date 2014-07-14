@@ -1,28 +1,32 @@
-MAIN=mock_test.cpp
+MAIN=main.cpp
 DST_POINT= points.txt
 CFLAGS= -O0
+INPUT_IMAGES=img/*.jpg
 
 ## build rules
-bin/main.out: bin/main.o bin/mock_data_factroy.o bin/bundle_adjustment.o
+bin/main.out: bin/main.o bin/mock_data_factroy.o bin/bundle_adjustment.o bin/feature_tracking.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
 bin/mock_test.out: bin/mock_test.o bin/mock_data_factroy.o bin/bundle_adjustment.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
 bin/main.o: $(MAIN)
-	g++ $(MAIN) -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
+	g++ $(MAIN) -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
 bin/mock_test.o: mock_test.cpp
-	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
 bin/mock_data_factroy.o: mock_data_factory.cpp
-	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
 bin/bundle_adjustment.o: bundle_adjustment.cpp
-	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv` 
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
+
+bin/feature_tracking.o: feature_tracking.cpp
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
 ## command
-run: 
+run:
 	./bin/main.out $(INPUT_IMAGES) $(DST_POINT)
 
 and_run: $(MAIN) bin/main.o

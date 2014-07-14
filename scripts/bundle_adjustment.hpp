@@ -41,11 +41,12 @@ namespace BundleAdjustment {
 
       K = Nc*6 + Np*3;
 
-      c = 0.00001;
+      c = 1.0;
       should_continue = true;
     }
 
     void init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in);
+    void init_with_first_image(double base_depth);
     double reprojection_error();
     void run_one_step();
 
@@ -66,7 +67,12 @@ bool ba_should_continue( double error_before, double error_after, double update_
 
 cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ); // 適当に正規化する
 
- // 適当な解を作る
+// 適当な解を作る
+std::vector<Point3d> random_3d_points(int N, cv::Point3d min, cv::Point3d max);
+std::vector<Point3d> random_3d_cam_t(int N);
+std::vector<Point3d> random_3d_cam_rot(int N);
+
+// 適当な解を作る(テスト用)
 std::vector<Point3d> mock_3d_points(int N, cv::Point3d min, cv::Point3d max, int reduced_by);
 std::vector<Point3d> mock_3d_cam_t(int N);
 std::vector<Point3d> mock_3d_cam_rot(int N);

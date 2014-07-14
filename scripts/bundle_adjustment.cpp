@@ -4,24 +4,96 @@
 #include <cstdlib>
 #include <ctime>
 
+inline double drand() { return (double)rand()/RAND_MAX; }
+
+std::vector<Point3d> random_3d_points(int N, cv::Point3d min, cv::Point3d max) {
+
+  std::srand(std::time(0));
+  std::vector<Point3d> points;
+  for( int i = 0; i < N; ++i ) {
+    Point3d pt;
+    pt.z = 1.0  / (min.z + (max.z - min.z) * drand() );
+    pt.x = pt.z * (min.x + (max.x - min.x) * drand() );
+    pt.y = pt.z * (min.y + (max.y - min.y) * drand() );
+    points.push_back(pt);
+  }
+  return points;
+}
+
+std::vector<Point3d> random_3d_cam_t(int N) {
+  std::srand(std::time(0));
+  std::vector<Point3d> points;
+  Point3d  min(-0.5, -0.5, -0.005), max(0.5, 0.5, 0.005);
+
+  for( int i = 0; i < N; ++i ) {
+    Point3d pt;
+    pt.x = min.x + (max.x - min.x) * drand();
+    pt.y = min.y + (max.y - min.y) * drand();
+    pt.z = min.z + (max.z - min.z) * drand();
+
+    if( i == 0 ) pt = Point3d(0, 0, 0);
+    if( i == 1 ) pt.x = 0.1;
+
+    points.push_back(pt);
+  }
+  return points;
+
+}
+
+std::vector<Point3d> random_3d_cam_rot(int N) {
+  std::vector<Point3d> points;
+  Point3d min(-0.001, -0.001, -0.001), max(0.001, 0.001, 0.001);
+
+  for( int i = 0; i < N; ++i ) {
+    Point3d pt;
+    pt.x = min.x + (max.x - min.x) * drand();
+    pt.y = min.y + (max.y - min.y) * drand();
+    pt.z = min.z + (max.z - min.z) * drand();
+
+    if( i == 0 ) pt = Point3d(0, 0, 0);
+    points.push_back(pt);
+  }
+  return points;
+}
+
+
 void BundleAdjustment::Solver::init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in) {
 
   for(int i = 0; i < Nc; ++i ) {
     Point3d pt = cam_t_in[i];
     cam_t_vec[i] = pt;
+    cout <<"cam_t "<< pt << endl;
   }
 
   for(int i = 0; i < Nc; ++i ) {
     Point3d pt = cam_rot_in[i];
     cam_rot_vec[i] = pt;
+    cout <<"cam_rot "<< pt << endl;
   }
 
   for(int j = 0; j < Np; ++j ) {
     Point3d pt = points_in[j];
     points[j] = pt;
+    cout <<"points "<< pt << endl;
   }
 
 }
+
+void BundleAdjustment::Solver::init_with_first_image(double base_depth) {
+  vector<Point3d> pt_list;
+  for( int j = 0; j < Np; ++j ) {
+    Point2d c = captured[0][j];
+    Point3d pt;
+    pt.z = 2.0 / (base_depth + base_depth * drand() );
+    pt.x = -pt.z * c.x;
+    pt.y = -pt.z * c.y;
+    pt_list.push_back(pt);
+  }
+
+  init( pt_list, random_3d_cam_t(Nc), random_3d_cam_rot(Nc) );
+
+}
+
 
 double BundleAdjustment::Solver::reprojection_error() {
 
@@ -124,7 +196,7 @@ void BundleAdjustment::Solver::run_one_step() {
   double error_after = this->reprojection_error();
 
   // 正則化パラメータは更新しないほうが収束が早い
-  //  error_before < error_after ? this->c *= 10.0 : this->c *= 0.1;
+  error_before < error_after ? this->c *= 10.0 : this->c *= 0.1;
 
   this->should_continue = ba_should_continue( error_before, error_after, update.norm() );
 }
@@ -244,11 +316,12 @@ double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, i
 
 
 bool ba_should_continue( double error_before, double error_after, double update_norm ) {
-  printf("error_before = %lf\n", error_before);
-  printf("error_after = %lf\n", error_after);
-  printf("update_norm = %lf\n", update_norm);
+  printf("error_before = %e\n", error_before);
+  printf("error_after = %e\n", error_after);
+  printf("update_norm = %e\n", update_norm);
 
   if ( update_norm < 0.1 ) return false;
-  if ( error_after / error_before > 10.0 ) return false;
-  return error_before > error_after;
+  // if ( error_after / error_before > 10.0 ) return false;
+  //  return error_before > error_after;
+  return true;
 }
