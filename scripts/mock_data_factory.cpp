@@ -112,6 +112,15 @@ cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ) {
   return img;
 }
 
+void print_3d_point_to_file( vector<Point3d> pt_list, char filename[] ) {
+  FILE *fp = fopen(filename, "w");
+  for(int i = 0; i < pt_list.size(); ++i ) {
+    double s = 1.0;
+    fprintf(fp, "%lf,%lf,%lf\n", s * pt_list[i].x/pt_list[i].z, s * pt_list[i].y/pt_list[i].z, s * 1.0/pt_list[i].z);
+  }
+  fclose(fp);
+}
+
 void add_noise_to_init_values( BundleAdjustment::Solver &s ) {
   for ( int i = 0; i < s.Nc; ++i ) {
     s.cam_t_vec[i].x += 0.005 * ((double)rand()/RAND_MAX -0.5);

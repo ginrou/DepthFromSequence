@@ -23,7 +23,7 @@ std::vector<Point3d> random_3d_points(int N, cv::Point3d min, cv::Point3d max) {
 std::vector<Point3d> random_3d_cam_t(int N) {
   std::srand(std::time(0));
   std::vector<Point3d> points;
-  Point3d  min(-0.5, -0.5, -0.005), max(0.5, 0.5, 0.005);
+  Point3d  min(0.0, -0.5, -0.005), max(10.0, 0.5, 0.005);
 
   for( int i = 0; i < N; ++i ) {
     Point3d pt;
@@ -32,7 +32,7 @@ std::vector<Point3d> random_3d_cam_t(int N) {
     pt.z = min.z + (max.z - min.z) * drand();
 
     if( i == 0 ) pt = Point3d(0, 0, 0);
-    if( i == 1 ) pt.x = 0.1;
+    if( i == 1 ) pt.x = 5.0;
 
     points.push_back(pt);
   }
@@ -51,6 +51,8 @@ std::vector<Point3d> random_3d_cam_rot(int N) {
     pt.z = min.z + (max.z - min.z) * drand();
 
     if( i == 0 ) pt = Point3d(0, 0, 0);
+
+    pt = Point3d(0, 0, 0);
     points.push_back(pt);
   }
   return points;
@@ -79,18 +81,33 @@ void BundleAdjustment::Solver::init( vector<Point3d> points_in, vector<Point3d> 
 
 }
 
-void BundleAdjustment::Solver::init_with_first_image(double base_depth) {
-  vector<Point3d> pt_list;
+void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > captured_in,
+						      Size img_size,
+						      double mean_depth,
+						      double fov
+						      )
+{
+  double W = img_size.width, H = img_size.height;
+  double tan_fov = tan(fov/(2.0*M_PI));
+
+  // 1. initialize points
   for( int j = 0; j < Np; ++j ) {
-    Point2d c = captured[0][j];
-    Point3d pt;
-    pt.z = 2.0 / (base_depth + base_depth * drand() );
-    pt.x = -pt.z * c.x;
-    pt.y = -pt.z * c.y;
-    pt_list.push_back(pt);
+    points[j].x = (2.0 * captured_in[0][j].x - W ) * tan_fov / W;
+    points[j].y = (2.0 * captured_in[0][j].y - H ) * tan_fov / H;
+    points[j].z = 1.0 / mean_depth;
   }
 
-  init( pt_list, random_3d_cam_t(Nc), random_3d_cam_rot(Nc) );
+  // 2. initialize captured
+  for( int i = 0; i < Nc; ++i ) {
+    for( int j = 0; j < Np; ++j ) {
+      captured[i][j].x = (2.0 * captured_in[i][j].x - W ) * tan_fov / W;
+      captured[i][j].y = (2.0 * captured_in[i][j].y - H ) * tan_fov / H;
+    }
+  }
+
+  // 3. initialize camera params
+  cam_t_vec = random_3d_cam_t(Nc);
+  cam_rot_vec = random_3d_cam_rot(Nc);
 
 }
 
@@ -195,9 +212,11 @@ void BundleAdjustment::Solver::run_one_step() {
   double error_after = this->reprojection_error();
 
   // 正則化パラメータは更新しないほうが収束が早い
-  error_before < error_after ? this->c *= 10.0 : this->c *= 0.1;
+  error_before > error_after ? this->c *= 0.1 : this->c *= 10.0;
 
   this->should_continue = ba_should_continue( error_before, error_after, update.norm() );
+
+  printf("next c = %e\n\n\n", this->c);
 }
 
 // 単体の関数ここから
@@ -319,8 +338,8 @@ bool ba_should_continue( double error_before, double error_after, double update_
   printf("error_after = %e\n", error_after);
   printf("update_norm = %e\n", update_norm);
 
-  if ( update_norm < 0.1 ) return false;
-  // if ( error_after / error_before > 10.0 ) return false;
+  if ( update_norm < 0.01 ) return false;
+  // if ( fabsf(error_after - error_before) < 0.01 ) return false;
   //  return error_before > error_after;
   return true;
 }

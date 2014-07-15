@@ -41,12 +41,12 @@ namespace BundleAdjustment {
 
       K = Nc*6 + Np*3;
 
-      c = 1.0;
+      c = 0.00001;
       should_continue = true;
     }
 
     void init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in);
-    void init_with_first_image(double base_depth);
+    void init_with_first_image( vector< vector<Point2d> > captured_in, Size img_size, double mean_depth, double fov);
     double reprojection_error();
     void run_one_step();
 
@@ -65,7 +65,9 @@ double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, i
 double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k);
 bool ba_should_continue( double error_before, double error_after, double update_norm );
 
+// 出力用
 cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ); // 適当に正規化する
+void print_3d_point_to_file( vector<Point3d> pt_list, char filename[] ); // printf("%lf,%lf,%lf\n", pt.x/pt.z, pt.y/pt.z, 1.0/pt.z) を出力
 
 // 適当な解を作る
 std::vector<Point3d> random_3d_points(int N, cv::Point3d min, cv::Point3d max);

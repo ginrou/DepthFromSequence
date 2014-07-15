@@ -14,21 +14,14 @@ int main(int argc, char* argv[]) {
   feature_tracker.track();
   vector< vector<Point2d> > track_points = feature_tracker.pickup_stable_points();
 
-  feature_tracker.draw_correspondences("tmp/matches-");
-
   // Solver を初期化
   BundleAdjustment::Solver solver( track_points );
-  for(int i = 0; i < track_points.size(); ++i ) {
-    for(int j = 0; j < track_points[i].size(); ++j ) {
-      cout << track_points[i][j] << ",";
-    }
-    cout << endl;
+  solver.init_with_first_image( track_points, cv::Size(480, 480), 75000.0, 55.0);
+
+  for(int j = 0; j < solver.points.size(); ++j ) {
+    cout << solver.points[j] << endl;
   }
-  // vector<Point3d> points_in_world = random_3d_points(solver.Np, Point3d( 0, 0, 20), Point3d( 100, 100, 300));
-  // vector<Point3d> cam_t_vec = random_3d_cam_t(solver.Nc);
-  // vector<Point3d> cam_rot_vec = random_3d_cam_rot(solver.Nc);
-  // solver.init( points_in_world, cam_t_vec, cam_rot_vec );
-  solver.init_with_first_image(100);
+  
 
   // bundle adjustment を実行
   while ( solver.should_continue ) {
@@ -36,7 +29,14 @@ int main(int argc, char* argv[]) {
     printf("reprojection error = %e\n", solver.reprojection_error());
   }
 
+  print_3d_point_to_file(solver.points, "after.txt");
+
+  for( int i = 0; i < solver.Nc ; ++i ) {
+    printf("cam %02d\n", i);
+    cout << "\t" << solver.cam_t_vec[i] << endl;
+    cout << "\t" << solver.cam_rot_vec[i] << endl;
+  }
+
   return 0;
 
 }
-
