@@ -113,6 +113,17 @@ std::vector<Point2d> project_3d_to_2d( Point3d cam_t, Point3d cam_rot, std::vect
   return projected;
 }
 
+std::vector<Point2d> project_3d_to_2d_normalize( Point3d cam_t, Point3d cam_rot, std::vector<Point3d> &points, int normalize) {
+  std::vector<Point2d> projected = project_3d_to_2d(cam_t, cam_rot, points);
+  for(int i = 0; i < projected.size(); ++i) {
+    Point2d pt = projected[i];
+    int x = normalize * pt.x, y = normalize * pt.y;
+    projected[i] = Point2d( x/(double)normalize, y/(double)normalize);
+  }
+  return projected;
+}
+
+
 cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ) {
   cv::Mat1b img(img_size.width, img_size.height);
   img.setTo(Scalar(0.0));

@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
   // 投影点を計算。画像に書き込む
   vector< vector<Point2d> > project_points;
   for( int j = 0; j < cam_t_vec.size(); ++j ) {
-    project_points.push_back( project_3d_to_2d( cam_t_vec[j], cam_rot_vec[j], points_in_world) );
+    project_points.push_back( project_3d_to_2d_normalize( cam_t_vec[j], cam_rot_vec[j], points_in_world, 256) );
   }
 
   // Solver を初期化
