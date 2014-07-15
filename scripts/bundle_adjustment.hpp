@@ -76,8 +76,13 @@ std::vector<Point3d> random_3d_cam_rot(int N);
 
 // 適当な解を作る(テスト用)
 std::vector<Point3d> mock_3d_points(int N, cv::Point3d min, cv::Point3d max, int reduced_by);
+
 std::vector<Point3d> mock_3d_cam_t(int N);
 std::vector<Point3d> mock_3d_cam_rot(int N);
+
+std::vector<Point3d> mock_sequential_cam_t(int N);
+std::vector<Point3d> mock_sequential_cam_rot(int N);
+
 std::vector<Point2d> project_3d_to_2d( Point3d cam_t, Point3d cam_rot, std::vector<Point3d> &points);
 
 // BundleAdjustment::Solver の初期解にノイズを加える

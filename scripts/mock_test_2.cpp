@@ -5,8 +5,8 @@ bool test_reproj_gradient( BundleAdjustment::Solver &s );
 int main(int argc, char* argv[]) {
 
   vector<Point3d> points_in_world = mock_3d_points(10, Point3d( -10, -10, 10), Point3d( 10, 10, 30), 20);
-  vector<Point3d> cam_t_vec = mock_3d_cam_t(3);
-  vector<Point3d> cam_rot_vec = mock_3d_cam_rot(3);
+  vector<Point3d> cam_t_vec = mock_sequential_cam_t(10);
+  vector<Point3d> cam_rot_vec = mock_sequential_cam_rot(10);
 
   // 投影点を計算。画像に書き込む
   vector< vector<Point2d> > project_points;
@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
     solver.run_one_step();
     printf("reprojection error = %e\n", solver.reprojection_error());
   }
+
+  print_3d_point_to_file( solver.points, "test.txt");
 
   return 0;
 

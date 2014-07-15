@@ -3,6 +3,8 @@
 
 #include "bundle_adjustment.hpp"
 
+inline double drand() { return (double)rand()/RAND_MAX; }
+
 std::vector<Point3d> mock_3d_points(int N, cv::Point3d min, cv::Point3d max, int reduced_by) {
 
   std::srand(std::time(0));
@@ -69,6 +71,33 @@ std::vector<Point3d> mock_3d_cam_rot(int N) {
 
   return points;
 }
+
+std::vector<Point3d> mock_sequential_cam_t(int N) {
+  std::vector<Point3d> ret;
+  for( int i = 0; i < N; ++i ) {
+    Point3d pt;
+    pt.x = 0.5 * (double)i + 0.05 * (drand() - 0.5);
+    pt.y = 0.05 * (drand() - 0.5);
+    pt.z = 0.05 * (drand() - 0.5);
+    ret.push_back(pt);
+  }
+
+  return ret;
+}
+
+std::vector<Point3d> mock_sequential_cam_rot(int N) {
+  std::vector<Point3d> ret;
+  for( int i = 0; i < N; ++i ) {
+    Point3d pt;
+    pt.x = 0.001 * (drand() - 0.5);
+    pt.y = 0.001 * (drand() - 0.5);
+    pt.z = 0.001 * (drand() - 0.5);
+    ret.push_back(pt);
+  }
+
+  return ret;
+}
+
 
 std::vector<Point2d> project_3d_to_2d( Point3d cam_t, Point3d cam_rot, std::vector<Point3d> &points){
   std::vector<Point2d> projected;
