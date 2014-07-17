@@ -152,10 +152,9 @@ cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ) {
   return img;
 }
 
-void print_3d_point_to_file( vector<Point3d> pt_list, char filename[] ) {
+void print_3d_point_to_file( vector<Point3d> pt_list, char filename[] , double s) {
   FILE *fp = fopen(filename, "w");
   for(int i = 0; i < pt_list.size(); ++i ) {
-    double s = 0.01;
     fprintf(fp, "%lf,%lf,%lf\n", s * pt_list[i].x/pt_list[i].z, s * pt_list[i].y/pt_list[i].z, s * 1.0/pt_list[i].z);
   }
   fclose(fp);

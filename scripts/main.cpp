@@ -1,6 +1,8 @@
 #include "bundle_adjustment.hpp"
 #include "feature_tracking.hpp"
 
+cv::Mat drawDepth( cv::Mat base_image, vector<Point2d> points, vector<double> depth);
+
 int main(int argc, char* argv[]) {
 
   // 画像をロード
@@ -29,7 +31,7 @@ int main(int argc, char* argv[]) {
     printf("reprojection error = %e\n", solver.reprojection_error());
   }
 
-  print_3d_point_to_file(solver.points, "after.txt");
+  print_3d_point_to_file(solver.points, "after.txt", 0.2);
 
   for( int i = 0; i < solver.Nc ; ++i ) {
     printf("cam %02d\n", i);
@@ -37,6 +39,28 @@ int main(int argc, char* argv[]) {
     cout << "\t" << solver.cam_rot_vec[i] << endl;
   }
 
+  vector<double> depth;
+  for( int j = 0; j < solver.Np ; ++j ) {
+    depth.push_back(1.0/solver.points[j].z);
+  }
+
+  imwrite("tmp/depth.png", drawDepth( input_images[0], track_points[0], depth));
+
   return 0;
 
+}
+
+cv::Mat drawDepth( cv::Mat base_image, vector<Point2d> points, vector<double> depth) {
+  cv::Mat img = base_image.clone();
+  for( int i = 0; i < points.size(); ++i ) {
+    cv::Scalar color = cv::Scalar::all(255);
+    cv::circle(img, points[i], 2, color, 1, 8, 0);
+
+    char buf[256];
+    sprintf(buf, "%.2lf", depth[i]);
+    std::string str = buf;
+    cv::putText(img, str, points[i], cv::FONT_HERSHEY_COMPLEX_SMALL, 0.6, color, 1, 1, false);
+
+  }
+  return img;
 }

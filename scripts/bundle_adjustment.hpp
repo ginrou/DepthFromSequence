@@ -71,7 +71,7 @@ double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, i
 
 // 出力用
 cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ); // 適当に正規化する
-void print_3d_point_to_file( vector<Point3d> pt_list, char filename[] ); // printf("%lf,%lf,%lf\n", pt.x/pt.z, pt.y/pt.z, 1.0/pt.z) を出力
+void print_3d_point_to_file( vector<Point3d> pt_list, char filename[] , double s); // printf("%lf,%lf,%lf\n", s*pt.x/pt.z, s*pt.y/pt.z, s*1.0/pt.z) を出力
 
 // 適当な解を作る
 std::vector<Point3d> random_3d_points(int N, cv::Point3d min, cv::Point3d max);
