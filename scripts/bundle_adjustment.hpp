@@ -30,6 +30,8 @@ namespace BundleAdjustment {
 
     // run_one_stepのたびに更新される
     bool should_continue;
+    int ittr;
+    int MAX_ITTR;
 
     Solver( vector< vector<Point2d> > captured_in )
       :captured( captured_in )
@@ -43,12 +45,15 @@ namespace BundleAdjustment {
 
       c = 0.00001;
       should_continue = true;
+      ittr = 0;
+      MAX_ITTR = 45;
     }
 
     void init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in);
     void init_with_first_image( vector< vector<Point2d> > captured_in, Size img_size, double mean_depth, double fov);
     double reprojection_error();
     void run_one_step();
+    bool get_should_continue( double error_before, double error_after, double update_norm );
 
   }; // class Solver
 } // namespace BundleAdjustment
@@ -63,7 +68,6 @@ Point3d ba_reproject3d( Point3d pt, Point3d cam_t, Point3d cam_rot);
 double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k);
 double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k);
 double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k);
-bool ba_should_continue( double error_before, double error_after, double update_norm );
 
 // 出力用
 cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ); // 適当に正規化する

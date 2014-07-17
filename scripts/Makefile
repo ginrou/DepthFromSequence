@@ -1,6 +1,6 @@
 MAIN=main.cpp
 DST_POINT= points.txt
-CFLAGS= -O0
+CFLAGS= -O2
 INPUT_IMAGES=img/*.jpg
 
 ## build rules
@@ -48,4 +48,4 @@ mock_test_2: bin/mock_test_2.out
 	./bin/mock_test_2.out $(DST_POINT)
 
 clean:
-	rm bin/main.out bin/main.o bin/mock_data_factory.cpp bundle_adjustment.out
+	rm bin/*.o bin/*.out

@@ -23,7 +23,7 @@ std::vector<Point3d> random_3d_points(int N, cv::Point3d min, cv::Point3d max) {
 std::vector<Point3d> random_3d_cam_t(int N) {
   std::srand(std::time(0));
   std::vector<Point3d> points;
-  Point3d  min(0.0, -0.5, -0.005), max(10.0, 0.5, 0.005);
+  Point3d  min(0.0, -0.5, -0.005), max(20.0, 0.5, 0.005);
 
   for( int i = 0; i < N; ++i ) {
     Point3d pt;
@@ -94,7 +94,7 @@ void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > 
   for( int j = 0; j < Np; ++j ) {
     points[j].x = (2.0 * captured_in[0][j].x - W ) * tan_fov / W;
     points[j].y = (2.0 * captured_in[0][j].y - H ) * tan_fov / H;
-    points[j].z = 1.0 / mean_depth;
+    points[j].z = (1.0 + 0.01 * drand() ) / mean_depth;
   }
 
   // 2. initialize captured
@@ -128,6 +128,8 @@ double BundleAdjustment::Solver::reprojection_error() {
 }
 
 void BundleAdjustment::Solver::run_one_step() {
+  ittr++;
+  printf("ittr : %d\n", ittr);
 
   // 領域確保
   int K = this->K -7;
@@ -214,10 +216,25 @@ void BundleAdjustment::Solver::run_one_step() {
   // 正則化パラメータは更新しないほうが収束が早い
   error_before > error_after ? this->c *= 0.1 : this->c *= 10.0;
 
-  this->should_continue = ba_should_continue( error_before, error_after, update.norm() );
+  this->should_continue = get_should_continue( error_before, error_after, update.norm());
 
   printf("next c = %e\n\n\n", this->c);
 }
+
+bool BundleAdjustment::Solver::get_should_continue( double error_before, double error_after, double update_norm ) {
+  printf("error_before = %e\n", error_before);
+  printf("error_after = %e\n", error_after);
+  printf("update_norm = %e\n", update_norm);
+  printf("error_per_pixel = %e\n", error_after / (double)(Np*Nc));
+  printf("error diff = %e\n", fabsf(error_after - error_before));
+
+  if ( update_norm < 0.0001 ) return false;
+  if ( fabsf(error_after - error_before) < 1.0e-3 ) return false;
+  if ( ittr >= MAX_ITTR ) return false;
+
+  return true;
+}
+
 
 // 単体の関数ここから
 Point3d ba_reproject3d( Point3d pt, Point3d cam_t, Point3d cam_rot) {
@@ -330,16 +347,4 @@ double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, i
   else // point_zでの微分
     return -delta(j, k - 6*s.Nc - 2*s.Np) * ( -cam_rot.y*pt.x + cam_rot.x*pt.y + 1.0 ) / (pt.z*pt.z);
 
-}
-
-
-bool ba_should_continue( double error_before, double error_after, double update_norm ) {
-  printf("error_before = %e\n", error_before);
-  printf("error_after = %e\n", error_after);
-  printf("update_norm = %e\n", update_norm);
-
-  if ( update_norm < 0.01 ) return false;
-  // if ( fabsf(error_after - error_before) < 0.01 ) return false;
-  //  return error_before > error_after;
-  return true;
 }

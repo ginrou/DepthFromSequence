@@ -3,7 +3,7 @@
 
 #include "bundle_adjustment.hpp"
 
-inline double drand() { return (double)rand()/RAND_MAX; }
+inline double drand() { return (double)rand()/RAND_MAX -0.5; }
 
 std::vector<Point3d> mock_3d_points(int N, cv::Point3d min, cv::Point3d max, int reduced_by) {
 
@@ -76,9 +76,9 @@ std::vector<Point3d> mock_sequential_cam_t(int N) {
   std::vector<Point3d> ret;
   for( int i = 0; i < N; ++i ) {
     Point3d pt;
-    pt.x = 0.5 * (double)i + 0.05 * (drand() - 0.5);
-    pt.y = 0.05 * (drand() - 0.5);
-    pt.z = 0.05 * (drand() - 0.5);
+    pt.x = 10.5 * (double)i + 0.05 * drand();
+    pt.y = 1.05 * drand();
+    pt.z = 1.05 * drand();
     ret.push_back(pt);
   }
 
@@ -89,9 +89,9 @@ std::vector<Point3d> mock_sequential_cam_rot(int N) {
   std::vector<Point3d> ret;
   for( int i = 0; i < N; ++i ) {
     Point3d pt;
-    pt.x = 0.001 * (drand() - 0.5);
-    pt.y = 0.001 * (drand() - 0.5);
-    pt.z = 0.001 * (drand() - 0.5);
+    pt.x = 0.001 * drand();
+    pt.y = 0.001 * drand();
+    pt.z = 0.001 * drand();
     ret.push_back(pt);
   }
 
@@ -117,8 +117,8 @@ std::vector<Point2d> project_3d_to_2d_normalize( Point3d cam_t, Point3d cam_rot,
   std::vector<Point2d> projected = project_3d_to_2d(cam_t, cam_rot, points);
   for(int i = 0; i < projected.size(); ++i) {
     Point2d pt = projected[i];
-    int x = normalize * pt.x, y = normalize * pt.y;
-    projected[i] = Point2d( x/(double)normalize, y/(double)normalize);
+    int x = normalize * pt.x + normalize/2 + 3 *drand(), y = normalize * pt.y + normalize/2 + 3*drand();
+    projected[i] = Point2d( x, y);
   }
   return projected;
 }
@@ -155,7 +155,7 @@ cv::Mat1b print_point_to_image( vector<Point2d> pt_list,  cv::Size img_size ) {
 void print_3d_point_to_file( vector<Point3d> pt_list, char filename[] ) {
   FILE *fp = fopen(filename, "w");
   for(int i = 0; i < pt_list.size(); ++i ) {
-    double s = 1.0;
+    double s = 0.01;
     fprintf(fp, "%lf,%lf,%lf\n", s * pt_list[i].x/pt_list[i].z, s * pt_list[i].y/pt_list[i].z, s * 1.0/pt_list[i].z);
   }
   fclose(fp);
