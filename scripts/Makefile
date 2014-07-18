@@ -1,5 +1,9 @@
 MAIN=main.cpp
+
 DST_POINT= points.txt
+CAM_TRANS_FILE=cam_trans.txt
+CAM_ROT_FILE=cam_rot.txt
+
 CFLAGS= -O2
 INPUT_IMAGES=img/*.jpg
 
@@ -14,6 +18,9 @@ bin/mock_test.out: bin/mock_test.o bin/mock_data_factroy.o bin/bundle_adjustment
 bin/mock_test_2.out: bin/mock_test_2.o bin/mock_data_factroy.o bin/bundle_adjustment.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
+bin/depth_estimation.out: bin/plane_sweep.o bin/depth_estimation.o
+	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
+
 ## object files
 bin/main.o: $(MAIN)
 	g++ $(MAIN) -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
@@ -24,6 +31,9 @@ bin/mock_test.o: mock_test.cpp
 bin/mock_test_2.o: mock_test_2.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
+bin/depth_estimation.o: depth_estimation.cpp
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
+
 bin/mock_data_factroy.o: mock_data_factory.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
@@ -31,6 +41,9 @@ bin/bundle_adjustment.o: bundle_adjustment.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
 bin/feature_tracking.o: feature_tracking.cpp
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
+
+bin/plane_sweep.o: plane_sweep.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
 ## command
@@ -47,5 +60,7 @@ mock_test: bin/mock_test.out
 mock_test_2: bin/mock_test_2.out
 	./bin/mock_test_2.out $(DST_POINT)
 
+run_depth_estimation: bin/depth_estimation.out
+	./bin/depth_estimation.out $(INPUT_IMAGES) $(CAM_TRANS_FILE) $(CAM_ROT_FILE)
 clean:
 	rm bin/*.o bin/*.out
