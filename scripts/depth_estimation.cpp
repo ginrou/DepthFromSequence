@@ -17,6 +17,10 @@ int main(int argc, char* argv[]) {
   vector<Point3d> cam_trans_vec = load_points(String(argv[argc-2]));
   vector<Point3d> cam_rot_vec = load_points(String(argv[argc-1]));
 
+  int i = 1;
+  cout << PlaneSweep::make_projection_matrix(cam_trans_vec[i], cam_rot_vec[i], input_images[i].size()) << endl;
+
+
   return 0;
 
 }
