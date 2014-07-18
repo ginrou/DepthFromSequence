@@ -23,6 +23,15 @@ public:
 
   }
 
+  static Matx33d homography_matrix( Matx44d P_base,  Matx44d P_obj, Point3d trans, double disparity ) {
+    Matx44d p = P_obj * P_base.inv();
+    return Matx33d( p(0,0), p(0,1), p(0,2) + trans.x * disparity,
+		    p(1,0), p(1,1), p(1,2) + trans.y * disparity,
+		    p(2,0), p(2,1), p(2,2) + trans.z * disparity);
+
+  }
+
+
 }; // class PlaneSweep
 
 
