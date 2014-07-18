@@ -2,6 +2,7 @@
 #include "feature_tracking.hpp"
 
 cv::Mat drawDepth( cv::Mat base_image, vector<Point2d> points, vector<double> depth);
+void write_cam_params_to_file(const string& filename, vector<Point3d> params);
 
 int main(int argc, char* argv[]) {
 
@@ -45,6 +46,8 @@ int main(int argc, char* argv[]) {
   }
 
   imwrite("tmp/depth.png", drawDepth( input_images[0], track_points[0], depth));
+  write_cam_params_to_file("cam_trans.txt", solver.cam_t_vec);
+  write_cam_params_to_file("cam_rot.txt", solver.cam_rot_vec);
 
   return 0;
 
@@ -63,4 +66,12 @@ cv::Mat drawDepth( cv::Mat base_image, vector<Point2d> points, vector<double> de
 
   }
   return img;
+}
+
+void write_cam_params_to_file(const string& filename, vector<Point3d> params) {
+  FILE *fp = fopen(filename.c_str(), "w");
+  for(int i = 0; i < params.size(); ++i ) {
+    fprintf(fp, "%lf,%lf,%lf\n", params[i].x, params[i].y, params[i].z);
+  }
+  fclose(fp);
 }
