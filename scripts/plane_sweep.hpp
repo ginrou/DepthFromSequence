@@ -34,5 +34,8 @@ public:
 
 }; // class PlaneSweep
 
+// 状態を持たない関数
+Point2d ps_point_in_image( Point3d cam_trans, Point3d cam_rot, Size img_size, Point3d point);
+
 
 #endif

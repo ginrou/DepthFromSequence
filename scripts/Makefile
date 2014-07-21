@@ -18,6 +18,10 @@ bin/mock_test.out: bin/mock_test.o bin/mock_data_factroy.o bin/bundle_adjustment
 bin/mock_test_2.out: bin/mock_test_2.o bin/mock_data_factroy.o bin/bundle_adjustment.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
+## plane sweepのテスト
+bin/mock_test_3.out: bin/mock_test_3.o bin/mock_data_factroy.o bin/bundle_adjustment.o bin/plane_sweep.o
+	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
+
 bin/depth_estimation.out: bin/plane_sweep.o bin/depth_estimation.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
@@ -29,6 +33,9 @@ bin/mock_test.o: mock_test.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
 bin/mock_test_2.o: mock_test_2.cpp
+	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
+
+bin/mock_test_3.o: mock_test_3.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
 
 bin/depth_estimation.o: depth_estimation.cpp
@@ -60,7 +67,11 @@ mock_test: bin/mock_test.out
 mock_test_2: bin/mock_test_2.out
 	./bin/mock_test_2.out $(DST_POINT)
 
+mock_test_3: bin/mock_test_3.out
+	./bin/mock_test_3.out $(DST_POINT)
+
 run_depth_estimation: bin/depth_estimation.out
 	./bin/depth_estimation.out $(INPUT_IMAGES) $(CAM_TRANS_FILE) $(CAM_ROT_FILE)
+
 clean:
 	rm bin/*.o bin/*.out
