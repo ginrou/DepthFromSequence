@@ -37,5 +37,25 @@ public:
 // 状態を持たない関数
 Point2d ps_point_in_image( Point3d cam_trans, Point3d cam_rot, Size img_size, Point3d point);
 
+// カメラrefの画像上の点pt_ref が奥行き1.0/disparityにあるとき
+// カメラobjで観測したときの画像上の点を返す
+// Point2d ps_homogenious_point( Matx44d Proj_ref, // カメラrefの同次座標変換行列
+// 			      Matx44d Proj_obj, // カメラobjの同次座標変換行列
+// 			      Point2d pt_ref, // カメラrefで撮影した画像上の点
+// 			      Size img_size,
+// 			      Point3d trans_obj, // カメラobjの平行移動
+// 			      double disparity);
+
+Point2d ps_homogenious_point( Point3d trans_ref,
+			      Point3d rot_ref,
+			      Point3d trans_obj,
+			      Point3d rot_obj,
+			      Point2d pt_ref,
+			      Size img_size,
+			      double depth);
+
+
+Matx33d ps_homography_matrix( Point3d trans, Point3d rot, Size img_size, double depth);
+			      
 
 #endif
