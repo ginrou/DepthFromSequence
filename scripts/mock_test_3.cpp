@@ -3,6 +3,10 @@
 
 bool test_projection();
 bool test_homo_projection();
+bool test_depth_variation();
+bool point_equals(Point2d pt1, Point2d pt2) {
+  return fabs(pt1.x-pt2.x) + fabs(pt1.y-pt2.y) < 10e-10;
+}
 
 int main(int argc, char* argv[]) {
 
@@ -13,6 +17,11 @@ int main(int argc, char* argv[]) {
   if( test_homo_projection() == false ) return 1;
 
   cout << "test_homo_projection() ok" << endl;
+
+  if( test_depth_variation() == false ) return 1;
+
+  cout << "test_depth_variation() ok" << endl;
+
 
   return 0;
 
@@ -127,6 +136,33 @@ bool test_homo_projection() {
     Point2d pt2 = ps_homogenious_point(trans, rot, trans_1, rot1, pt_in_ref, sz, test_point.z);
 
     if ( fabs(pt1.x-pt2.x) + fabs(pt1.y-pt2.y) > 10e-10  ) return false;
+  }
+
+  return true;
+}
+
+bool test_depth_variation() {
+  Size sz(512, 512);
+  Point3d test_point(50,60,70);
+
+  vector<Point3d> cam_t(3);
+  cam_t[0] = Point3d(0,0,0); cam_t[1] = Point3d(10,0,0); cam_t[2] = Point3d(20,-10,0.5);
+
+  vector<Point3d> cam_rot(3);
+  cam_rot[0] = Point3d(0,0,0); cam_rot[1] = Point3d(0.001,0,0); cam_rot[2] = Point3d(-0.02,0.1,0.5);
+
+  Point2d pt_in_ref = ps_point_in_image( cam_t[0], cam_rot[0], sz, test_point);
+
+  { // cam[1] の時
+    Point2d pt1 = ps_point_in_image( cam_t[1], cam_rot[1], sz, test_point);
+    Point2d pt2 = ps_homogenious_point( cam_t[0], cam_rot[0], cam_t[1], cam_rot[1], pt_in_ref, sz, test_point.z);
+    if ( point_equals(pt1, pt2) == false ) return false;
+  }
+
+  { // cam[2] の時
+    Point2d pt1 = ps_point_in_image( cam_t[2], cam_rot[2], sz, test_point);
+    Point2d pt2 = ps_homogenious_point( cam_t[0], cam_rot[0], cam_t[2], cam_rot[2], pt_in_ref, sz, test_point.z);
+    if ( point_equals(pt1, pt2) == false ) return false;
   }
 
   return true;
