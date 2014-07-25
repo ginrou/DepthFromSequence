@@ -19,21 +19,8 @@ int main(int argc, char* argv[]) {
 
   if( cam_trans_vec.size() != input_images.size() || cam_rot_vec.size() != input_images.size() ) exit(1);
 
-  vector<Matx44d> P;
-  for(int i = 0; i < input_images.size(); ++i ) {
-    P.push_back( PlaneSweep::make_projection_matrix(cam_trans_vec[i], cam_rot_vec[i], input_images[i].size()) );
-  }
-
-  Matx33d M = PlaneSweep::homography_matrix( P[0], P[1], cam_trans_vec[1], -0.015 );
-  cout << M << endl;
-
-  Mat dst = input_images[1].clone();
-  //  warpPerspective(input_images[1], dst, M, dst.size(), WARP_INVERSE_MAP);
-  warpPerspective(input_images[1], dst, M, dst.size());
-  imwrite("homo.png", dst);
-
   
-  cout << Matx22d( 1,2,3,4)(0,1) << endl;
+
 
   return 0;
 

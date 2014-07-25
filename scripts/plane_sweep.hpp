@@ -9,6 +9,8 @@ using namespace cv;
 class PlaneSweep {
 public:
 
+  static const double OutOfRangeIntensity;
+
   static Matx44d make_projection_matrix(Point3d trans, Point3d rot, Size img_size) {
     double W = img_size.width, H = img_size.height;
     Matx44d intrinsic( W, 0, W/2.0, 0,
@@ -56,6 +58,7 @@ Point2d ps_homogenious_point( Point3d trans_ref,
 
 
 Matx33d ps_homography_matrix( Point3d trans, Point3d rot, Size img_size, double depth);
-			      
+
+double ps_intensity_at_depth(Mat img, Point3d trans_ref, Point3d rot_ref, Point3d trans_obj, Point3d rot_obj, Point2d pt_in_ref, double depth);
 
 #endif

@@ -1,5 +1,7 @@
 #include "plane_sweep.hpp"
 
+const double PlaneSweep::OutOfRangeIntensity = -1;
+
 Point2d ps_point_in_image( Point3d cam_trans, Point3d cam_rot, Size img_size, Point3d point)  {
   Matx44d proj_mat = PlaneSweep::make_projection_matrix( cam_trans, cam_rot, img_size);
   Matx41d homo_point( point.x, point.y, point.z , 1.0);
@@ -33,4 +35,23 @@ Matx33d ps_homography_matrix( Point3d trans, Point3d rot, Size img_size, double 
 		     rot.z, 1.0, -rot.x * depth + trans.y,
 		     -rot.y, rot.x, 1.0 * depth + trans.z);
   return intrinsic * extrinsic;
+}
+
+double ps_intensity_at_depth(Mat img, Point3d trans_ref, Point3d rot_ref, Point3d trans_obj, Point3d rot_obj, Point2d pt_in_ref, double depth)
+{
+  Point2d pt = ps_homogenious_point(trans_ref, rot_ref, trans_obj, rot_obj, pt_in_ref, img.size(), depth);
+
+  if( pt.x < 0 || pt.x >= img.cols || pt.y < 0 || pt.y >= img.rows ) return PlaneSweep::OutOfRangeIntensity;
+  double ret = 0.0;
+  ret += (double)img.at<uchar>((int)pt.y-1, (int)pt.x-1);
+  ret += (double)img.at<uchar>((int)pt.y  , (int)pt.x-1);
+  ret += (double)img.at<uchar>((int)pt.y-1, (int)pt.x  );
+  ret += (double)img.at<uchar>((int)pt.y-1, (int)pt.x+1);
+  ret += (double)img.at<uchar>((int)pt.y  , (int)pt.x  );
+  ret += (double)img.at<uchar>((int)pt.y+1, (int)pt.x  );
+  ret += (double)img.at<uchar>((int)pt.y+1, (int)pt.x-1);
+  ret += (double)img.at<uchar>((int)pt.y  , (int)pt.x+1);
+  ret += (double)img.at<uchar>((int)pt.y+1, (int)pt.x+1);
+
+  return (double)img.at<uchar>((int)pt.y  , (int)pt.x  );
 }
