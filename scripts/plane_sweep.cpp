@@ -42,16 +42,6 @@ double ps_intensity_at_depth(Mat img, Point3d trans_ref, Point3d rot_ref, Point3
   Point2d pt = ps_homogenious_point(trans_ref, rot_ref, trans_obj, rot_obj, pt_in_ref, img.size(), depth);
 
   if( pt.x < 0 || pt.x >= img.cols || pt.y < 0 || pt.y >= img.rows ) return PlaneSweep::OutOfRangeIntensity;
-  double ret = 0.0;
-  ret += (double)img.at<uchar>((int)pt.y-1, (int)pt.x-1);
-  ret += (double)img.at<uchar>((int)pt.y  , (int)pt.x-1);
-  ret += (double)img.at<uchar>((int)pt.y-1, (int)pt.x  );
-  ret += (double)img.at<uchar>((int)pt.y-1, (int)pt.x+1);
-  ret += (double)img.at<uchar>((int)pt.y  , (int)pt.x  );
-  ret += (double)img.at<uchar>((int)pt.y+1, (int)pt.x  );
-  ret += (double)img.at<uchar>((int)pt.y+1, (int)pt.x-1);
-  ret += (double)img.at<uchar>((int)pt.y  , (int)pt.x+1);
-  ret += (double)img.at<uchar>((int)pt.y+1, (int)pt.x+1);
 
   return (double)img.at<uchar>((int)pt.y  , (int)pt.x  );
 }
