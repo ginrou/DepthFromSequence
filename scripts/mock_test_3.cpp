@@ -219,9 +219,10 @@ bool test_image_homography() {
 
 bool test_plane_sweep_estimation() {
   Size sz(512, 512);
+  double tx = 5.0;
 
   vector<Point3d> cam_t(2), cam_rot(2);
-  cam_t[0] = Point3d(0,0,0); cam_t[1] = Point3d(1, 0, 0);
+  cam_t[0] = Point3d(0,0,0); cam_t[1] = Point3d(tx, 0, 0);
   cam_rot[0] = Point3d(0,0,0); cam_rot[1] = Point3d(0.001, 0.002, -0.003);
 
   vector<Point3d> test_points(5);
@@ -244,19 +245,22 @@ bool test_plane_sweep_estimation() {
 
   Mat obj_img = image_with_points( sz, obj_points );
 
-  int min_disp = 1, max_disp = 10;
+  int min_disp = 1, max_disp = 50;
   for( int i = 0; i < 5; ++i ) {
     double disparity = 0.0;
     double min_val = DBL_MAX;
     double val = ref_img.at<uchar>((int)ref_points[i].y, (int)ref_points[i].x);
 
     for( int d = min_disp; d <= max_disp; d += 1 ) {
-      double depth = 512.0 * 1.0 / (double)d; // z = W * tx / 視差
+      double depth = 512.0 * tx / (double)d; // z = W * tx / 視差
       double val2 = ps_intensity_at_depth(obj_img, cam_t[0], cam_rot[0], cam_t[1], cam_rot[1], ref_points[i], depth);
 
-       if ( val2 == PlaneSweep::OutOfRangeIntensity ) continue;
+      Point2d pt = ps_homogenious_point( cam_t[0], cam_rot[0], cam_t[1], cam_rot[1], 
+					 ref_points[i], obj_img.size(), depth);
 
-       //printf("i = %d, val = %lf, d = %d, val2 = %lf, diff = %lf\n", i, val, d, val2, fabs(val-val2));
+      if ( val2 == PlaneSweep::OutOfRangeIntensity ) continue;
+
+      //printf("i = %d, val = %lf, d = %d, val2 = %lf, diff = %lf\n", i, val, d, val2, fabs(val-val2));
       if ( fabs(val-val2) < min_val ) {
 	min_val = fabs(val-val2);
 	disparity = d;
@@ -264,8 +268,8 @@ bool test_plane_sweep_estimation() {
 
     }
 
-    int to_disp = 512.0 * 1.0 / test_points[i].z;
-    //printf("i = %d, estimated = %d, gt = %d\n", (int)disparity, to_disp);
+    int to_disp = 512.0 * tx / test_points[i].z;
+    //printf("i = %d, estimated = %d, gt = %d\n", i, (int)disparity, to_disp);
     if ( abs(to_disp - (int)disparity) > 1 ) return false;
 
   }

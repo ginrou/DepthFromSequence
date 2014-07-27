@@ -61,4 +61,6 @@ Matx33d ps_homography_matrix( Point3d trans, Point3d rot, Size img_size, double 
 
 double ps_intensity_at_depth(Mat img, Point3d trans_ref, Point3d rot_ref, Point3d trans_obj, Point3d rot_obj, Point2d pt_in_ref, double depth);
 
+int ps_depth_index_for_point(vector<Mat> images, vector<Point3d> trans_vec, vector<Point3d> rot_vec, int row, int col, vector<double> depth_variation);
+
 #endif

@@ -87,7 +87,7 @@ void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > 
 						      double fov
 						      )
 {
-  double W = img_size.width, H = img_size.height;
+  double W = -img_size.width, H = -img_size.height;
   double tan_fov = tan(fov/(2.0*M_PI));
 
   // 1. initialize points

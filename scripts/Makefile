@@ -4,7 +4,7 @@ DST_POINT= points.txt
 CAM_TRANS_FILE=cam_trans.txt
 CAM_ROT_FILE=cam_rot.txt
 
-CFLAGS= -O0
+CFLAGS= -O3
 INPUT_IMAGES=img/*.jpg
 
 ## build rules

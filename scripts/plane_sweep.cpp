@@ -26,7 +26,7 @@ Point2d ps_homogenious_point( Point3d trans_ref,
 
 Matx33d ps_homography_matrix( Point3d trans, Point3d rot, Size img_size, double depth) 
 {
-  double W = img_size.width, H = img_size.height;
+  double W = -img_size.width, H = -img_size.height;
   Matx33d intrinsic( W, 0, W/2.0,
 		     0, H, H/2.0,
 		     0, 0,     1);
@@ -44,4 +44,43 @@ double ps_intensity_at_depth(Mat img, Point3d trans_ref, Point3d rot_ref, Point3
   if( pt.x < 0 || pt.x >= img.cols || pt.y < 0 || pt.y >= img.rows ) return PlaneSweep::OutOfRangeIntensity;
 
   return (double)img.at<uchar>((int)pt.y  , (int)pt.x  );
+}
+
+int ps_depth_index_for_point(vector<Mat> images, vector<Point3d> trans_vec, vector<Point3d> rot_vec, int row, int col, vector<double> depth_variation)
+{
+  double min_var = DBL_MAX;
+  int min_idx = -1;
+
+  for (int d = 0; d < depth_variation.size(); ++d ) {
+    
+    vector<double> vals;
+    double mean = 0.0;
+    
+    for (int i = 0; i < images.size(); ++i ) {
+      double val = ps_intensity_at_depth(images[i], 
+					 trans_vec[0], rot_vec[0], trans_vec[i], rot_vec[i],
+					 Point2d(col, row), depth_variation[d]);
+
+      if (val != PlaneSweep::OutOfRangeIntensity ) {
+	vals.push_back(val);
+	mean += val;
+      }
+
+    }
+
+    mean /= (double)vals.size();
+    double var = 0.0;
+    for (int i = 0; i < vals.size(); ++i ) var += (vals[i]-mean)*(vals[i]-mean);
+
+    var = sqrt(var/(double)vals.size());
+
+    if( var < min_var ) {
+      min_var = var;
+      min_idx = d;
+    }
+
+  }
+
+  return min_idx;
+
 }
