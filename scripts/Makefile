@@ -4,7 +4,7 @@ DST_POINT= points.txt
 CAM_TRANS_FILE=cam_trans.txt
 CAM_ROT_FILE=cam_rot.txt
 
-CFLAGS= -O3
+CFLAGS= -O3 -I.
 INPUT_IMAGES=img/*.jpg
 
 ## build rules
@@ -22,7 +22,7 @@ bin/mock_test_2.out: bin/mock_test_2.o bin/mock_data_factroy.o bin/bundle_adjust
 bin/mock_test_3.out: bin/mock_test_3.o bin/mock_data_factroy.o bin/bundle_adjustment.o bin/plane_sweep.o bin/mock_image_factory.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
-bin/depth_estimation.out: bin/plane_sweep.o bin/depth_estimation.o
+bin/depth_estimation.out: bin/plane_sweep.o bin/depth_estimation.o bin/bipartitedensecrf.o bin/densecrf.o bin/filter.o bin/permutohedral.o bin/util.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
 ## object files
@@ -55,6 +55,21 @@ bin/feature_tracking.o: feature_tracking.cpp
 
 bin/plane_sweep.o: plane_sweep.cpp
 	g++ $^ -c -o $@ $(CFLAGS) `pkg-config --cflags opencv`
+
+bin/bipartitedensecrf.o: densecrf/bipartitedensecrf.cpp
+	g++ $^ -c -o $@ $(CFLAGS)
+
+bin/densecrf.o: densecrf/densecrf.cpp
+	g++ $^ -c -o $@ $(CFLAGS)
+
+bin/filter.o: densecrf/filter.cpp
+	g++ $^ -c -o $@ $(CFLAGS)
+
+bin/permutohedral.o: densecrf/permutohedral.cpp
+	g++ $^ -c -o $@ $(CFLAGS)
+
+bin/util.o: densecrf/util.cpp
+	g++ $^ -c -o $@ $(CFLAGS)
 
 ## command
 run:

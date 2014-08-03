@@ -1,10 +1,12 @@
 #include "plane_sweep.hpp"
+#include "densecrf.h"
 
 using namespace std;
 using namespace cv;
 
 vector<Point3d> load_points(const string& filename);
 Mat photo_consistency_image(vector<Mat> images, vector<Point3d> trans_vec, vector<Point3d> rot_vec, int row, vector<double> depth_variation);
+Mat dence_crf_image(vector<Mat> images, vector<Point3d> trans_vec, vector<Point3d> rot_vec, vector<double> depth_variation);
 
 void show_points(vector<Mat> images, vector<Point3d> trans_vec, vector<Point3d> rot_vec, int row, int col, vector<double> depth_variation);
 
@@ -34,6 +36,12 @@ int main(int argc, char* argv[]) {
     imwrite("tmp/pci.png", pci);
   }
 
+  if(1) {
+    Mat depth_map = dence_crf_image(input_images, cam_trans_vec, cam_rot_vec, depths);
+    imwrite("tmp/dence_crf_image.png", depth_map);
+    exit(0);
+  }
+
   Mat1b disp_map(input_images[0].size());
 
   for( int r = 0; r < disp_map.rows; ++r ) {
@@ -46,6 +54,7 @@ int main(int argc, char* argv[]) {
   }
 
   imwrite("dispmap.png", disp_map);
+
 
   return 0;
 
@@ -129,4 +138,79 @@ void show_points(vector<Mat> images, vector<Point3d> trans_vec, vector<Point3d> 
 
     }
   }
+}
+
+Mat dence_crf_image(vector<Mat> images, 
+		    vector<Point3d> trans_vec, 
+		    vector<Point3d> rot_vec, 
+		    vector<double> depth_variation)
+{
+
+  int W = images[0].cols;
+  int H = images[0].rows;
+  int M = depth_variation.size();
+
+  // 輝度一致度(輝度の分散)をunary energyとして代入 unary(x,y,i) = -log(var)
+
+  float *unary = new float[W*H*M];
+  for( int r = 0; r < H; ++r ) {
+    for( int c = 0; c < W; ++c ) {
+      for( int d = 0; d < M; ++d ) {
+
+	vector<double> vals;
+	double mean = 0.0;
+
+	for( int i = 0; i < images.size(); ++i ) {
+	  double val = ps_intensity_at_depth(images[i], 
+					     trans_vec[0], rot_vec[0], trans_vec[i], rot_vec[i],
+					     Point2d(c, r), depth_variation[d]);
+	  if (val != PlaneSweep::OutOfRangeIntensity ) {
+	    vals.push_back(val);
+	    mean += val;
+	  }
+	}
+
+	mean /= (double)vals.size();
+	double var = 0.0;
+	for( int i = 0; i < vals.size(); ++i ) var += (vals[i]-mean)*(vals[i]-mean);
+
+	unary[r*W*M + c*M + d] = 1.0/(var+0.00001);
+
+      }
+
+      if( r % 10 == 0 && c % 10 == 0 ) printf("%d, %d -> %f\n", r,c, unary[r*W*M + c*M + 3]);
+
+    }
+  }
+
+  unsigned char* img = new unsigned char[W*H*3]; // rgb
+  for(int h = 0; h < H; ++h ) {
+    for(int w = 0; w < W; ++w ) {
+      img[h*W*3 + w*3 + 0 ] = images[0].at<uchar>(h,w);
+      img[h*W*3 + w*3 + 1 ] = images[0].at<uchar>(h,w);
+      img[h*W*3 + w*3 + 2 ] = images[0].at<uchar>(h,w);
+    }
+  }
+
+  DenseCRF2D crf(W,H,M);
+  crf.setUnaryEnergy(unary);
+  crf.addPairwiseGaussian(3,3,3);
+  crf.addPairwiseBilateral(60, 60, 20, 20, 20, img, 10);
+
+  short *map = new short[W*H];
+  crf.map(10, map);
+
+  Mat1b ret(W,H);
+  for(int r = 0; r < H; ++r ) {
+    for(int c = 0; c < W; ++c ) {
+      ret.at<uchar>(r,c) = map[r*W+c];
+    }
+  }
+
+
+  delete [] unary;
+  delete [] img;
+  delete [] map;
+  
+  return ret;
 }
