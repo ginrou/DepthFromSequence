@@ -9,7 +9,7 @@ INPUT_IMAGES=img/*.jpg
 
 ## build rules
 ## executable files
-bin/main.out: bin/main.o bin/mock_data_factroy.o bin/bundle_adjustment.o bin/feature_tracking.o
+bin/main.out: bin/main.o bin/mock_data_factroy.o bin/bundle_adjustment.o bin/feature_tracking.o bin/plane_sweep.o bin/bipartitedensecrf.o bin/densecrf.o bin/filter.o bin/permutohedral.o bin/util.o
 	g++ -o $@ $^ `pkg-config --cflags opencv` `pkg-config --libs opencv` $(CFLAGS) $(AKAZE_LIBS)
 
 bin/mock_test.out: bin/mock_test.o bin/mock_data_factroy.o bin/bundle_adjustment.o
