@@ -56,13 +56,13 @@ int main(int argc, char* argv[]) {
 
   // plane sweep の準備
   vector<double> depths;
-  for( int i = 1; i <= 32; ++i ) depths.push_back( 5000.0  / (double)i );
+  for( int i = 1; i <= 20; ++i ) depths.push_back( 1000.0 - 40 * i );
 
   // plane sweep + dencecrf で奥行きを求める
   Mat depth_map = dence_crf_image(input_images, solver.cam_t_vec, solver.cam_rot_vec, depths);
   imwrite("tmp/dence_crf_image.png", depth_map);
 
-  for( int i = 0; i < 32; ++i ) cout << depths[i] << endl;
+  for( int i = 0; i < depths.size(); ++i ) cout << depths[i] << endl;
 
   return 0;
 
@@ -106,81 +106,50 @@ Mat dence_crf_image(vector<Mat> images,
   float *unary = new float[W*H*M];
   Mat1b pci(W,H);  
 
-  for( int r = 0; r < H; ++r ) {
-    for( int c = 0; c < W; ++c ) {
+  Mat1b m(images.size()+1, M);
+  m.setTo(0);
 
+  for(int r = 0; r < H; ++r ) {
+    for(int c = 0; c < W; ++c ) {
+      double ref = images[0].at<uchar>(r,c);
+
+      double min_val = DBL_MAX;
       int min_idx;
-      double min_var = DBL_MAX;
 
       for( int d = 0; d < M; ++d ) {
+	double sqr_err = 0.0;
+	for( int i = 1; i < images.size(); ++i ) {
+	  double v = ps_intensity_at_depth(images[i], trans_vec[0], rot_vec[0], trans_vec[i], rot_vec[i],
+					   Point2d(c,r), depth_variation[d]);
 
-	vector<Vec9d> vecs;
-
-	for( int i = 0; i < images.size(); ++i ) {
-	  Point2d pt = ps_homogenious_point(trans_vec[0], rot_vec[0], trans_vec[i], rot_vec[i],
-					    Point2d(c, r), images[i].size(), depth_variation[d]);
-
-	  int x = pt.x, y = pt.y;
-	  if( x < 1 || x >= W-2 || y < 1 || y >= H-2 ) continue;
-
-	  Vec9d v;
-	  v[0] = images[i].at<uchar>(y-1, x-1);
-	  v[1] = images[i].at<uchar>(y-1, x  );
-	  v[2] = images[i].at<uchar>(y-1, x+1);
-	  v[3] = images[i].at<uchar>(y  , x-1);
-	  v[4] = images[i].at<uchar>(y  , x  );
-	  v[5] = images[i].at<uchar>(y  , x+1);
-	  v[6] = images[i].at<uchar>(y+1, x-1);
-	  v[7] = images[i].at<uchar>(y+1, x  );
-	  v[8] = images[i].at<uchar>(y+1, x+1);
-	  vecs.push_back(v);
-
-	  if ( r == 240 && c == 240 ) {
-	    printf("d = %2d  i = %2d ", d, i);
-	    for( int j = 0; j < 9; ++j ) printf(", %3d", (int)v[j]);
-
-	    printf("\n");
-	  }
+	  if(v != PlaneSweep::OutOfRangeIntensity)
+	    sqr_err += (ref-v)*(ref-v);
+	  else
+	    sqr_err += 255 * 255; // とりあえず最大の値を足しておく
 
 	}
 
-	Vec9d mean(0,0,0,0,0,0,0,0,0);
-	for( int i = 0; i < vecs.size(); ++i ) {
-	  for( int j = 0; j < 9; ++j ) {
-	    mean[j] += vecs[i][j] / (double)vecs.size();
-	  }
-	}
+	unary[r*W*M + c*M + d] = 0.001 * sqr_err;
 
-	double var = 0.0;
-	for( int i = 0; i < vecs.size(); ++i ) {
-	  for( int j = 0; j < 9; ++j ) {
-	    var += (vecs[i][j]-mean[j])*(vecs[i][j]-mean[j]);
-	  }
-	}
-
-	if ( r == 240 && c == 240 ) printf("   var = %lf\n", var);
-
-	if ( var == 0.0 )
-	  unary[r*W*M + c*M + d] = 0.0;
-	else
-	  unary[r*W*M + c*M + d] = 1.0 / var;
-
-
-	if( var < min_var ) {
+	if( sqr_err < min_val ) {
+	  min_val = sqr_err;
 	  min_idx = d;
-	  min_var = var;
 	}
 
       }
-      pci.at<uchar>(r,c) = min_idx;
 
-      //if( r % 10 == 0 && c % 10 == 0 ) printf("%d, %d -> %f\n", r,c, unary[r*W*M + c*M + 3]);
+      if (r%10 == 0 && c%10 == 0 ) {
+	printf("%3d, %3d => ", r, c);
+	for( int d = 0; d < M; ++d ) printf("%f, ", unary[r*W*M + c*M + d]);
+	printf("\n");
+      }
+
+      pci.at<uchar>(r,c) = min_idx;
 
     }
   }
 
-  imwrite("tmp/pci.png", pci);
-
+  imwrite("tmp/pci.png", pci);  
   unsigned char* img = new unsigned char[W*H*3]; // rgb
   for(int h = 0; h < H; ++h ) {
     for(int w = 0; w < W; ++w ) {
