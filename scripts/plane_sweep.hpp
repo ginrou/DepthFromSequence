@@ -6,10 +6,60 @@
 using namespace std;
 using namespace cv;
 
+// extrinsic camera parameter
+typedef struct {
+  Point3d t; // translaction of camera
+  Point3d rot; // rotation of camera
+} Camera;
+
+Matx33d ps_homography_matrix( Point3d trans, Point3d rot, Size img_size, double depth);
+
 class PlaneSweep {
 public:
 
   static const double OutOfRangeIntensity;
+
+  // inputs
+  vector<Mat1b> _images;
+  vector<Camera> _cameras;
+  vector<double> _depth_variation;
+
+  // ouput
+  Mat1b _depth_pci; // depth map based on photo consistency used for debug
+  Mat1b _depth_smooth; // depth map smooth by dence_crf
+ 
+  // for used in inside
+  int _N; // number of images, 
+  vector< vector< Matx33d > > _homography_matrix; // homography_matrix[ img_index ][ depth_index];
+  
+  PlaneSweep(vector<Mat1b> images, vector<Camera> cameras, vector<double> depth_variation)
+    :_images(images),
+     _cameras(cameras),
+     _depth_variation(depth_variation)
+  {
+    Size img_size = images[0].size();
+
+    _N = images.size();
+
+
+    // allocate
+    _depth_pci = Mat1b(img_size); // もしかしたらコンパイルエラーするかも
+    _depth_smooth = Mat1b(img_size); // もしかしたらコンパイルエラーするかも
+
+    // compute all homography matrix
+    Camera ref_cam = cameras[0];
+    _homography_matrix = vector< vector< Matx33d > >(_N);
+    for(int i = 0; i < cameras.size(); ++i ) {
+      _homography_matrix[i] = vector<Matx33d>(depth_variation.size());
+      for(int d = 0; d < depth_variation.size(); ++d ) {
+	_homography_matrix[i][d] = PlaneSweep::homography_matrix(ref_cam, cameras[i], img_size, depth_variation[d]);
+      }
+    }
+  }
+
+  void sweep(Mat3b &img);
+
+  float *compute_unary_energy();
 
   static Matx44d make_projection_matrix(Point3d trans, Point3d rot, Size img_size) {
     double W = img_size.width, H = img_size.height;
@@ -25,7 +75,14 @@ public:
 
   }
 
-  static Matx33d homography_matrix( Matx44d P_base,  Matx44d P_obj, Point3d trans, double disparity ) {
+  // homography matrix to see target_cam image from ref_cam params assuming all points are on the depth
+  static Matx33d homography_matrix( Camera ref_cam, Camera target_cam, Size img_size, double depth ) {
+    Matx33d homo_ref = ps_homography_matrix(ref_cam.t, ref_cam.rot, img_size, depth);
+    Matx33d homo_target = ps_homography_matrix(target_cam.t, target_cam.rot, img_size, depth);
+    return homo_target * homo_ref.inv();
+  }
+
+  static Matx33d homography_matrix_( Matx44d P_base,  Matx44d P_obj, Point3d trans, double disparity ) {
     Matx44d p = P_obj * P_base.inv();
     return Matx33d( p(0,0), p(0,1), p(0,2) + trans.x * disparity,
 		    p(1,0), p(1,1), p(1,2) + trans.y * disparity,
@@ -33,8 +90,13 @@ public:
 
   }
 
+  
+  
 
 }; // class PlaneSweep
+
+Point2d ps_homogenious_point_2( Matx33d homo_mat, Point2d ref_point);
+
 
 // 状態を持たない関数
 Point2d ps_point_in_image( Point3d cam_trans, Point3d cam_rot, Size img_size, Point3d point);
@@ -57,7 +119,7 @@ Point2d ps_homogenious_point( Point3d trans_ref,
 			      double depth);
 
 
-Matx33d ps_homography_matrix( Point3d trans, Point3d rot, Size img_size, double depth);
+
 
 double ps_intensity_at_depth(Mat img, Point3d trans_ref, Point3d rot_ref, Point3d trans_obj, Point3d rot_obj, Point2d pt_in_ref, double depth);
 
