@@ -58,6 +58,29 @@ int main(int argc, char* argv[]) {
   vector<double> depths;
   for( int i = 1; i <= 20; ++i ) depths.push_back( 1000.0 - 40 * i );
 
+  vector<Camera> cameras(solver.cam_t_vec.size());
+  for(int i = 0; i < cameras.size(); ++i ) {
+    cameras[i].t = solver.cam_t_vec[i];
+    cameras[i].rot = solver.cam_rot_vec[i];
+  }
+
+  Mat3b color_image(input_images[0].size());
+  for( int h = 0; h < color_image.rows; ++h ) {
+    for( int w = 0; w < color_image.cols; ++w ) {
+      unsigned char intensity = input_images[0].at<uchar>(h,w);
+      color_image.at<Vec3b>(h,w)[0] = intensity;
+      color_image.at<Vec3b>(h,w)[1] = intensity;
+      color_image.at<Vec3b>(h,w)[2] = intensity;
+    }
+  }
+
+  PlaneSweep *ps = new PlaneSweep(input_images, cameras, depths);
+  ps->sweep(color_image);
+  imwrite("tmp/plane_sweep.png", ps->_depth_smooth);
+
+  delete ps;
+  exit(0);
+
   // plane sweep + dencecrf で奥行きを求める
   Mat depth_map = dence_crf_image(input_images, solver.cam_t_vec, solver.cam_rot_vec, depths);
   imwrite("tmp/dence_crf_image.png", depth_map);
@@ -173,7 +196,6 @@ Mat dence_crf_image(vector<Mat> images,
       ret.at<uchar>(r,c) = map[r*W+c];
     }
   }
-
 
   delete [] unary;
   delete [] img;

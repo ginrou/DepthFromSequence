@@ -10,8 +10,8 @@ void PlaneSweep::sweep(Mat3b &img) {
 
   unsigned char *img_buf = new unsigned char[W*H*3];
   for( int h = 0; h < H; ++h ) {
-    for( int w= 0; w < W; ++w ) {
-      Vec3b intenisty = img.at<uchar>(h,w);
+    for( int w = 0; w < W; ++w ) {
+      Vec3b intenisty = img.at<Vec3b>(h,w);
       img_buf[h*W*3 + w*3 + 0] = intenisty.val[0]; // b
       img_buf[h*W*3 + w*3 + 1] = intenisty.val[1]; // g
       img_buf[h*W*3 + w*3 + 2] = intenisty.val[2]; // r
@@ -27,7 +27,7 @@ void PlaneSweep::sweep(Mat3b &img) {
   crf.map(10, map);
 
   for( int h = 0; h < H; ++h ) {
-    for( int w= 0; w < W; ++w ) {
+    for( int w = 0; w < W; ++w ) {
       _depth_smooth.at<uchar>(h,w) = map[h*W+w];
     }
   }
@@ -56,14 +56,14 @@ float *PlaneSweep::compute_unary_energy() {
 	  
 	  Point2d pt = ps_homogenious_point_2( _homography_matrix[n][d], Point2d(w, h));
 	  if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
-	    err += 255*255; // とりあえずはずれの場合は最大誤差を入れる
+	    err += UCHAR_MAX*UCHAR_MAX; // とりあえずはずれの場合は最大誤差を入れる
 	  } else {
 	    double val = _images[n].at<uchar>((int)pt.y, (int)pt.x);
 	    err += (ref_val - val)*(ref_val - val);
 	  }
 
 	}// n
-	unary[h*W*M + w*M +d] = err;
+	unary[h*W*M + w*M +d] = _unary_weight * err;
       }// d
     }//w
   }//h

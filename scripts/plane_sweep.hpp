@@ -20,7 +20,7 @@ public:
   static const double OutOfRangeIntensity;
 
   // inputs
-  vector<Mat1b> _images;
+  vector<Mat> _images;
   vector<Camera> _cameras;
   vector<double> _depth_variation;
 
@@ -31,8 +31,11 @@ public:
   // for used in inside
   int _N; // number of images, 
   vector< vector< Matx33d > > _homography_matrix; // homography_matrix[ img_index ][ depth_index];
+
+  // parameters
+  double _unary_weight; // multiplied to photo consistency
   
-  PlaneSweep(vector<Mat1b> images, vector<Camera> cameras, vector<double> depth_variation)
+  PlaneSweep(vector<Mat> images, vector<Camera> cameras, vector<double> depth_variation)
     :_images(images),
      _cameras(cameras),
      _depth_variation(depth_variation)
@@ -41,10 +44,12 @@ public:
 
     _N = images.size();
 
-
     // allocate
-    _depth_pci = Mat1b(img_size); // もしかしたらコンパイルエラーするかも
-    _depth_smooth = Mat1b(img_size); // もしかしたらコンパイルエラーするかも
+    _depth_pci = Mat1b(img_size);
+    _depth_smooth = Mat1b(img_size);
+
+    // set default parameters
+    _unary_weight = 0.0005;
 
     // compute all homography matrix
     Camera ref_cam = cameras[0];
