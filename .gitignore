@@ -24,3 +24,9 @@ Pods/
 scripts/img/*
 scripts/tmp/*
 scripts/points.txt
+
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
