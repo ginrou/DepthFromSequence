@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
   }
 
   // 特徴点追跡
-  BundleAdjustment::FeatureTracker feature_tracker(input_images);
+  FeatureTracker feature_tracker(input_images);
   feature_tracker.track();
   vector< vector<Point2d> > track_points = feature_tracker.pickup_stable_points();
 
@@ -30,42 +30,33 @@ int main(int argc, char* argv[]) {
     cout << solver.points[j] << endl;
   }
   
-
   // bundle adjustment を実行
   while ( solver.should_continue ) {
     solver.run_one_step();
     printf("reprojection error = %e\n", solver.reprojection_error());
   }
 
-  print_3d_point_to_file(solver.points, "after.txt", 0.2);
-
-  for( int i = 0; i < solver.Nc ; ++i ) {
-    printf("cam %02d\n", i);
-    cout << "\t" << solver.cam_t_vec[i] << endl;
-    cout << "\t" << solver.cam_rot_vec[i] << endl;
-  }
-
-  vector<double> depth;
-  for( int j = 0; j < solver.Np ; ++j ) {
-    depth.push_back(1.0/solver.points[j].z);
-  }
-
-  imwrite("tmp/depth.png", drawDepth( input_images[0], track_points[0], depth));
-  write_cam_params_to_file("cam_trans.txt", solver.cam_t_vec);
-  write_cam_params_to_file("cam_rot.txt", solver.cam_rot_vec);
-
   // plane sweep の準備
   vector<double> depths;
   for( int i = 1; i <= 20; ++i ) depths.push_back( 1000.0 - 40 * i );
 
   // plane sweep + dencecrf で奥行きを求める
-  Mat depth_map = dence_crf_image(input_images, solver.cam_t_vec, solver.cam_rot_vec, depths);
-  imwrite("tmp/dence_crf_image.png", depth_map);
+  PlaneSweep *ps = new PlaneSweep(input_images, solver.camera_params, depths);
+  Mat3b color_image(input_images[0].size(), CV_8UC3);
+  for( int h = 0; h < color_image.rows; ++h ) {
+    for( int w = 0; w < color_image.cols; ++w ) {
+      Vec3b intenisty(input_images[0].at<unsigned char>(h,w));
+      color_image.at<Vec3b>(h,w) = intenisty;
+    }
+  }
 
-  for( int i = 0; i < depths.size(); ++i ) cout << depths[i] << endl;
+  ps->sweep(color_image);
 
+  // output
+  imwrite(argv[argc-1], ps->_depth_smooth);
+
+  delete ps;
   return 0;
-
 }
 
 cv::Mat drawDepth( cv::Mat base_image, vector<Point2d> points, vector<double> depth) {

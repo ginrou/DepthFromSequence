@@ -58,6 +58,31 @@ std::vector<Point3d> random_3d_cam_rot(int N) {
   return points;
 }
 
+std::vector<Camera> initial_camera_params(int N) {
+  std::vector<Camera> ret(N);
+  
+  std::srand(std::time(0));
+  Point3d min_t(0.0, -0.5, -0.005), max_t(20.0, 0.5, 0.005);
+  Point3d min_rot(-0.001, -0.001, -0.001), max_rot(0.001, 0.001, 0.001);
+  for( int i = 0; i < N; ++i ) {
+    ret[i].t.x = min_t.x + (max_t.x - min_t.x) * drand();
+    ret[i].t.y = min_t.y + (max_t.y - min_t.y) * drand();
+    ret[i].t.z = min_t.z + (max_t.z - min_t.z) * drand();
+    ret[i].rot.x = min_rot.x + (max_rot.x - min_rot.x) * drand();
+    ret[i].rot.y = min_rot.y + (max_rot.y - min_rot.y) * drand();
+    ret[i].rot.z = min_rot.z + (max_rot.z - min_rot.z) * drand();
+  }
+
+  // set first camera to the origin of world cordinate
+  ret[0].t = Point3d(0, 0, 0);
+  ret[0].rot = Point3d(0, 0, 0);
+
+  // set translation between first camera and second camera to 5.0
+  ret[1].t.x = 5.0;
+
+  return ret;
+}
+
 
 void BundleAdjustment::Solver::init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in) {
 
@@ -106,25 +131,21 @@ void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > 
   }
 
   // 3. initialize camera params
-  cam_t_vec = random_3d_cam_t(Nc);
-  cam_rot_vec = random_3d_cam_rot(Nc);
-
+  camera_params = initial_camera_params(Nc);
 }
 
 double BundleAdjustment::Solver::reprojection_error() {
-
   double error = 0.0;
 
   for( int i = 0; i < Nc; ++i ) {
     for( int j = 0; j < Np; ++j ) {
-      Point2d reproj = ba_reproject( points[j], cam_t_vec[i], cam_rot_vec[i]);
+      Point2d reproj = ba_reproject( points[j], camera_params[i].t, camera_params[i].rot);
       double ex = captured[i][j].x - reproj.x, ey = captured[i][j].y - reproj.y;
       error += ex*ex + ey*ey;
     }
   }
 
   return error;
-
 }
 
 void BundleAdjustment::Solver::run_one_step() {
@@ -147,7 +168,7 @@ void BundleAdjustment::Solver::run_one_step() {
       int nx = i*Np + j, ny = i*Np + j + Np*Nc;
 
       Point2d p = captured[i][j];
-      Point3d q = ba_reproject3d(points[j],  cam_t_vec[i], cam_rot_vec[i]);
+      Point3d q = ba_reproject3d(points[j], camera_params[i].t, camera_params[i].rot);
       target_error[nx] = p.x - q.x/q.z;
       target_error[ny] = p.y - q.y/q.z;
 
@@ -197,12 +218,12 @@ void BundleAdjustment::Solver::run_one_step() {
   }
 
   for ( int i = 0; i < Nc; ++i ) {
-    cam_t_vec[i].x += update[i];
-    cam_t_vec[i].y += update[ i+Nc ];
-    cam_t_vec[i].z += update[ i+2*Nc ];
-    cam_rot_vec[i].x += update[ i+3*Nc ];
-    cam_rot_vec[i].y += update[ i+4*Nc ];
-    cam_rot_vec[i].z += update[ i+5*Nc ];
+    camera_params[i].t.x   += update[i];
+    camera_params[i].t.y   += update[i+Nc];
+    camera_params[i].t.z   += update[i+2*Nc];
+    camera_params[i].rot.x += update[i+3*Nc];
+    camera_params[i].rot.y += update[i+4*Nc];
+    camera_params[i].rot.z += update[i+5*Nc];
   }
 
   for ( int j = 0; j < Np; ++j ) {
@@ -253,7 +274,7 @@ Point2d ba_reproject( Point3d pt, Point3d cam_t, Point3d cam_rot) {
 inline double delta(int i, int j) { return i == j ? 1.0 : 0.0; }
 
 double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k) {
-  Point3d pt = s.points[j], cam_rot = s.cam_rot_vec[i];
+  Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
   if ( k < s.Nc ) // Txでの微分
     return delta(i,k);
@@ -285,7 +306,7 @@ double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, i
 }
 
 double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k) {
-  Point3d pt = s.points[j], cam_rot = s.cam_rot_vec[i];
+  Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
   if ( k < s.Nc ) // Txでの微分
     return 0;
@@ -318,7 +339,7 @@ double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, i
 
 
 double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k) {
-  Point3d pt = s.points[j], cam_rot = s.cam_rot_vec[i];
+  Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
   if ( k < s.Nc ) // Txでの微分
     return 0;

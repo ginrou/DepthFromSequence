@@ -1,10 +1,9 @@
-#ifndef __BUNDLE_ADJUTMENT_HPP__
-#define __BUNDLE_ADJUTMENT_HPP__
+#pragma once
 
 #include <opencv2/opencv.hpp>
+#include "depth_from_sequence.hpp"
 #include "Eigen/Core"
 
-using namespace std;
 using namespace cv;
 using namespace Eigen;
 
@@ -15,12 +14,17 @@ namespace BundleAdjustment {
     
     size_t Nc, Np; // Nc = カメラの数, Np = 特徴点の数
     size_t K; // 変数の数
-
+    
+    // inputs
     // 観測した特徴点  i番目のカメラで撮影したj番目の点については captured[i][j] でアクセスする
     vector< vector<Point2d> > captured;
 
-    // 特徴点
+    // outputs
+    // 特徴点の３次元位置
     vector<Point3d> points;
+
+    // カメラの外部パラメータ
+    vector<Camera> camera_params;
 
     // カメラの平行移動と回転
     vector<Point3d> cam_t_vec, cam_rot_vec;
@@ -38,6 +42,7 @@ namespace BundleAdjustment {
     {
       Nc = captured_in.size(); Np = captured_in[0].size();
       points = vector<Point3d>(Np);
+      camera_params = vector<Camera>(Nc);
       cam_t_vec = vector<Point3d>(Nc);
       cam_rot_vec = vector<Point3d>(Nc);
 
@@ -63,6 +68,7 @@ namespace BundleAdjustment {
   状態を持たない。ba_ プレフィックス
 */
 
+// うまくいったらcam_t, cam_rotをCameraに変更する
 Point2d ba_reproject( Point3d pt, Point3d cam_t, Point3d cam_rot);
 Point3d ba_reproject3d( Point3d pt, Point3d cam_t, Point3d cam_rot);
 double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k);
@@ -94,4 +100,4 @@ std::vector<Point2d> project_3d_to_2d_normalize( Point3d cam_t, Point3d cam_rot,
 // BundleAdjustment::Solver の初期解にノイズを加える
 void add_noise_to_init_values( BundleAdjustment::Solver &s );
 
-#endif // __BUNDLE_ADJUTMENT_HPP__
+

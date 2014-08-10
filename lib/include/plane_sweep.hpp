@@ -1,16 +1,6 @@
-#ifndef __PLANE_SWEEP__
-#define __PLANE_SWEEP__
+#pragma once
 
-#include <opencv2/opencv.hpp>
-
-using namespace std;
-using namespace cv;
-
-// extrinsic camera parameter
-typedef struct {
-  Point3d t; // translaction of camera
-  Point3d rot; // rotation of camera
-} Camera;
+#include "depth_from_sequence.hpp"
 
 Matx33d ps_homography_matrix( Point3d trans, Point3d rot, Size img_size, double depth);
 
@@ -20,19 +10,18 @@ public:
   static const double OutOfRangeIntensity;
 
   // inputs
-  vector<Mat1b> _images;
+  vector<Mat> _images;
   vector<Camera> _cameras;
   vector<double> _depth_variation;
 
   // ouput
-  Mat1b _depth_pci; // depth map based on photo consistency used for debug
   Mat1b _depth_smooth; // depth map smooth by dence_crf
  
   // for used in inside
   int _N; // number of images, 
   vector< vector< Matx33d > > _homography_matrix; // homography_matrix[ img_index ][ depth_index];
   
-  PlaneSweep(vector<Mat1b> images, vector<Camera> cameras, vector<double> depth_variation)
+  PlaneSweep(vector<Mat> images, vector<Camera> cameras, vector<double> depth_variation)
     :_images(images),
      _cameras(cameras),
      _depth_variation(depth_variation)
@@ -41,10 +30,8 @@ public:
 
     _N = images.size();
 
-
     // allocate
-    _depth_pci = Mat1b(img_size); // もしかしたらコンパイルエラーするかも
-    _depth_smooth = Mat1b(img_size); // もしかしたらコンパイルエラーするかも
+    _depth_smooth = Mat(img_size, CV_8UC1);
 
     // compute all homography matrix
     Camera ref_cam = cameras[0];
@@ -125,4 +112,3 @@ double ps_intensity_at_depth(Mat img, Point3d trans_ref, Point3d rot_ref, Point3
 
 int ps_depth_index_for_point(vector<Mat> images, vector<Point3d> trans_vec, vector<Point3d> rot_vec, int row, int col, vector<double> depth_variation);
 
-#endif

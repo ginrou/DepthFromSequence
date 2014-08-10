@@ -1,6 +1,6 @@
 #include "feature_tracking.hpp"
 
-void BundleAdjustment::FeatureTracker::track() {
+void FeatureTracker::track() {
   // initialize
   initialize_tracker(images[0]);
 
@@ -18,7 +18,7 @@ void BundleAdjustment::FeatureTracker::track() {
 
 }
 
-void BundleAdjustment::FeatureTracker::initialize_tracker(cv::Mat base_image) {
+void FeatureTracker::initialize_tracker(cv::Mat base_image) {
   vector<Point2f> points;
   cv::goodFeaturesToTrack(base_image, points, MAX_CORNERS, 0.075, 10, noArray(), 5, true, 0.04);
   cv::cornerSubPix(base_image, points, sub_pix_win_size, cv::Size(-1,-1), term_crit);
@@ -26,7 +26,7 @@ void BundleAdjustment::FeatureTracker::initialize_tracker(cv::Mat base_image) {
   total_status = std::vector<uchar>( points.size(), 1 );
 }
 
-std::vector<Point2f> BundleAdjustment::FeatureTracker::track_for_image( cv::Mat prev_image,
+std::vector<Point2f> FeatureTracker::track_for_image( cv::Mat prev_image,
 									cv::Mat next_image,
 									std::vector<Point2f> prev_point,
 									std::vector<uchar> &status )
@@ -37,7 +37,7 @@ std::vector<Point2f> BundleAdjustment::FeatureTracker::track_for_image( cv::Mat 
   return next_points;
 }
 
-std::vector< std::vector<cv::Point2d> > BundleAdjustment::FeatureTracker::pickup_stable_points()
+std::vector< std::vector<cv::Point2d> > FeatureTracker::pickup_stable_points()
 {
   vector< vector<cv::Point2d> > ret;
 
@@ -60,7 +60,7 @@ std::vector< std::vector<cv::Point2d> > BundleAdjustment::FeatureTracker::pickup
 }
 
 
-void BundleAdjustment::FeatureTracker::draw_correspondences(char prefix[]) {
+void FeatureTracker::draw_correspondences(char prefix[]) {
 
   cv::Size img_size( images[0].cols, images[0].rows );
 
