@@ -62,7 +62,7 @@ float *PlaneSweep::compute_unary_energy() {
 	  }
 
 	}// n
-	unary[h*W*M + w*M +d] = 0.001 * err;
+	unary[h*W*M + w*M +d] = log(err);
       }// d
     }//w
   }//h

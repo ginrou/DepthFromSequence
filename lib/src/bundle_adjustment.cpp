@@ -6,58 +6,6 @@
 
 inline double drand() { return (double)rand()/RAND_MAX; }
 
-std::vector<Point3d> random_3d_points(int N, cv::Point3d min, cv::Point3d max) {
-
-  std::srand(std::time(0));
-  std::vector<Point3d> points;
-  for( int i = 0; i < N; ++i ) {
-    Point3d pt;
-    pt.z = 1.0  / (min.z + (max.z - min.z) * drand() );
-    pt.x = pt.z * (min.x + (max.x - min.x) * drand() );
-    pt.y = pt.z * (min.y + (max.y - min.y) * drand() );
-    points.push_back(pt);
-  }
-  return points;
-}
-
-std::vector<Point3d> random_3d_cam_t(int N) {
-  std::srand(std::time(0));
-  std::vector<Point3d> points;
-  Point3d  min(0.0, -0.5, -0.005), max(20.0, 0.5, 0.005);
-
-  for( int i = 0; i < N; ++i ) {
-    Point3d pt;
-    pt.x = min.x + (max.x - min.x) * drand();
-    pt.y = min.y + (max.y - min.y) * drand();
-    pt.z = min.z + (max.z - min.z) * drand();
-
-    if( i == 0 ) pt = Point3d(0, 0, 0);
-    if( i == 1 ) pt.x = 5.0;
-
-    points.push_back(pt);
-  }
-  return points;
-
-}
-
-std::vector<Point3d> random_3d_cam_rot(int N) {
-  std::vector<Point3d> points;
-  Point3d min(-0.001, -0.001, -0.001), max(0.001, 0.001, 0.001);
-
-  for( int i = 0; i < N; ++i ) {
-    Point3d pt;
-    pt.x = min.x + (max.x - min.x) * drand();
-    pt.y = min.y + (max.y - min.y) * drand();
-    pt.z = min.z + (max.z - min.z) * drand();
-
-    if( i == 0 ) pt = Point3d(0, 0, 0);
-
-    pt = Point3d(0, 0, 0);
-    points.push_back(pt);
-  }
-  return points;
-}
-
 std::vector<Camera> initial_camera_params(int N) {
   std::vector<Camera> ret(N);
   
@@ -81,29 +29,6 @@ std::vector<Camera> initial_camera_params(int N) {
   ret[1].t.x = 5.0;
 
   return ret;
-}
-
-
-void BundleAdjustment::Solver::init( vector<Point3d> points_in, vector<Point3d> cam_t_in, vector<Point3d> cam_rot_in) {
-
-  for(int i = 0; i < Nc; ++i ) {
-    Point3d pt = cam_t_in[i];
-    cam_t_vec[i] = pt;
-    cout <<"cam_t "<< pt << endl;
-  }
-
-  for(int i = 0; i < Nc; ++i ) {
-    Point3d pt = cam_rot_in[i];
-    cam_rot_vec[i] = pt;
-    cout <<"cam_rot "<< pt << endl;
-  }
-
-  for(int j = 0; j < Np; ++j ) {
-    Point3d pt = points_in[j];
-    points[j] = pt;
-    cout <<"points "<< pt << endl;
-  }
-
 }
 
 void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > captured_in,
@@ -139,7 +64,7 @@ double BundleAdjustment::Solver::reprojection_error() {
 
   for( int i = 0; i < Nc; ++i ) {
     for( int j = 0; j < Np; ++j ) {
-      Point2d reproj = ba_reproject( points[j], camera_params[i].t, camera_params[i].rot);
+      Point2d reproj = ba_reproject(points[j], camera_params[i] );
       double ex = captured[i][j].x - reproj.x, ey = captured[i][j].y - reproj.y;
       error += ex*ex + ey*ey;
     }
@@ -168,7 +93,7 @@ void BundleAdjustment::Solver::run_one_step() {
       int nx = i*Np + j, ny = i*Np + j + Np*Nc;
 
       Point2d p = captured[i][j];
-      Point3d q = ba_reproject3d(points[j], camera_params[i].t, camera_params[i].rot);
+      Point3d q = ba_reproject3d(points[j], camera_params[i]);
       target_error[nx] = p.x - q.x/q.z;
       target_error[ny] = p.y - q.y/q.z;
 
@@ -258,22 +183,22 @@ bool BundleAdjustment::Solver::get_should_continue( double error_before, double 
 
 
 // 単体の関数ここから
-Point3d ba_reproject3d( Point3d pt, Point3d cam_t, Point3d cam_rot) {
+inline Point3d ba_reproject3d( Point3d pt, Camera cam) {
   Point3d ret;
-  ret.x = ( pt.x - cam_rot.z * pt.y + cam_rot.y ) / pt.z + cam_t.x;
-  ret.y = ( pt.x * cam_rot.z + pt.y - cam_rot.x ) / pt.z + cam_t.y;
-  ret.z = (-pt.x * cam_rot.y + pt.y * cam_rot.x +1.0 ) / pt.z + cam_t.z;
+  ret.x = ( pt.x - cam.rot.z * pt.y + cam.rot.y ) / pt.z + cam.t.x;
+  ret.y = ( pt.x * cam.rot.z + pt.y - cam.rot.x ) / pt.z + cam.t.y;
+  ret.z = (-pt.x * cam.rot.y + pt.y * cam.rot.x +1.0 ) / pt.z + cam.t.z;
   return ret;
 }
 
-Point2d ba_reproject( Point3d pt, Point3d cam_t, Point3d cam_rot) {
-  Point3d ret = ba_reproject3d(pt, cam_t, cam_rot);
+inline Point2d ba_reproject( Point3d pt, Camera cam) {
+  Point3d ret = ba_reproject3d(pt, cam);
   return Point2d( ret.x / ret.z, ret.y / ret.z );
 }
 
 inline double delta(int i, int j) { return i == j ? 1.0 : 0.0; }
 
-double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k) {
+inline double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k) {
   Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
   if ( k < s.Nc ) // Txでの微分
@@ -305,7 +230,7 @@ double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, i
 
 }
 
-double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k) {
+inline double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k) {
   Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
   if ( k < s.Nc ) // Txでの微分
@@ -338,7 +263,7 @@ double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, i
 }
 
 
-double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k) {
+inline double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k) {
   Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
   if ( k < s.Nc ) // Txでの微分
