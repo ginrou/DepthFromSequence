@@ -359,8 +359,8 @@ struct gemv_static_vector_if<Scalar,Size,Dynamic,true>
   EIGEN_STRONG_INLINE Scalar* data() { return 0; }
 };
 
-template<typename Scalar,int Size,int MaxSize>
-struct gemv_static_vector_if<Scalar,Size,MaxSize,true>
+template<typename Scalar,int Size_,int MaxSize>
+struct gemv_static_vector_if<Scalar,Size_,MaxSize,true>
 {
   #if EIGEN_ALIGN_STATICALLY
   internal::plain_array<Scalar,EIGEN_SIZE_MIN_PREFER_FIXED(Size,MaxSize),0> m_data;
@@ -372,7 +372,7 @@ struct gemv_static_vector_if<Scalar,Size,MaxSize,true>
     ForceAlignment  = internal::packet_traits<Scalar>::Vectorizable,
     PacketSize      = internal::packet_traits<Scalar>::size
   };
-  internal::plain_array<Scalar,EIGEN_SIZE_MIN_PREFER_FIXED(Size,MaxSize)+(ForceAlignment?PacketSize:0),0> m_data;
+  internal::plain_array<Scalar,EIGEN_SIZE_MIN_PREFER_FIXED(Size_,MaxSize)+(ForceAlignment?PacketSize:0),0> m_data;
   EIGEN_STRONG_INLINE Scalar* data() {
     return ForceAlignment
             ? reinterpret_cast<Scalar*>((reinterpret_cast<size_t>(m_data.array) & ~(size_t(15))) + 16)

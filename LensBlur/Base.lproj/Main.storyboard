@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="13C64" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="vXZ-lx-hvc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6154.17" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="vXZ-lx-hvc">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6153.11"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -16,20 +16,61 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wbb-aP-f12">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="436"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XII-Kp-jMO" customClass="TKDPreviewView">
+                                <rect key="frame" x="40" y="124" width="240" height="320"/>
+                                <color key="backgroundColor" red="0.0" green="0.59607843140000005" blue="0.4549019608" alpha="1" colorSpace="deviceRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="240" id="Oh6-Kz-0pY"/>
+                                    <constraint firstAttribute="height" constant="320" id="oG9-Z9-9aH"/>
+                                </constraints>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wRu-Hj-ifL">
+                                <rect key="frame" x="82" y="472" width="33" height="30"/>
+                                <state key="normal" title="Start">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="startButtonTapped:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="kRa-kJ-3o0"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uZS-KR-le1">
+                                <rect key="frame" x="201" y="472" width="33" height="30"/>
+                                <state key="normal" title="Stop">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="stopButtonTapped:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="Up8-h8-t1j"/>
+                                </connections>
+                            </button>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kjK-gl-eEJ">
+                                <rect key="frame" x="0.0" y="0.0" width="240" height="320"/>
+                                <color key="backgroundColor" red="0.91372549020000005" green="0.2784313725" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="320" id="JCF-aa-hXp"/>
+                                    <constraint firstAttribute="width" constant="240" id="ma2-QF-Fce"/>
+                                </constraints>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="centerX" secondItem="XII-Kp-jMO" secondAttribute="centerX" id="3JH-Mb-Ecw"/>
+                            <constraint firstItem="kjK-gl-eEJ" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="8Yz-rT-VtY"/>
+                            <constraint firstItem="wRu-Hj-ifL" firstAttribute="leading" secondItem="XII-Kp-jMO" secondAttribute="leading" constant="42" id="Gbl-Cj-Hf0"/>
+                            <constraint firstItem="wRu-Hj-ifL" firstAttribute="top" secondItem="XII-Kp-jMO" secondAttribute="bottom" constant="28" id="cuc-QQ-kwD"/>
+                            <constraint firstItem="uZS-KR-le1" firstAttribute="trailing" secondItem="XII-Kp-jMO" secondAttribute="trailing" constant="-46" id="dOC-G3-TFX"/>
+                            <constraint firstItem="kjK-gl-eEJ" firstAttribute="top" secondItem="kh9-bI-dsS" secondAttribute="top" id="f0U-V2-6ym"/>
+                            <constraint firstAttribute="centerY" secondItem="XII-Kp-jMO" secondAttribute="centerY" id="kLd-hA-JC7"/>
+                            <constraint firstItem="uZS-KR-le1" firstAttribute="top" secondItem="XII-Kp-jMO" secondAttribute="bottom" constant="28" id="re5-oU-inq"/>
+                        </constraints>
                     </view>
                     <connections>
-                        <outlet property="videoView" destination="kh9-bI-dsS" id="BeW-Ok-8ph"/>
+                        <outlet property="depthmap" destination="kjK-gl-eEJ" id="dra-cx-NsN"/>
+                        <outlet property="previewView" destination="XII-Kp-jMO" id="960-5S-QOF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="-99" y="172"/>
         </scene>
     </scenes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

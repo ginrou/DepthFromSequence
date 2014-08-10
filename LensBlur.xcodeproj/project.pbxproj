@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		548225381997377B00FA5BD0 /* TKDDepthEstimator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 548225371997377B00FA5BD0 /* TKDDepthEstimator.mm */; };
+		5482253B1997401400FA5BD0 /* TKDPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5482253A1997401400FA5BD0 /* TKDPreviewView.m */; };
+		5482254319975D3900FA5BD0 /* eigen in Resources */ = {isa = PBXBuildFile; fileRef = 5482253F19975D3900FA5BD0 /* eigen */; };
+		5482254419975D3900FA5BD0 /* include in Resources */ = {isa = PBXBuildFile; fileRef = 5482254019975D3900FA5BD0 /* include */; };
+		5482254D19975FAA00FA5BD0 /* bundle_adjustment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */; };
+		5482254E19975FAA00FA5BD0 /* feature_tracking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */; };
+		5482254F19975FAA00FA5BD0 /* plane_sweep.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482254C19975FAA00FA5BD0 /* plane_sweep.cpp */; };
+		5482255519975FC700FA5BD0 /* bipartitedensecrf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482255019975FC700FA5BD0 /* bipartitedensecrf.cpp */; };
+		5482255619975FC700FA5BD0 /* densecrf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482255119975FC700FA5BD0 /* densecrf.cpp */; };
+		5482255719975FC700FA5BD0 /* filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482255219975FC700FA5BD0 /* filter.cpp */; };
+		5482255819975FC700FA5BD0 /* permutohedral.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482255319975FC700FA5BD0 /* permutohedral.cpp */; };
+		5482255919975FC700FA5BD0 /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482255419975FC700FA5BD0 /* util.cpp */; };
 		54C1653E19073AFF005E20F8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653D19073AFF005E20F8 /* Foundation.framework */; };
 		54C1654019073AFF005E20F8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653F19073AFF005E20F8 /* CoreGraphics.framework */; };
 		54C1654219073AFF005E20F8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1654119073AFF005E20F8 /* UIKit.framework */; };
@@ -14,7 +26,7 @@
 		54C1654A19073AFF005E20F8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1654919073AFF005E20F8 /* main.m */; };
 		54C1654E19073AFF005E20F8 /* TKDAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */; };
 		54C1655119073AFF005E20F8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 54C1654F19073AFF005E20F8 /* Main.storyboard */; };
-		54C1655419073AFF005E20F8 /* TKDViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 54C1655319073AFF005E20F8 /* TKDViewController.mm */; };
+		54C1655419073AFF005E20F8 /* TKDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1655319073AFF005E20F8 /* TKDViewController.m */; };
 		54C1655619073AFF005E20F8 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 54C1655519073AFF005E20F8 /* Images.xcassets */; };
 		54C1655D19073B00005E20F8 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1655C19073B00005E20F8 /* XCTest.framework */; };
 		54C1655E19073B00005E20F8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653D19073AFF005E20F8 /* Foundation.framework */; };
@@ -36,6 +48,20 @@
 
 /* Begin PBXFileReference section */
 		34823DE6731B465DA94B0273 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		548225361997377B00FA5BD0 /* TKDDepthEstimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDDepthEstimator.h; sourceTree = "<group>"; };
+		548225371997377B00FA5BD0 /* TKDDepthEstimator.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TKDDepthEstimator.mm; sourceTree = "<group>"; };
+		548225391997401400FA5BD0 /* TKDPreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDPreviewView.h; sourceTree = "<group>"; };
+		5482253A1997401400FA5BD0 /* TKDPreviewView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDPreviewView.m; sourceTree = "<group>"; };
+		5482253F19975D3900FA5BD0 /* eigen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = eigen; path = lib/eigen; sourceTree = SOURCE_ROOT; };
+		5482254019975D3900FA5BD0 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = lib/include; sourceTree = SOURCE_ROOT; };
+		5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bundle_adjustment.cpp; path = lib/src/bundle_adjustment.cpp; sourceTree = "<group>"; };
+		5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = feature_tracking.cpp; path = lib/src/feature_tracking.cpp; sourceTree = "<group>"; };
+		5482254C19975FAA00FA5BD0 /* plane_sweep.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = plane_sweep.cpp; path = lib/src/plane_sweep.cpp; sourceTree = "<group>"; };
+		5482255019975FC700FA5BD0 /* bipartitedensecrf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bipartitedensecrf.cpp; path = lib/densecrf/bipartitedensecrf.cpp; sourceTree = "<group>"; };
+		5482255119975FC700FA5BD0 /* densecrf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = densecrf.cpp; path = lib/densecrf/densecrf.cpp; sourceTree = "<group>"; };
+		5482255219975FC700FA5BD0 /* filter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = filter.cpp; path = lib/densecrf/filter.cpp; sourceTree = "<group>"; };
+		5482255319975FC700FA5BD0 /* permutohedral.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = permutohedral.cpp; path = lib/densecrf/permutohedral.cpp; sourceTree = "<group>"; };
+		5482255419975FC700FA5BD0 /* util.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = lib/densecrf/util.cpp; sourceTree = "<group>"; };
 		54C1653A19073AFF005E20F8 /* LensBlur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LensBlur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C1653D19073AFF005E20F8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		54C1653F19073AFF005E20F8 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -48,7 +74,7 @@
 		54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TKDAppDelegate.m; sourceTree = "<group>"; };
 		54C1655019073AFF005E20F8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		54C1655219073AFF005E20F8 /* TKDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TKDViewController.h; sourceTree = "<group>"; };
-		54C1655319073AFF005E20F8 /* TKDViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TKDViewController.mm; sourceTree = "<group>"; };
+		54C1655319073AFF005E20F8 /* TKDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TKDViewController.m; sourceTree = "<group>"; };
 		54C1655519073AFF005E20F8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		54C1655B19073B00005E20F8 /* LensBlurTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LensBlurTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C1655C19073B00005E20F8 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -83,9 +109,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		548225351997370700FA5BD0 /* DepthFromSequence */ = {
+			isa = PBXGroup;
+			children = (
+				5482253F19975D3900FA5BD0 /* eigen */,
+				5482254019975D3900FA5BD0 /* include */,
+				548225361997377B00FA5BD0 /* TKDDepthEstimator.h */,
+				548225371997377B00FA5BD0 /* TKDDepthEstimator.mm */,
+			);
+			name = DepthFromSequence;
+			sourceTree = "<group>";
+		};
 		54C1653119073AFF005E20F8 = {
 			isa = PBXGroup;
 			children = (
+				5482255019975FC700FA5BD0 /* bipartitedensecrf.cpp */,
+				5482255119975FC700FA5BD0 /* densecrf.cpp */,
+				5482255219975FC700FA5BD0 /* filter.cpp */,
+				5482255319975FC700FA5BD0 /* permutohedral.cpp */,
+				5482255419975FC700FA5BD0 /* util.cpp */,
+				5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */,
+				5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */,
+				5482254C19975FAA00FA5BD0 /* plane_sweep.cpp */,
 				54C1654319073AFF005E20F8 /* LensBlur */,
 				54C1656219073B00005E20F8 /* LensBlurTests */,
 				54C1653C19073AFF005E20F8 /* Frameworks */,
@@ -118,11 +163,14 @@
 		54C1654319073AFF005E20F8 /* LensBlur */ = {
 			isa = PBXGroup;
 			children = (
+				548225351997370700FA5BD0 /* DepthFromSequence */,
 				54C1654C19073AFF005E20F8 /* TKDAppDelegate.h */,
 				54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */,
 				54C1654F19073AFF005E20F8 /* Main.storyboard */,
 				54C1655219073AFF005E20F8 /* TKDViewController.h */,
-				54C1655319073AFF005E20F8 /* TKDViewController.mm */,
+				54C1655319073AFF005E20F8 /* TKDViewController.m */,
+				548225391997401400FA5BD0 /* TKDPreviewView.h */,
+				5482253A1997401400FA5BD0 /* TKDPreviewView.m */,
 				54C1655519073AFF005E20F8 /* Images.xcassets */,
 				54C1654419073AFF005E20F8 /* Supporting Files */,
 			);
@@ -237,8 +285,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5482254319975D3900FA5BD0 /* eigen in Resources */,
 				54C1655619073AFF005E20F8 /* Images.xcassets in Resources */,
 				54C1654819073AFF005E20F8 /* InfoPlist.strings in Resources */,
+				5482254419975D3900FA5BD0 /* include in Resources */,
 				54C1655119073AFF005E20F8 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -291,9 +341,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5482255519975FC700FA5BD0 /* bipartitedensecrf.cpp in Sources */,
+				5482255619975FC700FA5BD0 /* densecrf.cpp in Sources */,
+				5482255719975FC700FA5BD0 /* filter.cpp in Sources */,
+				5482255819975FC700FA5BD0 /* permutohedral.cpp in Sources */,
+				5482255919975FC700FA5BD0 /* util.cpp in Sources */,
+				5482254D19975FAA00FA5BD0 /* bundle_adjustment.cpp in Sources */,
+				5482254E19975FAA00FA5BD0 /* feature_tracking.cpp in Sources */,
+				5482254F19975FAA00FA5BD0 /* plane_sweep.cpp in Sources */,
 				54C1654E19073AFF005E20F8 /* TKDAppDelegate.m in Sources */,
+				5482253B1997401400FA5BD0 /* TKDPreviewView.m in Sources */,
 				54C1654A19073AFF005E20F8 /* main.m in Sources */,
-				54C1655419073AFF005E20F8 /* TKDViewController.mm in Sources */,
+				548225381997377B00FA5BD0 /* TKDDepthEstimator.mm in Sources */,
+				54C1655419073AFF005E20F8 /* TKDViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,10 +479,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LensBlur/LensBlur-Prefix.pch";
 				INFOPLIST_FILE = "LensBlur/LensBlur-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/lib/include $(PROJECT_DIR)/lib/eigen";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -436,7 +499,9 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LensBlur/LensBlur-Prefix.pch";
 				INFOPLIST_FILE = "LensBlur/LensBlur-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/lib/include $(PROJECT_DIR)/lib/eigen";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
