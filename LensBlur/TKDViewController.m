@@ -15,6 +15,7 @@
 @interface TKDViewController () <AVCaptureVideoDataOutputSampleBufferDelegate, TKDDepthEstimatorDelegate>
 @property (weak, nonatomic) IBOutlet TKDPreviewView *previewView;
 @property (weak, nonatomic) IBOutlet UIImageView *depthmap;
+@property (atomic, assign) BOOL shouldCapture;
 @property (nonatomic, strong) AVCaptureSession *session;
 @property (nonatomic, strong) AVCaptureDeviceInput *deviceInput;
 @property (nonatomic, strong) AVCaptureVideoDataOutput *videoOutput;
@@ -31,6 +32,8 @@
 
     self.depthEstimator = [TKDDepthEstimator new];
     self.depthEstimator.delegate = self;
+
+    self.shouldCapture = NO;
 
     self.session = [AVCaptureSession new];
     self.previewView.session = self.session;
@@ -62,14 +65,13 @@
         if ([self.session canAddOutput:self.videoOutput]) {
             [self.session addOutput:self.videoOutput];
         }
-
+        [self.session startRunning];
     });
 
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-
 }
 
 
@@ -80,12 +82,22 @@
 }
 
 - (IBAction)startButtonTapped:(id)sender {
-    [self.session startRunning];
+    dispatch_async(self.videoDataQueue, ^{
+        [self.session beginConfiguration];
+        AVCaptureDevice *device = self.deviceInput.device;
+        [device lockForConfiguration:nil];
+        [device setFocusMode:AVCaptureFocusModeLocked];
+        [device unlockForConfiguration];
+        [self.session commitConfiguration];
+        self.shouldCapture = YES;
+    });
 }
 
 - (IBAction)stopButtonTapped:(id)sender {
-    [self.session stopRunning];
-    [self.depthEstimator runEstimation];
+    dispatch_async(self.videoDataQueue, ^{
+        self.shouldCapture = NO;
+        [self.depthEstimator runEstimation];
+    });
 }
 
 
@@ -100,7 +112,9 @@
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
-    [self.depthEstimator addImage:sampleBuffer];
+    if (self.shouldCapture) {
+        [self.depthEstimator addImage:sampleBuffer];
+    }
 }
 
 - (void)depthEstimator:(UIImage *)estimatedDepthMap

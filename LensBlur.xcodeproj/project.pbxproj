@@ -54,14 +54,14 @@
 		5482253A1997401400FA5BD0 /* TKDPreviewView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDPreviewView.m; sourceTree = "<group>"; };
 		5482253F19975D3900FA5BD0 /* eigen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = eigen; path = lib/eigen; sourceTree = SOURCE_ROOT; };
 		5482254019975D3900FA5BD0 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = lib/include; sourceTree = SOURCE_ROOT; };
-		5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bundle_adjustment.cpp; path = lib/src/bundle_adjustment.cpp; sourceTree = "<group>"; };
-		5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = feature_tracking.cpp; path = lib/src/feature_tracking.cpp; sourceTree = "<group>"; };
-		5482254C19975FAA00FA5BD0 /* plane_sweep.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = plane_sweep.cpp; path = lib/src/plane_sweep.cpp; sourceTree = "<group>"; };
-		5482255019975FC700FA5BD0 /* bipartitedensecrf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bipartitedensecrf.cpp; path = lib/densecrf/bipartitedensecrf.cpp; sourceTree = "<group>"; };
-		5482255119975FC700FA5BD0 /* densecrf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = densecrf.cpp; path = lib/densecrf/densecrf.cpp; sourceTree = "<group>"; };
-		5482255219975FC700FA5BD0 /* filter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = filter.cpp; path = lib/densecrf/filter.cpp; sourceTree = "<group>"; };
-		5482255319975FC700FA5BD0 /* permutohedral.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = permutohedral.cpp; path = lib/densecrf/permutohedral.cpp; sourceTree = "<group>"; };
-		5482255419975FC700FA5BD0 /* util.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = lib/densecrf/util.cpp; sourceTree = "<group>"; };
+		5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bundle_adjustment.cpp; path = ../lib/src/bundle_adjustment.cpp; sourceTree = "<group>"; };
+		5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = feature_tracking.cpp; path = ../lib/src/feature_tracking.cpp; sourceTree = "<group>"; };
+		5482254C19975FAA00FA5BD0 /* plane_sweep.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = plane_sweep.cpp; path = ../lib/src/plane_sweep.cpp; sourceTree = "<group>"; };
+		5482255019975FC700FA5BD0 /* bipartitedensecrf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bipartitedensecrf.cpp; path = ../lib/densecrf/bipartitedensecrf.cpp; sourceTree = "<group>"; };
+		5482255119975FC700FA5BD0 /* densecrf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = densecrf.cpp; path = ../lib/densecrf/densecrf.cpp; sourceTree = "<group>"; };
+		5482255219975FC700FA5BD0 /* filter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = filter.cpp; path = ../lib/densecrf/filter.cpp; sourceTree = "<group>"; };
+		5482255319975FC700FA5BD0 /* permutohedral.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = permutohedral.cpp; path = ../lib/densecrf/permutohedral.cpp; sourceTree = "<group>"; };
+		5482255419975FC700FA5BD0 /* util.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = ../lib/densecrf/util.cpp; sourceTree = "<group>"; };
 		54C1653A19073AFF005E20F8 /* LensBlur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LensBlur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C1653D19073AFF005E20F8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		54C1653F19073AFF005E20F8 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -112,6 +112,7 @@
 		548225351997370700FA5BD0 /* DepthFromSequence */ = {
 			isa = PBXGroup;
 			children = (
+				9A11A57A19976DF9007A1CB6 /* src */,
 				5482253F19975D3900FA5BD0 /* eigen */,
 				5482254019975D3900FA5BD0 /* include */,
 				548225361997377B00FA5BD0 /* TKDDepthEstimator.h */,
@@ -123,14 +124,6 @@
 		54C1653119073AFF005E20F8 = {
 			isa = PBXGroup;
 			children = (
-				5482255019975FC700FA5BD0 /* bipartitedensecrf.cpp */,
-				5482255119975FC700FA5BD0 /* densecrf.cpp */,
-				5482255219975FC700FA5BD0 /* filter.cpp */,
-				5482255319975FC700FA5BD0 /* permutohedral.cpp */,
-				5482255419975FC700FA5BD0 /* util.cpp */,
-				5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */,
-				5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */,
-				5482254C19975FAA00FA5BD0 /* plane_sweep.cpp */,
 				54C1654319073AFF005E20F8 /* LensBlur */,
 				54C1656219073B00005E20F8 /* LensBlurTests */,
 				54C1653C19073AFF005E20F8 /* Frameworks */,
@@ -204,6 +197,21 @@
 				54C1656519073B00005E20F8 /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		9A11A57A19976DF9007A1CB6 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				5482255019975FC700FA5BD0 /* bipartitedensecrf.cpp */,
+				5482255119975FC700FA5BD0 /* densecrf.cpp */,
+				5482255219975FC700FA5BD0 /* filter.cpp */,
+				5482255319975FC700FA5BD0 /* permutohedral.cpp */,
+				5482255419975FC700FA5BD0 /* util.cpp */,
+				5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */,
+				5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */,
+				5482254C19975FAA00FA5BD0 /* plane_sweep.cpp */,
+			);
+			name = src;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

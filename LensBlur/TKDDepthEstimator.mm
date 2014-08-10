@@ -53,11 +53,42 @@ using namespace cv;
     cv::Rect rect(0,0, 480, 480);
     Mat3b cropped = mat3c(rect).clone();
 
-
     //End processing
     CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
 
     return cropped;
+}
+
++ (NSInteger)seqNum
+{
+    static NSInteger num = -1;
+    if (num == -1) {
+        num = [[NSUserDefaults standardUserDefaults] integerForKey:@"seqNum"];
+        [[NSUserDefaults standardUserDefaults] setInteger:num+1 forKey:@"seqNum"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+    return num;
+}
+
+- (void)saveSampleBuffer:(CMSampleBufferRef)sampleBuffer name:(NSString *)filename {
+    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+
+    CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
+
+    //Processing here
+    int bufferWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+    int bufferHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
+    unsigned char *pixel = (unsigned char *)CVPixelBufferGetBaseAddress(pixelBuffer);
+
+    // put buffer in open cv, no memory copied
+    Mat4b mat = cv::Mat(bufferHeight,bufferWidth,CV_8UC4,pixel);
+    Mat3b mat3c(bufferHeight, bufferWidth);
+    cvtColor(mat, mat3c, CV_BGRA2RGB);
+
+    UIImage *image = MatToUIImage(mat3c);
+    NSData *jpeg = UIImageJPEGRepresentation(image, 1.0);
+    [jpeg writeToFile:filename atomically:NO];
+
 }
 
 - (void)addImage:(CMSampleBufferRef)sampleBuffer {
@@ -71,6 +102,11 @@ using namespace cv;
     dispatch_async(_queue, ^{
         full_color_images->push_back(new_iamge);
     });
+
+    NSString *docDir = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *filename = [NSString stringWithFormat:@"%02d-%02d.jpg", (int)[[self class] seqNum], (int)full_color_images->size()];
+    NSString *filepath = [docDir stringByAppendingPathComponent:filename];
+    [self saveSampleBuffer:sampleBuffer name:filepath];
 
 }
 
@@ -88,13 +124,19 @@ using namespace cv;
     }
 
     FeatureTracker tracker(gray_images);
+    cout << tracker.images.size() << endl;
     tracker.track();
-    vector<vector<Point2d>> track_points = tracker.pickup_stable_points();
+    vector< vector<Point2d> > track_points = tracker.pickup_stable_points();
 
     NSLog(@"tracking complete");
+    for (int i = 0; i < track_points.size(); ++i) {
+        for (int j = 0; j < track_points[i].size(); ++j) {
+            cout << track_points[i][j] << endl;
+        }
+    }
 
     BundleAdjustment::Solver ba_solver(track_points);
-    ba_solver.init_with_first_image(track_points, gray_images[0].size(), 7500, 55);
+    ba_solver.init_with_first_image(track_points, gray_images[0].size(), 1000, 55);
 
     while (ba_solver.should_continue) {
         ba_solver.run_one_step();
