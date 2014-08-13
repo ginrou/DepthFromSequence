@@ -3,15 +3,17 @@
 int main(int argc, char* argv[]) {
 
   // 画像をロード
+  FeatureTracker tracker;
   vector<Mat> input_images;
+  cout << "Feature Tracking, tracking points" << endl;
   for( int i = 1; i < argc-1; ++i ) {
     input_images.push_back( imread(argv[i], CV_8UC1) );
+    tracker.add_image(input_images.back());
+    cout << tracker.count_track_points() << endl;
   }
+  cout << endl;
 
-  // 特徴点追跡
-  FeatureTracker feature_tracker(input_images);
-  feature_tracker.track();
-  vector< vector<Point2d> > track_points = feature_tracker.pickup_stable_points();
+  vector< vector<Point2d> > track_points = tracker.pickup_stable_points();
 
   // Solver を初期化
   BundleAdjustment::Solver solver( track_points );

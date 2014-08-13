@@ -19,11 +19,16 @@ public:
 
   FeatureTracker(std::vector<cv::Mat> images )
     :images(images)
-  {
+  {}
+
+  FeatureTracker() {
     sub_pix_win_size = cv::Size(10, 10);
     term_crit = cv::TermCriteria( cv::TermCriteria::COUNT|cv::TermCriteria::EPS,20,0.03 );
-    MAX_CORNERS = 200;
+    MAX_CORNERS = 500;
   }
+
+  void add_image(cv::Mat image);
+  int count_track_points();
 
   vector< vector<cv::Point2d> > pickup_stable_points();
 
