@@ -363,7 +363,7 @@ template<typename Scalar,int Size_,int MaxSize>
 struct gemv_static_vector_if<Scalar,Size_,MaxSize,true>
 {
   #if EIGEN_ALIGN_STATICALLY
-  internal::plain_array<Scalar,EIGEN_SIZE_MIN_PREFER_FIXED(Size,MaxSize),0> m_data;
+  internal::plain_array<Scalar,EIGEN_SIZE_MIN_PREFER_FIXED(Size_,MaxSize),0> m_data;
   EIGEN_STRONG_INLINE Scalar* data() { return m_data.array; }
   #else
   // Some architectures cannot align on the stack,
