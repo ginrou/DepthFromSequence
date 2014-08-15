@@ -16,6 +16,7 @@ public:
 
     // ouput
     Mat1b _depth_smooth; // depth map smooth by dence_crf
+    Mat1b _depth_raw; // raw depth map
 
     // for used in inside
     int _N; // number of images,
@@ -32,6 +33,7 @@ public:
 
             // allocate
             _depth_smooth = Mat(img_size, CV_8UC1);
+            _depth_raw = Mat(img_size, CV_8UC1);
 
             // compute all homography matrix
             Camera ref_cam = cameras[0];

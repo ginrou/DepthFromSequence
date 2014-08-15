@@ -47,6 +47,8 @@ float *PlaneSweep::compute_unary_energy() {
         for( int w = 0; w < W; ++w ) {
 
             double ref_val = ref_img.at<uchar>(h,w);
+            int min_idx;
+            double min_val = DBL_MAX;
 
             for( int d = 0; d < M; ++d ) {
 
@@ -63,7 +65,12 @@ float *PlaneSweep::compute_unary_energy() {
 
                 }// n
                 unary[h*W*M + w*M +d] = log(err);
+                if ( err < min_val ) {
+                    min_val = err;
+                    min_idx = d;
+                }
             }// d
+            _depth_raw.at<uchar>(h,w) = min_idx;
         }//w
     }//h
 

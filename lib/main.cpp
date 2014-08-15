@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
         cout << tracker.count_track_points() << " " ;
     }
     cout << endl;
-    return 0;
+
     vector< vector<Point2d> > track_points = tracker.pickup_stable_points();
 
     // Solver を初期化
@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
 
     // output
     imwrite(argv[argc-1], ps->_depth_smooth);
+    imwrite("raw_depth.png", ps->_depth_raw);
 
     delete ps;
     return 0;
