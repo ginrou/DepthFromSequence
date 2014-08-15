@@ -10,6 +10,9 @@ typedef struct {
     cv::Point3d rot; // rotation of camera
 } Camera;
 
+// デバッグ用関数
+void dump_camera(Camera camera);
+
 #include "feature_tracking.hpp"
 #include "bundle_adjustment.hpp"
 #include "plane_sweep.hpp"

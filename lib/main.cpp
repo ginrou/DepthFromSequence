@@ -19,15 +19,13 @@ int main(int argc, char* argv[]) {
     BundleAdjustment::Solver solver( track_points );
     solver.init_with_first_image( track_points, cv::Size(480, 480), 7500.0, 55.0);
 
-    for(int j = 0; j < solver.points.size(); ++j ) {
-        cout << solver.points[j] << endl;
-    }
-
     // bundle adjustment を実行
     while ( solver.should_continue ) {
         solver.run_one_step();
         printf("reprojection error = %e\n", solver.reprojection_error());
     }
+
+    for(int j = 0; j < solver.Nc; ++j ) dump_camera(solver.camera_params[j]);
 
     // plane sweep の準備
     vector<double> depths;
