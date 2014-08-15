@@ -6,7 +6,7 @@
 
 inline double drand() { return (double)rand()/RAND_MAX; }
 
-std::vector<Camera> initial_camera_params(int N) {
+std::vector<Camera> initial_camera_params(int N, cv::Size img_size, double focal_length) {
     std::vector<Camera> ret(N);
 
     std::srand(std::time(0));
@@ -19,6 +19,8 @@ std::vector<Camera> initial_camera_params(int N) {
         ret[i].rot.x = min_rot.x + (max_rot.x - min_rot.x) * drand();
         ret[i].rot.y = min_rot.y + (max_rot.y - min_rot.y) * drand();
         ret[i].rot.z = min_rot.z + (max_rot.z - min_rot.z) * drand();
+        ret[i].img_size = img_size;
+        ret[i].f = focal_length;
     }
 
     // set first camera to the origin of world cordinate
@@ -32,7 +34,8 @@ std::vector<Camera> initial_camera_params(int N) {
 }
 
 void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > captured_in,
-                                                      Size img_size,
+                                                      cv::Size img_size,
+                                                      double focal_length,
                                                       double mean_depth,
                                                       double fov
 )
@@ -42,21 +45,21 @@ void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > 
 
     // 1. initialize points
     for( int j = 0; j < Np; ++j ) {
-        points[j].x = (2.0 * captured_in[0][j].x - W ) * tan_fov / W;
-        points[j].y = (2.0 * captured_in[0][j].y - H ) * tan_fov / H;
+        points[j].x = (2.0 * captured_in[0][j].x - W ) * tan_fov / focal_length;
+        points[j].y = (2.0 * captured_in[0][j].y - H ) * tan_fov / focal_length;
         points[j].z = (1.0 + 0.01 * drand() ) / mean_depth;
     }
 
     // 2. initialize captured
     for( int i = 0; i < Nc; ++i ) {
         for( int j = 0; j < Np; ++j ) {
-            captured[i][j].x = (2.0 * captured_in[i][j].x - W ) * tan_fov / W;
-            captured[i][j].y = (2.0 * captured_in[i][j].y - H ) * tan_fov / H;
+            captured[i][j].x = (2.0 * captured_in[i][j].x - W ) * tan_fov / focal_length;
+            captured[i][j].y = (2.0 * captured_in[i][j].y - H ) * tan_fov / focal_length;
         }
     }
 
     // 3. initialize camera params
-    camera_params = initial_camera_params(Nc);
+    camera_params = initial_camera_params(Nc, img_size, focal_length);
 }
 
 double BundleAdjustment::Solver::reprojection_error() {

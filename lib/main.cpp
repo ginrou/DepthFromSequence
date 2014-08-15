@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 
     // Solver を初期化
     BundleAdjustment::Solver solver( track_points );
-    solver.init_with_first_image( track_points, cv::Size(480, 480), 7500.0, 55.0);
+    solver.init_with_first_image( track_points, cv::Size(480, 480), 480, 7500.0, 55.0);
 
     // bundle adjustment を実行
     while ( solver.should_continue ) {

@@ -49,7 +49,7 @@ public:
             MAX_ITTR = 45;
         }
 
-    void init_with_first_image( vector< vector<Point2d> > captured_in, cv::Size img_size, double mean_depth, double fov);
+    void init_with_first_image( vector< vector<Point2d> > captured_in, cv::Size img_size, double focal_length, double mean_depth, double fov);
     double reprojection_error();
     void run_one_step();
     bool get_should_continue( double error_before, double error_after, double update_norm );

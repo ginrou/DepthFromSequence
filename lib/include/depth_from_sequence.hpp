@@ -8,6 +8,8 @@ using namespace cv;
 typedef struct {
     cv::Point3d t; // translaction of camera
     cv::Point3d rot; // rotation of camera
+    cv::Size img_size;
+    double f; // focal length
 } Camera;
 
 // デバッグ用関数
