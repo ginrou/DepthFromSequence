@@ -24,7 +24,7 @@ public:
   FeatureTracker() {
     sub_pix_win_size = cv::Size(10, 10);
     term_crit = cv::TermCriteria( cv::TermCriteria::COUNT|cv::TermCriteria::EPS,20,0.03 );
-    MAX_CORNERS = 500;
+    MAX_CORNERS = 200;
   }
 
   void add_image(cv::Mat image);

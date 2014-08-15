@@ -27,7 +27,7 @@ void FeatureTracker::add_image(cv::Mat image) {
     std::vector<Point2f> prev_point = all_track_points.back();
     std::vector<Point2f> new_points = track_for_image(images.back(), image, prev_point, status);
     all_track_points.push_back(new_points);
-
+    images.push_back(image);
     for(int j = 0; j < status.size(); ++j )
       total_status[j] &= status[j];
   }
@@ -43,7 +43,7 @@ int FeatureTracker::count_track_points() {
 
 void FeatureTracker::initialize_tracker(cv::Mat base_image) {
     vector<Point2f> points;
-    cv::goodFeaturesToTrack(base_image, points, MAX_CORNERS, 0.001, 10, noArray(), 5, true, 0.04);
+    cv::goodFeaturesToTrack(base_image, points, MAX_CORNERS, 0.075, 10, noArray(), 5, true, 0.04);
     cv::cornerSubPix(base_image, points, sub_pix_win_size, cv::Size(-1,-1), term_crit);
     all_track_points.push_back(points);
     total_status = std::vector<uchar>( points.size(), 1 );
