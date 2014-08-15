@@ -6,8 +6,8 @@ using namespace cv;
 
 // extrinsic camera parameter
 typedef struct {
-  cv::Point3d t; // translaction of camera
-  cv::Point3d rot; // rotation of camera
+    cv::Point3d t; // translaction of camera
+    cv::Point3d rot; // rotation of camera
 } Camera;
 
 #include "feature_tracking.hpp"

@@ -19,26 +19,26 @@ void FeatureTracker::track() {
 }
 
 void FeatureTracker::add_image(cv::Mat image) {
-  if ( images.size() == 0 ) {
-    initialize_tracker(image);
-    images.push_back(image);
-  } else {
-    std::vector<uchar> status;
-    std::vector<Point2f> prev_point = all_track_points.back();
-    std::vector<Point2f> new_points = track_for_image(images.back(), image, prev_point, status);
-    all_track_points.push_back(new_points);
-    images.push_back(image);
-    for(int j = 0; j < status.size(); ++j )
-      total_status[j] &= status[j];
-  }
+    if ( images.size() == 0 ) {
+        initialize_tracker(image);
+        images.push_back(image);
+    } else {
+        std::vector<uchar> status;
+        std::vector<Point2f> prev_point = all_track_points.back();
+        std::vector<Point2f> new_points = track_for_image(images.back(), image, prev_point, status);
+        all_track_points.push_back(new_points);
+        images.push_back(image);
+        for(int j = 0; j < status.size(); ++j )
+            total_status[j] &= status[j];
+    }
 }
 
 int FeatureTracker::count_track_points() {
-  int count = 0;
-  for(int j = 0; j < total_status.size(); ++j ) {
-    if(total_status[j]) count++;
-  }
-  return count;
+    int count = 0;
+    for(int j = 0; j < total_status.size(); ++j ) {
+        if(total_status[j]) count++;
+    }
+    return count;
 }
 
 void FeatureTracker::initialize_tracker(cv::Mat base_image) {
@@ -50,9 +50,9 @@ void FeatureTracker::initialize_tracker(cv::Mat base_image) {
 }
 
 std::vector<Point2f> FeatureTracker::track_for_image( cv::Mat prev_image,
-                                                     cv::Mat next_image,
-                                                     std::vector<Point2f> prev_point,
-                                                     std::vector<uchar> &status )
+                                                      cv::Mat next_image,
+                                                      std::vector<Point2f> prev_point,
+                                                      std::vector<uchar> &status )
 {
     std::vector<float> error;
     std::vector<Point2f> next_points;
@@ -102,21 +102,21 @@ void FeatureTracker::draw_correspondences(char prefix[]) {
             pt2.x += img_size.width;
 
             cv::Scalar color(255,0,0,0);
-            
+
             int radius = 3.0;
             cv::circle(img, pt1, radius, color, -1, 8, 0 );
             cv::circle(img, pt2, radius, color, -1, 8, 0 );
-            
+
             cv::line(img, pt1, pt2, color );
-            
+
         }
-        
+
         // save
         char filename[256];
         sprintf(filename, "%s%02d-%02d.png", prefix, i-1, i );
         imwrite(filename, img);
-        
+
         cout << filename << " written" << endl;
-        
+
     }
 }

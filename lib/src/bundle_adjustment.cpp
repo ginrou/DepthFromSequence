@@ -32,10 +32,10 @@ std::vector<Camera> initial_camera_params(int N) {
 }
 
 void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > captured_in,
-                                                     Size img_size,
-                                                     double mean_depth,
-                                                     double fov
-                                                     )
+                                                      Size img_size,
+                                                      double mean_depth,
+                                                      double fov
+)
 {
     double W = img_size.width, H = img_size.height;
     double tan_fov = tan(fov/(2.0*M_PI));
@@ -256,41 +256,41 @@ inline double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, i
 
     else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
         return delta(j, k - 6*s.Nc - s.Np) / pt.z;
-    
+
     else // point_zでの微分
         return -delta(j, k - 6*s.Nc - 2*s.Np) * ( cam_rot.z*pt.x + pt.y - cam_rot.x) / (pt.z*pt.z);
-    
+
 }
 
 
 inline double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k) {
     Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
-    
+
     if ( k < s.Nc ) // Txでの微分
         return 0;
-    
+
     else if ( k < 2*s.Nc ) // Tyでの微分
         return 0;
-    
+
     else if ( k < 3*s.Nc ) // Tzでの微分
         return delta(i, k - 2*s.Nc);
-    
+
     else if ( k < 4*s.Nc ) // pose_xでの微分
         return delta(i, k - 3*s.Nc) * pt.y / pt.z;
-    
+
     else if ( k < 5*s.Nc ) // pose_yでの微分
         return -delta(i, k - 4*s.Nc) * pt.x / pt.z;
-    
+
     else if ( k < 6*s.Nc ) // pose_zでの微分
         return 0;
-    
+
     else if ( k < 6*s.Nc + s.Np ) // point_xでの微分
         return - delta(j, k - 6*s.Nc) * cam_rot.y / pt.z;
-    
+
     else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
         return delta(j, k - 6*s.Nc - s.Np) * cam_rot.x / pt.z;
-    
+
     else // point_zでの微分
         return -delta(j, k - 6*s.Nc - 2*s.Np) * ( -cam_rot.y*pt.x + cam_rot.x*pt.y + 1.0 ) / (pt.z*pt.z);
-    
+
 }
