@@ -9,10 +9,10 @@ int main(int argc, char* argv[]) {
   for( int i = 1; i < argc-1; ++i ) {
     input_images.push_back( imread(argv[i], CV_8UC1) );
     tracker.add_image(input_images.back());
-    cout << tracker.count_track_points() << endl;
+    cout << tracker.count_track_points() << " " ;
   }
   cout << endl;
-
+  return 0;
   vector< vector<Point2d> > track_points = tracker.pickup_stable_points();
 
   // Solver を初期化

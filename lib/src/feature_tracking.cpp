@@ -43,7 +43,7 @@ int FeatureTracker::count_track_points() {
 
 void FeatureTracker::initialize_tracker(cv::Mat base_image) {
     vector<Point2f> points;
-    cv::goodFeaturesToTrack(base_image, points, MAX_CORNERS, 0.075, 10, noArray(), 5, true, 0.04);
+    cv::goodFeaturesToTrack(base_image, points, MAX_CORNERS, 0.0075, 10, noArray(), 5, true, 0.04);
     cv::cornerSubPix(base_image, points, sub_pix_win_size, cv::Size(-1,-1), term_crit);
     all_track_points.push_back(points);
     total_status = std::vector<uchar>( points.size(), 1 );
