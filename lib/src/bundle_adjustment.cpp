@@ -62,6 +62,75 @@ void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > 
     camera_params = initial_camera_params(Nc, img_size, focal_length);
 }
 
+void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
+                                          double min_depth,
+                                          double fov,
+                                          cv::Size img_size,
+                                          double focal_length)
+{
+    double W = img_size.width, H = img_size.height;
+    double tan_fov = tan(fov/(2.0*M_PI));
+
+    // captured : camera coordinate -> world coordinate
+    for( int i = 0; i < Nc; ++i ) {
+        for( int j = 0; j < Np; ++j ) {
+            captured[i][j].x = (2.0 * captured_in[i][j].x - W ) * tan_fov / focal_length;
+            captured[i][j].y = (2.0 * captured_in[i][j].y - H ) * tan_fov / focal_length;
+        }
+    }
+
+    // 各特徴点の平均移動量を計算
+    vector<double> pt_avg(Np, 0);
+    double pt_max = 0.0;
+    for ( int j = 0; j < Np; ++j ) {
+        for ( int i = 0; i < Nc; ++i ) {
+            double x = captured_in[i][j].x, y = captured_in[i][j].y;
+            pt_avg[j] +=  sqrt(x*x + y*y)/ (double)Np;
+        }
+
+        if ( pt_max < pt_avg[j] ) pt_max = pt_avg[j];
+    }
+
+    double a = pt_max * min_depth; // 最も近い点と最も移動量が大きい点を対応付ける
+
+    double z_avg = 0.0;
+    for ( int j = 0; j < Np; ++j ) {
+        points[j].x = (2.0 * captured_in[0][j].x - W ) * tan_fov / focal_length;
+        points[j].y = (2.0 * captured_in[0][j].y - H ) * tan_fov / focal_length;
+        points[j].z = a / pt_avg[j]; // 奥行きは最も近い点の逆数に比例する
+        z_avg += points[j].z/(double)Np;
+    }
+
+    // カメラの外部パラメータなどの初期化
+    Camera c;
+    c.t = Point3d(0,0,0); c.rot = Point3d(0,0,0);
+    c.f = focal_length, c.img_size = img_size;
+    camera_params[0] = c;
+
+    for ( int i = 1; i < Nc; ++i ) {
+        Point2d trans_avg(0,0);
+        for ( int j = 0; j < Np; ++j ) {
+            trans_avg.x += (captured[0][j].x - captured[i][j].x)/(double)Np;
+            trans_avg.y += (captured[0][j].y - captured[i][j].y)/(double)Np;
+        }
+        Camera c;
+        c.t.x = -z_avg * trans_avg.x;
+        c.t.y = -z_avg * trans_avg.y;
+        c.t.z = 0.0;
+        c.rot = Point3d(0,0,0);
+        c.img_size = img_size;
+        c.f = focal_length;
+        camera_params[i] = c;
+
+        camera_params[i].t.x /= fabs(0.1*camera_params[1].t.x); // 一つ目のカメラの平行移動を10に正規化
+    }
+
+    // zでパラメータ化しているので戻す
+    for ( int j = 0; j < Np; ++j ) points[j].z = 1.0/points[j].z;
+
+}
+
+
 double BundleAdjustment::Solver::reprojection_error() {
     double error = 0.0;
 
@@ -78,14 +147,11 @@ double BundleAdjustment::Solver::reprojection_error() {
 
 void BundleAdjustment::Solver::run_one_step() {
     ittr++;
-    printf("ittr : %d\n", ittr);
 
     // 領域確保
     int K = this->K -7;
     Eigen::MatrixXd Jacobian = Eigen::MatrixXd::Zero(2*Nc*Np, K);
     Eigen::VectorXd target_error = Eigen::VectorXd::Zero(2*Nc*Np);
-
-    printf("K = %d -> %d\n", (int)this->K, K);
 
     // 更新前の再投影エラー
     double error_before = this->reprojection_error();
@@ -122,11 +188,8 @@ void BundleAdjustment::Solver::run_one_step() {
     }
 
     // 更新方向の計算
-    cout << "get update direction" << endl;
     Eigen::VectorXd gradient = -Jacobian.transpose() * target_error;
     Eigen::MatrixXd Hessian = Jacobian.transpose() * Jacobian + this->c * Eigen::MatrixXd::Identity(K, K);
-
-    //cout << "|H| = " << Hessian.determinant() << endl;
 
     Eigen::VectorXd sol = Hessian.fullPivLu().solve(gradient);
     Eigen::VectorXd update = Eigen::VectorXd::Zero(this->K);
@@ -164,21 +227,16 @@ void BundleAdjustment::Solver::run_one_step() {
 
     // 正則化パラメータは更新しないほうが収束が早い
     error_before > error_after ? this->c *= 0.1 : this->c *= 10.0;
+    update_norm = update.norm();
 
-    this->should_continue = get_should_continue( error_before, error_after, update.norm());
+    this->should_continue = get_should_continue( error_before, error_after, update_norm);
 
-    printf("next c = %e\n\n\n", this->c);
 }
 
 bool BundleAdjustment::Solver::get_should_continue( double error_before, double error_after, double update_norm ) {
-    printf("error_before = %e\n", error_before);
-    printf("error_after = %e\n", error_after);
-    printf("update_norm = %e\n", update_norm);
-    printf("error_per_pixel = %e\n", error_after / (double)(Np*Nc));
-    printf("error diff = %e\n", fabsf(error_after - error_before));
 
-    if ( update_norm < 0.0001 ) return false;
-    if ( fabsf(error_after - error_before) < 1.0e-3 ) return false;
+    if ( update_norm < 1.0e-5 ) return false;
+    if ( fabsf(error_after - error_before) < 1.0e-8 ) return false;
     if ( ittr >= MAX_ITTR ) return false;
 
     return true;

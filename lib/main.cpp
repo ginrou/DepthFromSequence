@@ -17,15 +17,21 @@ int main(int argc, char* argv[]) {
 
     // Solver を初期化
     BundleAdjustment::Solver solver( track_points );
-    solver.init_with_first_image( track_points, cv::Size(480, 480), 480, 7500.0, 55.0);
+    double min_depth = 500.0; // [mm]
+    double fov = 55.0; // [deg]
+    cv::Size img_size = input_images.front().size();
+    double f = MIN(img_size.width, img_size.height);
+    //solver.init_with_first_image(track_points, img_size, 480, 7500, 55);
+    solver.initialize(track_points, min_depth, fov, img_size, f);
+    print_params(solver);
 
     // bundle adjustment を実行
     while ( solver.should_continue ) {
         solver.run_one_step();
-        printf("reprojection error = %e\n", solver.reprojection_error());
+        print_ittr_status(solver);
     }
 
-    for(int j = 0; j < solver.Nc; ++j ) dump_camera(solver.camera_params[j]);
+    print_params(solver);
 
     // plane sweep の準備
     vector<double> depths;
@@ -36,11 +42,15 @@ int main(int argc, char* argv[]) {
 
     // 読み込みがカラー画像になるようにする
     Mat3b color_image(input_images[0].size(), CV_8UC3);
-    for( int h = 0; h < color_image.rows; ++h ) {
-        for( int w = 0; w < color_image.cols; ++w ) {
-            Vec3b intenisty(input_images[0].at<unsigned char>(h,w));
-            color_image.at<Vec3b>(h,w) = intenisty;
+    if ( true ) {
+        for( int h = 0; h < color_image.rows; ++h ) {
+            for( int w = 0; w < color_image.cols; ++w ) {
+                Vec3b intenisty(input_images[0].at<unsigned char>(h,w));
+                color_image.at<Vec3b>(h,w) = intenisty;
+            }
         }
+    } else {
+        color_image = imread(argv[1], CV_8UC3);
     }
 
     ps->sweep(color_image);
