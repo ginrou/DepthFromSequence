@@ -59,6 +59,8 @@ public:
     void run_one_step();
     bool get_should_continue( double error_before, double error_after, double update_norm );
 
+    vector<double> depth_variation(int resolution);
+
 }; // class Solver
 } // namespace BundleAdjustment
 

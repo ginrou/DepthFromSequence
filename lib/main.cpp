@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
     double fov = 55.0; // [deg]
     cv::Size img_size = input_images.front().size();
     double f = MIN(img_size.width, img_size.height);
-    //solver.init_with_first_image(track_points, img_size, 480, 7500, 55);
     solver.initialize(track_points, min_depth, fov, img_size, f);
     print_params(solver);
 
@@ -34,8 +33,10 @@ int main(int argc, char* argv[]) {
     print_params(solver);
 
     // plane sweep の準備
-    vector<double> depths;
-    for( int i = 1; i <= 20; ++i ) depths.push_back( 1000.0 - 40 * i );
+    vector<double> depths = solver.depth_variation(32);
+
+    for(int i = 0; i < depths.size(); ++i )
+        cout << depths[i] << endl;
 
     // plane sweep + dencecrf で奥行きを求める
     PlaneSweep *ps = new PlaneSweep(input_images, solver.camera_params, depths);

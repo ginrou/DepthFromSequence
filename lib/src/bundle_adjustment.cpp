@@ -242,6 +242,24 @@ bool BundleAdjustment::Solver::get_should_continue( double error_before, double 
     return true;
 }
 
+vector<double> BundleAdjustment::Solver::depth_variation(int resolution) {
+    double min = DBL_MAX, max = 0.0;
+    for ( int j = 0; j < Np; ++j ) {
+        double z = 1.0/points[j].z;
+        if ( z < min ) min = z;
+        if ( z > max ) max = z;
+    }
+    min /= 3.0;
+    max *= 3.0;
+
+    vector<double> ret(resolution);
+    double step = (max-min)/(double)(resolution-1);
+
+    for ( int i = 0; i < resolution; ++i ) ret[i] = step * i + min;
+
+    return ret;
+}
+
 
 // 単体の関数ここから
 inline Point3d ba_reproject3d( Point3d pt, Camera cam) {
