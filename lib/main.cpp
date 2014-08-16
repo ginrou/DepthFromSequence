@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
     vector<Mat> input_images;
     cout << "Feature Tracking, tracking points" << endl;
     for( int i = 1; i < argc-1; ++i ) {
-        input_images.push_back( imread(argv[i], CV_8UC1) );
+        input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
         tracker.add_image(input_images.back());
         cout << tracker.count_track_points() << " " ;
     }
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 
     // 読み込みがカラー画像になるようにする
     Mat3b color_image(input_images[0].size(), CV_8UC3);
-    if ( true ) {
+    if ( false ) {
         for( int h = 0; h < color_image.rows; ++h ) {
             for( int w = 0; w < color_image.cols; ++w ) {
                 Vec3b intenisty(input_images[0].at<unsigned char>(h,w));
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
             }
         }
     } else {
-        color_image = imread(argv[1], CV_8UC3);
+        color_image = imread(argv[1],  CV_LOAD_IMAGE_COLOR);
     }
 
     ps->sweep(color_image);
