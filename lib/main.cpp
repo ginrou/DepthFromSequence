@@ -4,11 +4,11 @@ int main(int argc, char* argv[]) {
 
     // 画像をロード
     FeatureTracker tracker;
-    vector<Mat> input_images;
+    vector<Mat3b> input_images;
     cout << "Feature Tracking, tracking points" << endl;
     for( int i = 1; i < argc-1; ++i ) {
-        input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
-        tracker.add_image(input_images.back());
+        input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_COLOR) );
+        tracker.add_image( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
         cout << tracker.count_track_points() << " " ;
     }
     cout << endl;

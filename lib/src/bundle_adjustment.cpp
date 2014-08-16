@@ -236,7 +236,7 @@ void BundleAdjustment::Solver::run_one_step() {
 bool BundleAdjustment::Solver::get_should_continue( double error_before, double error_after, double update_norm ) {
 
     if ( update_norm < 1.0e-5 ) return false;
-    if ( fabsf(error_after - error_before) < 1.0e-8 ) return false;
+    if ( fabsf(error_after - error_before) < 1.0e-6 ) return false;
     if ( ittr >= MAX_ITTR ) return false;
 
     return true;

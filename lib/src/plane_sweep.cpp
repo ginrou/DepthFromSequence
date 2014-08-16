@@ -40,7 +40,7 @@ void PlaneSweep::sweep(Mat3b &img) {
 }
 
 float *PlaneSweep::compute_unary_energy() {
-    Mat1b ref_img = _images[0];
+    Mat3b ref_img = _images[0];
     int W = ref_img.cols, H = ref_img.rows, M = _depth_variation.size();
 
     float *unary = new float[W*H*M];
@@ -48,7 +48,7 @@ float *PlaneSweep::compute_unary_energy() {
     for( int h = 0; h < H; ++h ) {
         for( int w = 0; w < W; ++w ) {
 
-            double ref_val = ref_img.at<uchar>(h,w);
+            Vec3b ref_val = ref_img.at<Vec3b>(h,w);
             int min_idx;
             double min_val = DBL_MAX;
 
@@ -61,12 +61,14 @@ float *PlaneSweep::compute_unary_energy() {
                     if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
                         err += 255*255; // とりあえずはずれの場合は最大誤差を入れる
                     } else {
-                        double val = _images[n].at<uchar>((int)pt.y, (int)pt.x);
-                        err += (ref_val - val)*(ref_val - val);
+                        Vec3b val = _images[n].at<Vec3b>((int)pt.y, (int)pt.x);
+                        err += (ref_val.val[0] - val.val[0]) * (ref_val.val[0] - val.val[0]);
+                        err += (ref_val.val[1] - val.val[1]) * (ref_val.val[1] - val.val[1]);
+                        err += (ref_val.val[2] - val.val[2]) * (ref_val.val[2] - val.val[2]);
                     }
 
                 }// n
-                unary[h*W*M + w*M +d] = log(err);
+                unary[h*W*M + w*M +d] = log(err/3.0);
                 if ( err < min_val ) {
                     min_val = err;
                     min_idx = d;
