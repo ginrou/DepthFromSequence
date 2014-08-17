@@ -11,6 +11,11 @@ int main(int argc, char* argv[]) {
         input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_COLOR) );
         gray_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
         tracker.add_image( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
+
+        if ( i == 1 ) imwrite("tmp/ft-01.png",tracker.track_points_image());
+        else if ( i == argc/2 ) imwrite("tmp/ft-02.png",tracker.track_points_image());
+        else if ( i == argc-2 ) imwrite("tmp/ft-03.png",tracker.track_points_image());
+
         cout << tracker.count_track_points() << " " ;
     }
     cout << endl;

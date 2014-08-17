@@ -77,28 +77,24 @@ std::vector< std::vector<cv::Point2d> > FeatureTracker::pickup_stable_points()
         }
 
         ret.push_back( pt_list );
-        stable_track_points.push_back(pt_list_2f);
     }
     return ret;
 }
 
-
-void FeatureTracker::draw_correspondences(char prefix[]) {
+Mat1b FeatureTracker::track_points_image() {
 
     cv::Size img_size( images[0].cols, images[0].rows );
 
-    for(int i = 1; i < images.size(); ++i ) {
+    // prepare image
+    cv::Mat img( img_size.height ,img_size.width * 2,  CV_8UC1);
+    images.front().copyTo(img(cv::Rect(0,0,img_size.width, img_size.height)));
+    images.back().copyTo( img(cv::Rect(img_size.width,0,img_size.width, img_size.height)));
 
-        cv::Mat img( img_size.height ,img_size.width * 2,  CV_8UC1);
-
-        // copy images
-        images[i-1].copyTo( img(cv::Rect(0,0,img_size.width, img_size.height)));
-        images[i  ].copyTo( img(cv::Rect(img_size.width,0,img_size.width, img_size.height)));
-
-        // draw points and lines
-        for(int j = 0; j < stable_track_points[i].size(); ++j ) {
-            Point2f pt1 = stable_track_points[i-1][j];
-            Point2f pt2 = stable_track_points[i  ][j];
+    // draw circle and line
+    for(int j = 0; j < all_track_points.front().size(); ++j ) {
+        if(total_status[j]) {
+            Point2f pt1 = all_track_points.front()[j];
+            Point2f pt2 = all_track_points.back()[j];
             pt2.x += img_size.width;
 
             cv::Scalar color(255,0,0,0);
@@ -108,15 +104,8 @@ void FeatureTracker::draw_correspondences(char prefix[]) {
             cv::circle(img, pt2, radius, color, -1, 8, 0 );
 
             cv::line(img, pt1, pt2, color );
-
         }
-
-        // save
-        char filename[256];
-        sprintf(filename, "%s%02d-%02d.png", prefix, i-1, i );
-        imwrite(filename, img);
-
-        cout << filename << " written" << endl;
-
     }
+
+    return img;
 }

@@ -5,7 +5,6 @@
 class FeatureTracker {
 public:
     vector<cv::Mat> images;
-    vector< vector<cv::Point2f> > stable_track_points;
     vector< vector<cv::Point2f> > all_track_points;
     void track();
 
@@ -16,7 +15,7 @@ public:
     cv::TermCriteria term_crit;
 
     // helper methods
-    void draw_correspondences(char prefix[]);
+    Mat1b track_points_image();
 
     FeatureTracker(std::vector<cv::Mat> images )
         :images(images)
