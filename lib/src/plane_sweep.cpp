@@ -3,8 +3,6 @@
 
 const double PlaneSweep::OutOfRangeIntensity = -1;
 
-inline Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point);
-
 void PlaneSweep::sweep(Mat3b &img) {
     int W = img.size().width, H = img.size().height;
 
@@ -81,7 +79,7 @@ float *PlaneSweep::compute_unary_energy() {
     return unary;
 }
 
-inline Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point) {
+Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point) {
     Matx31d dst = homo_mat * Matx31d(ref_point.x, ref_point.y, 1.0);
     return Point2d( dst(0,0)/dst(0,2), dst(0,1)/dst(0,2) );
 }

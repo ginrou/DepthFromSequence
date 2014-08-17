@@ -5,9 +5,11 @@ int main(int argc, char* argv[]) {
     // 画像をロード
     FeatureTracker tracker;
     vector<Mat3b> input_images;
+    vector<Mat1b> gray_images;
     cout << "Feature Tracking, tracking points" << endl;
     for( int i = 1; i < argc-1; ++i ) {
         input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_COLOR) );
+        gray_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
         tracker.add_image( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
         cout << tracker.count_track_points() << " " ;
     }
@@ -37,6 +39,14 @@ int main(int argc, char* argv[]) {
 
     for(int i = 0; i < depths.size(); ++i )
         cout << depths[i] << endl;
+
+    for(int i = 0; i < depths.size(); ++i ) {
+        Mat1b hoge = warped_image(gray_images, solver.camera_params, depths[i]);
+        char filename[256];
+        sprintf(filename, "tmp/warped-%02d.png", i);
+        imwrite(filename, hoge);
+    }
+    return 0;
 
     // plane sweep + dencecrf で奥行きを求める
     PlaneSweep *ps = new PlaneSweep(input_images, solver.camera_params, depths);

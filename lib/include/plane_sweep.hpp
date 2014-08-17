@@ -3,6 +3,7 @@
 #include "depth_from_sequence.hpp"
 
 Matx33d ps_homography_matrix( Camera camera, double depth);
+Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point);
 
 class PlaneSweep {
 public:
@@ -58,3 +59,6 @@ public:
     }
 
 }; // class PlaneSweep
+
+// デバッグ用関数
+Mat1b warped_image(vector<Mat1b> images, vector<Camera> cameras, double depth);
