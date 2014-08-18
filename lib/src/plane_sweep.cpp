@@ -55,7 +55,8 @@ float *PlaneSweep::compute_unary_energy() {
                 double err = 0.0;
                 for( int n = 1; n < _N; ++n ) { // skip ref image
 
-                    Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
+                    //Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
+                    Point2d pt = ps_homogenious_point_cam(_cameras[n], Point2d(w,h), _depth_variation[d]);
                     if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
                         err += 255*255; // とりあえずはずれの場合は最大誤差を入れる
                     } else {
@@ -94,4 +95,22 @@ Matx33d ps_homography_matrix( Camera camera, double depth) {
                        rot.z, 1.0, -rot.x * depth + trans.y,
                        -rot.y, rot.x, 1.0 * depth + trans.z);
     return intrinsic * extrinsic;
+}
+
+Point2d ps_homogenious_point_cam( Camera cam, Point2d pt, double depth) {
+    Point3d c, t = cam.t, r = cam.rot;
+    c.x =  - ( 1.0 * t.x - r.z * t.y + r.y * t.z);
+    c.y =  - ( r.z * t.x + 1.0 * t.y - r.x * t.z);
+    c.z =  - (-r.y * t.x + r.x * t.y + 1.0 * t.z);
+    double z0 = cam.f;
+    double d = (depth - c.z) / (z0 - c.z);
+
+    pt.x = (pt.x - cam.img_size.width/2.0) / cam.f;
+    pt.y = (pt.y - cam.img_size.height/2.0) / cam.f;
+
+    Point2d ret( (z0*d/depth)*pt.x + (1.0-d)*c.x, (z0*d/depth)*pt.y + (1.0-d)*c.y);
+    ret.x = ret.x * cam.f + cam.img_size.width/2.0;
+    ret.y = ret.y * cam.f + cam.img_size.height/2.0;
+
+    return ret;
 }

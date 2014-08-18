@@ -43,7 +43,8 @@ Mat1b warped_image(vector<Mat1b> images, vector<Camera> cameras, double depth) {
         for( int w = 0; w < W; ++w ) {
             double v = 0.0;
             for( int i = 1; i < homos.size(); ++i ) {
-                Point2d pt = ps_homogenious_point( homos[i], Point2d(w, h));
+                //Point2d pt = ps_homogenious_point( homos[i], Point2d(w, h));
+                Point2d pt = ps_homogenious_point_cam(cameras[i], Point2d(w, h), depth);
                 if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
                     // do notihing
                 } else {

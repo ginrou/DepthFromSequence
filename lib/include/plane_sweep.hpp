@@ -4,6 +4,7 @@
 
 Matx33d ps_homography_matrix( Camera camera, double depth);
 Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point);
+Point2d ps_homogenious_point_cam( Camera cam, Point2d pt, double depth);
 
 class PlaneSweep {
 public:

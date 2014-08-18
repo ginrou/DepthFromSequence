@@ -122,7 +122,7 @@ void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
         c.f = focal_length;
         camera_params[i] = c;
 
-        camera_params[i].t.x /= fabs(0.1*camera_params[1].t.x); // 一つ目のカメラの平行移動を10に正規化
+        camera_params[i].t.x /= fabs(0.2*camera_params[1].t.x); // 一つ目のカメラの平行移動を10に正規化
     }
 
     // zでパラメータ化しているので戻す
@@ -249,7 +249,7 @@ vector<double> BundleAdjustment::Solver::depth_variation(int resolution) {
         if ( z < min ) min = z;
         if ( z > max ) max = z;
     }
-    min /= 3.0;
+    min /= 10.0;
     max *= 3.0;
 
     vector<double> ret(resolution);
