@@ -114,3 +114,33 @@ Point2d ps_homogenious_point_cam( Camera cam, Point2d pt, double depth) {
 
     return ret;
 }
+
+Matx44d ps_projection_matrix(Camera c, double depth ) {
+    double W = c.img_size.width, H = c.img_size.height, f = c.f;
+    Point3d trans = c.t, rot = c.rot;
+    Matx44d intrinsic( f, 0, W/2.0, 0.0,
+                       0, f, H/2.0, 0.0,
+                       0, 0,   1.0, 0.0,
+                       0, 0,   0.0, 1.0);
+
+    Matx44d extrinsic( 1.0, -rot.z, rot.y, trans.x,
+                       rot.z, 1.0, -rot.x, trans.y,
+                       -rot.y, rot.x, 1.0, trans.z,
+                       0.0,   0.0,    1.0, -depth);
+
+    return intrinsic * extrinsic;
+
+}
+
+Point2d ps_homogenious_point_2( Camera ref_cam, Camera dst_cam, Point2d pt, double depth) {
+
+    Matx44d ref_projection = ps_projection_matrix(ref_cam, depth);
+    Matx44d dst_projection = ps_projection_matrix(dst_cam, depth);
+    Matx44d M10 = dst_projection * ref_projection.inv();
+    Matx33d H( M10(0,0), M10(0,1), M10(0,2),
+               M10(1,0), M10(1,1), M10(1,2),
+               M10(2,0), M10(2,1), M10(2,2) );
+
+    Matx31d dst = H * Matx31d(pt.x, pt.y, 1.0);
+    return Point2d( dst(0,0)/dst(0,2), dst(0,1)/dst(0,2) );
+}
