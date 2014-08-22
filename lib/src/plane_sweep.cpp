@@ -55,8 +55,8 @@ float *PlaneSweep::compute_unary_energy() {
                 double err = 0.0;
                 for( int n = 1; n < _N; ++n ) { // skip ref image
 
-                    //Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
-                    Point2d pt = ps_homogenious_point_cam(_cameras[n], Point2d(w,h), _depth_variation[d]);
+                    Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
+                    //Point2d pt = ps_homogenious_point_cam(_cameras[n], Point2d(w,h), _depth_variation[d]);
                     if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
                         err += 255*255; // とりあえずはずれの場合は最大誤差を入れる
                     } else {

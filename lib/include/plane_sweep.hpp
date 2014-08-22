@@ -55,10 +55,13 @@ public:
     float *compute_unary_energy();
 
     // homography matrix to see target_cam image from ref_cam params assuming all points are on the depth
-    static Matx33d homography_matrix( Camera ref_cam, Camera target_cam, double depth ) {
-        Matx33d homo_ref = ps_homography_matrix(ref_cam, depth);
-        Matx33d homo_target = ps_homography_matrix(target_cam, depth);
-        return homo_target * homo_ref.inv();
+    static Matx33d homography_matrix( Camera ref_cam, Camera dst_cam, double depth ) {
+        Matx44d ref_projection = ps_projection_matrix(ref_cam, depth);
+        Matx44d dst_projection = ps_projection_matrix(dst_cam, depth);
+        Matx44d M10 = dst_projection * ref_projection.inv();
+        return Matx33d( M10(0,0), M10(0,1), M10(0,2),
+                        M10(1,0), M10(1,1), M10(1,2),
+                        M10(2,0), M10(2,1), M10(2,2) );
     }
 
 }; // class PlaneSweep
