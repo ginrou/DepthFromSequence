@@ -44,16 +44,10 @@ int main(int argc, char* argv[]) {
     for(int i = 0; i < depths.size(); ++i )
         cout << depths[i] << endl;
 
-    for(int i = 0; i < depths.size(); ++i ) {
-        Mat1b hoge = warped_image(gray_images, solver.camera_params, depths[i]);
-        char filename[256];
-        sprintf(filename, "tmp/warped-%02d.png", i);
-        imwrite(filename, hoge);
-    }
+    save_warped_images(gray_images, solver.camera_params, depths);
 
     // plane sweep + dencecrf で奥行きを求める
     PlaneSweep *ps = new PlaneSweep(input_images, solver.camera_params, depths);
-
     // 読み込みがカラー画像になるようにする
     Mat3b color_image(input_images[0].size(), CV_8UC3);
     if ( false ) {

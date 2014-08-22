@@ -56,3 +56,13 @@ Mat1b warped_image(vector<Mat1b> images, vector<Camera> cameras, double depth) {
 
     return ret;
 }
+
+void save_warped_images(vector<Mat1b> images, vector<Camera> cameras, vector<double> depths)
+{
+    for(int i = 0; i < depths.size(); ++i ) {
+        Mat1b hoge = warped_image(images, cameras, depths[i]);
+        char filename[256];
+        sprintf(filename, "tmp/warped-%02d.png", i);
+        imwrite(filename, hoge);
+    }
+}

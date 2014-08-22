@@ -66,3 +66,6 @@ public:
 
 // デバッグ用関数
 Mat1b warped_image(vector<Mat1b> images, vector<Camera> cameras, double depth);
+
+//saved to tmp/warped-%02d
+void save_warped_images(vector<Mat1b> images, vector<Camera> cameras, vector<double> depths);
