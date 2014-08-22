@@ -56,7 +56,6 @@ float *PlaneSweep::compute_unary_energy() {
                 for( int n = 1; n < _N; ++n ) { // skip ref image
 
                     Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
-                    //Point2d pt = ps_homogenious_point_cam(_cameras[n], Point2d(w,h), _depth_variation[d]);
                     if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
                         err += 1000 * 3*255*255; // とりあえずはずれの場合は最大誤差を入れる
                     } else {
@@ -85,36 +84,6 @@ Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point) {
     return Point2d( dst(0,0)/dst(0,2), dst(0,1)/dst(0,2) );
 }
 
-Matx33d ps_homography_matrix( Camera camera, double depth) {
-    double W = -camera.img_size.width, H = -camera.img_size.height, f = -camera.f;
-    Point3d trans = camera.t, rot = camera.rot;
-    Matx33d intrinsic( f, 0, W/2.0,
-                       0, f, H/2.0,
-                       0, 0,     1);
-    Matx33d extrinsic( 1.0, -rot.z, rot.y * depth + trans.x,
-                       rot.z, 1.0, -rot.x * depth + trans.y,
-                       -rot.y, rot.x, 1.0 * depth + trans.z);
-    return intrinsic * extrinsic;
-}
-
-Point2d ps_homogenious_point_cam( Camera cam, Point2d pt, double depth) {
-    Point3d c, t = cam.t, r = cam.rot;
-    c.x =  - ( 1.0 * t.x - r.z * t.y + r.y * t.z);
-    c.y =  - ( r.z * t.x + 1.0 * t.y - r.x * t.z);
-    c.z =  - (-r.y * t.x + r.x * t.y + 1.0 * t.z);
-    double z0 = cam.f;
-    double d = (depth - c.z) / (z0 - c.z);
-
-    pt.x = (pt.x - cam.img_size.width/2.0) / cam.f;
-    pt.y = (pt.y - cam.img_size.height/2.0) / cam.f;
-
-    Point2d ret( (z0*d/depth)*pt.x + (1.0-d)*c.x, (z0*d/depth)*pt.y + (1.0-d)*c.y);
-    ret.x = ret.x * cam.f + cam.img_size.width/2.0;
-    ret.y = ret.y * cam.f + cam.img_size.height/2.0;
-
-    return ret;
-}
-
 Matx44d ps_projection_matrix(Camera c, double depth ) {
     double W = c.img_size.width, H = c.img_size.height, f = c.f;
     Point3d trans = c.t, rot = c.rot;
@@ -130,17 +99,4 @@ Matx44d ps_projection_matrix(Camera c, double depth ) {
 
     return intrinsic * extrinsic;
 
-}
-
-Point2d ps_homogenious_point_2( Camera ref_cam, Camera dst_cam, Point2d pt, double depth) {
-
-    Matx44d ref_projection = ps_projection_matrix(ref_cam, depth);
-    Matx44d dst_projection = ps_projection_matrix(dst_cam, depth);
-    Matx44d M10 = dst_projection * ref_projection.inv();
-    Matx33d H( M10(0,0), M10(0,1), M10(0,2),
-               M10(1,0), M10(1,1), M10(1,2),
-               M10(2,0), M10(2,1), M10(2,2) );
-
-    Matx31d dst = H * Matx31d(pt.x, pt.y, 1.0);
-    return Point2d( dst(0,0)/dst(0,2), dst(0,1)/dst(0,2) );
 }

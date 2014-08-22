@@ -1,8 +1,5 @@
 #include "depth_from_sequence.hpp"
 
-void test();
-void test_with_ba(BundleAdjustment::Solver &s);
-
 int main(int argc, char* argv[]) {
 
     // 画像をロード
@@ -41,7 +38,6 @@ int main(int argc, char* argv[]) {
     }
 
     print_params(solver);
-
     // plane sweep の準備
     vector<double> depths = solver.depth_variation(32);
 
@@ -79,71 +75,4 @@ int main(int argc, char* argv[]) {
 
     delete ps;
     return 0;
-}
-
-
-Point2d projection_point(Camera c, Point3d pt) {
-    Matx41d pt4( pt.x, pt.y, pt.z, 1.0);
-    Matx44d proj = ps_projection_matrix(c, 1.0);
-    Matx41d pt_out = proj * pt4;
-    return Point2d( pt_out(0,0)/pt_out(0,2), pt_out(0,1)/pt_out(0,2));
-}
-
-bool check(Point2d in, Point2d out) {
-    bool ok = in == out;
-    cout <<  in << " => " << out << ", " << ok << endl;
-    return ok;
-}
-
-void test() {
-    Point2d in, out;
-
-    Camera ref_cam, dst_cam;
-    ref_cam.f = 100.0;
-    ref_cam.img_size = cv::Size(256, 256);
-    ref_cam.t = Point3d(0, 0, 0);
-    ref_cam.rot = Point3d(0, 0, 0);
-
-    Point2d p = ps_homogenious_point_2(ref_cam, ref_cam, Point2d(128,128), 10);
-    check(Point2d(128,128), p);
-
-    dst_cam.f = 100.0;
-    dst_cam.img_size = cv::Size(256, 256);
-    dst_cam.t = Point3d(1000, 0, 0);
-    dst_cam.rot = Point3d(0.0, 0.0, 0.0);
-
-    Point3d src(400, 500, 3000);
-    in = projection_point(ref_cam, src);
-    out = projection_point(dst_cam, src);
-    p = ps_homogenious_point_2(ref_cam, dst_cam, in, src.z);
-    cout << "in" << in << endl;
-    cout << "out"<< out << endl;
-    cout << "p"  << p << endl;
-
-
-}
-
-void test_with_ba(BundleAdjustment::Solver &s) {
-
-    for( int j = 0; j < s.Np; ++j ) {
-        Point3d wp(s.points[j].x/s.points[j].z, s.points[j].y/s.points[j].z, 1.0/s.points[j].z);
-        Camera ref_cam = s.camera_params[0];
-        Point2d rp = projection_point(ref_cam, wp);
-
-        for ( int i = 0; i < s.Nc; ++i ) {
-            Camera dst_cam = s.camera_params[i];
-            Point2d cap = s.captured[i][j];
-            cap.x = cap.x * dst_cam.f + dst_cam.img_size.width/2.0;
-            cap.y = -cap.y * dst_cam.f + dst_cam.img_size.height/ 2.0;
-            Point2d dp = projection_point(dst_cam, wp);
-            Point2d out = ps_homogenious_point_2(ref_cam, dst_cam, rp, wp.z);
-
-            cout << " captured : " << cap;
-            cout << " projected : " << dp;
-            cout << " reprojected : " << out;
-            cout << endl;
-
-        }
-
-    }
 }
