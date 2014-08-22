@@ -52,13 +52,13 @@ float *PlaneSweep::compute_unary_energy() {
 
             for( int d = 0; d < M; ++d ) {
 
-                double err = 0.0;
+                double err = 10.0; // offset
                 for( int n = 1; n < _N; ++n ) { // skip ref image
 
                     Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
                     //Point2d pt = ps_homogenious_point_cam(_cameras[n], Point2d(w,h), _depth_variation[d]);
                     if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
-                        err += 255*255; // とりあえずはずれの場合は最大誤差を入れる
+                        err += 1000 * 3*255*255; // とりあえずはずれの場合は最大誤差を入れる
                     } else {
                         Vec3b val = _images[n].at<Vec3b>((int)pt.y, (int)pt.x);
                         err += (ref_val.val[0] - val.val[0]) * (ref_val.val[0] - val.val[0]);
@@ -67,7 +67,7 @@ float *PlaneSweep::compute_unary_energy() {
                     }
 
                 }// n
-                unary[h*W*M + w*M +d] = log(err/3.0);
+                unary[h*W*M + w*M +d] = log(err);
                 if ( err < min_val ) {
                     min_val = err;
                     min_idx = d;
@@ -118,10 +118,10 @@ Point2d ps_homogenious_point_cam( Camera cam, Point2d pt, double depth) {
 Matx44d ps_projection_matrix(Camera c, double depth ) {
     double W = c.img_size.width, H = c.img_size.height, f = c.f;
     Point3d trans = c.t, rot = c.rot;
-    Matx44d intrinsic( f, 0, W/2.0, 0.0,
-                       0, f, H/2.0, 0.0,
-                       0, 0,   1.0, 0.0,
-                       0, 0,   0.0, 1.0);
+    Matx44d intrinsic( f,  0, W/2.0, 0.0,
+                       0, -f, H/2.0, 0.0,
+                       0,  0,   1.0, 0.0,
+                       0,  0,   0.0, 1.0);
 
     Matx44d extrinsic( 1.0, -rot.z, rot.y, trans.x,
                        rot.z, 1.0, -rot.x, trans.y,

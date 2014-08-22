@@ -53,8 +53,8 @@ void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > 
     // 2. initialize captured
     for( int i = 0; i < Nc; ++i ) {
         for( int j = 0; j < Np; ++j ) {
-            captured[i][j].x = (2.0 * captured_in[i][j].x - W )  / focal_length;
-            captured[i][j].y = (2.0 * captured_in[i][j].y - H )  / focal_length;
+            captured[i][j].x =  (captured_in[i][j].x - W/2.0 ) / focal_length;
+            captured[i][j].y = -(captured_in[i][j].y - H/2.0 ) / focal_length;
         }
     }
 
@@ -74,8 +74,8 @@ void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
     // captured : camera coordinate -> world coordinate
     for( int i = 0; i < Nc; ++i ) {
         for( int j = 0; j < Np; ++j ) {
-            captured[i][j].x = (2.0 * captured_in[i][j].x - W ) * tan_fov / focal_length;
-            captured[i][j].y = (2.0 * captured_in[i][j].y - H ) * tan_fov / focal_length;
+            captured[i][j].x =  (captured_in[i][j].x - W/2.0 ) / focal_length;
+            captured[i][j].y = -(captured_in[i][j].y - H/2.0 ) / focal_length;
         }
     }
 
@@ -250,7 +250,7 @@ vector<double> BundleAdjustment::Solver::depth_variation(int resolution) {
         if ( z > max ) max = z;
     }
     min /= 10.0;
-    max *= 10.0;
+    max *= 2.0;
 
     vector<double> ret(resolution);
     double step = (max-min)/(double)(resolution-1);

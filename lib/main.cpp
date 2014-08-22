@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     double min_depth = 500.0; // [mm]
     double fov = 55.0; // [deg]
     cv::Size img_size = input_images.front().size();
-    double f = MIN(img_size.width, img_size.height);
+    double f = MIN(img_size.width, img_size.height)/2.0;
     solver.initialize(track_points, min_depth, fov, img_size, f);
     print_params(solver);
 
@@ -44,21 +44,18 @@ int main(int argc, char* argv[]) {
 
     print_params(solver);
 
-    test_with_ba(solver);
-    return 0;
-
     // plane sweep の準備
     vector<double> depths = solver.depth_variation(32);
 
     for(int i = 0; i < depths.size(); ++i )
         cout << depths[i] << endl;
 
-    for(int i = 0; i < depths.size(); ++i ) {
-        Mat1b hoge = warped_image(gray_images, solver.camera_params, depths[i]);
-        char filename[256];
-        sprintf(filename, "tmp/warped-%02d.png", i);
-        imwrite(filename, hoge);
-    }
+    // for(int i = 0; i < depths.size(); ++i ) {
+    //     Mat1b hoge = warped_image(gray_images, solver.camera_params, depths[i]);
+    //     char filename[256];
+    //     sprintf(filename, "tmp/warped-%02d.png", i);
+    //     imwrite(filename, hoge);
+    // }
 
     // plane sweep + dencecrf で奥行きを求める
     PlaneSweep *ps = new PlaneSweep(input_images, solver.camera_params, depths);
@@ -111,12 +108,12 @@ void test() {
 
     Point2d p = ps_homogenious_point_2(ref_cam, ref_cam, Point2d(128,128), 10);
     check(Point2d(128,128), p);
- 
+
     dst_cam.f = 100.0;
     dst_cam.img_size = cv::Size(256, 256);
     dst_cam.t = Point3d(1000, 0, 0);
     dst_cam.rot = Point3d(0.0, 0.0, 0.0);
-    
+
     Point3d src(400, 500, 3000);
     in = projection_point(ref_cam, src);
     out = projection_point(dst_cam, src);
@@ -138,8 +135,8 @@ void test_with_ba(BundleAdjustment::Solver &s) {
         for ( int i = 0; i < s.Nc; ++i ) {
             Camera dst_cam = s.camera_params[i];
             Point2d cap = s.captured[i][j];
-            cap.x = ( cap.x * dst_cam.f + dst_cam.img_size.width ) / 2.0;
-            cap.y = ( cap.y * dst_cam.f + dst_cam.img_size.height) / 2.0;
+            cap.x = cap.x * dst_cam.f + dst_cam.img_size.width/2.0;
+            cap.y = -cap.y * dst_cam.f + dst_cam.img_size.height/ 2.0;
             Point2d dp = projection_point(dst_cam, wp);
             Point2d out = ps_homogenious_point_2(ref_cam, dst_cam, rp, wp.z);
 
@@ -147,7 +144,7 @@ void test_with_ba(BundleAdjustment::Solver &s) {
             cout << " projected : " << dp;
             cout << " reprojected : " << out;
             cout << endl;
-            
+
         }
 
     }
