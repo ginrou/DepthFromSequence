@@ -20,8 +20,8 @@ void PlaneSweep::sweep(Mat3b &img) {
 
     DenseCRF2D crf(W,H,_depth_variation.size());
     crf.setUnaryEnergy(unary);
-    crf.addPairwiseGaussian(3,3,3);
-    crf.addPairwiseBilateral(8, 8, 20, 20, 20, img_buf, 10);
+    crf.addPairwiseGaussian(8,8,8);
+    crf.addPairwiseBilateral(10, 10, 30, 30, 30, img_buf, 10);
 
     short *map = new short[W*H];
     crf.map(10, map);

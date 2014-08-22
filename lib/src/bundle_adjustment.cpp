@@ -249,13 +249,16 @@ vector<double> BundleAdjustment::Solver::depth_variation(int resolution) {
         if ( z < min ) min = z;
         if ( z > max ) max = z;
     }
-    min /= 10.0;
+    min /= 1.5;
     max *= 2.0;
 
     vector<double> ret(resolution);
-    double step = (max-min)/(double)(resolution-1);
+    double zmax = 1.0/min, zmin = 1.0/max;
 
-    for ( int i = 0; i < resolution; ++i ) ret[i] = step * i + min;
+    ret[0] = max;
+    for ( int i = 1; i < resolution; ++i ) {
+        ret[i] = 1.0/((i-1)*(zmax-zmin)/(double)(resolution-1) + zmin);
+    }
 
     return ret;
 }
