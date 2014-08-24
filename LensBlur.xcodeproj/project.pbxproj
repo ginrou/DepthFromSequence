@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		545FF06719A9EAAD003B6681 /* TKDRecordTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 545FF06619A9EAAD003B6681 /* TKDRecordTableViewController.m */; };
+		545FF06A19A9EB2C003B6681 /* TKDRecordDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 545FF06919A9EB2C003B6681 /* TKDRecordDataSource.m */; };
+		545FF06D19AA16E7003B6681 /* TKDNewRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 545FF06C19AA16E7003B6681 /* TKDNewRecordViewController.m */; };
 		548225381997377B00FA5BD0 /* TKDDepthEstimator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 548225371997377B00FA5BD0 /* TKDDepthEstimator.mm */; };
 		5482253B1997401400FA5BD0 /* TKDPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5482253A1997401400FA5BD0 /* TKDPreviewView.m */; };
 		5482254319975D3900FA5BD0 /* eigen in Resources */ = {isa = PBXBuildFile; fileRef = 5482253F19975D3900FA5BD0 /* eigen */; };
@@ -19,6 +22,7 @@
 		5482255719975FC700FA5BD0 /* filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482255219975FC700FA5BD0 /* filter.cpp */; };
 		5482255819975FC700FA5BD0 /* permutohedral.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482255319975FC700FA5BD0 /* permutohedral.cpp */; };
 		5482255919975FC700FA5BD0 /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482255419975FC700FA5BD0 /* util.cpp */; };
+		54971DD619AA26E70064E4F8 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54971DD519AA26E70064E4F8 /* debug.cpp */; };
 		54C1653E19073AFF005E20F8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653D19073AFF005E20F8 /* Foundation.framework */; };
 		54C1654019073AFF005E20F8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1653F19073AFF005E20F8 /* CoreGraphics.framework */; };
 		54C1654219073AFF005E20F8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1654119073AFF005E20F8 /* UIKit.framework */; };
@@ -48,6 +52,12 @@
 
 /* Begin PBXFileReference section */
 		34823DE6731B465DA94B0273 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		545FF06519A9EAAD003B6681 /* TKDRecordTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDRecordTableViewController.h; sourceTree = "<group>"; };
+		545FF06619A9EAAD003B6681 /* TKDRecordTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDRecordTableViewController.m; sourceTree = "<group>"; };
+		545FF06819A9EB2C003B6681 /* TKDRecordDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDRecordDataSource.h; sourceTree = "<group>"; };
+		545FF06919A9EB2C003B6681 /* TKDRecordDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDRecordDataSource.m; sourceTree = "<group>"; };
+		545FF06B19AA16E7003B6681 /* TKDNewRecordViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDNewRecordViewController.h; sourceTree = "<group>"; };
+		545FF06C19AA16E7003B6681 /* TKDNewRecordViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDNewRecordViewController.m; sourceTree = "<group>"; };
 		548225361997377B00FA5BD0 /* TKDDepthEstimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDDepthEstimator.h; sourceTree = "<group>"; };
 		548225371997377B00FA5BD0 /* TKDDepthEstimator.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TKDDepthEstimator.mm; sourceTree = "<group>"; };
 		548225391997401400FA5BD0 /* TKDPreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDPreviewView.h; sourceTree = "<group>"; };
@@ -62,6 +72,7 @@
 		5482255219975FC700FA5BD0 /* filter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = filter.cpp; path = ../lib/densecrf/filter.cpp; sourceTree = "<group>"; };
 		5482255319975FC700FA5BD0 /* permutohedral.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = permutohedral.cpp; path = ../lib/densecrf/permutohedral.cpp; sourceTree = "<group>"; };
 		5482255419975FC700FA5BD0 /* util.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = ../lib/densecrf/util.cpp; sourceTree = "<group>"; };
+		54971DD519AA26E70064E4F8 /* debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = debug.cpp; path = lib/src/debug.cpp; sourceTree = SOURCE_ROOT; };
 		54C1653A19073AFF005E20F8 /* LensBlur.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LensBlur.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C1653D19073AFF005E20F8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		54C1653F19073AFF005E20F8 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -160,6 +171,12 @@
 				54C1654C19073AFF005E20F8 /* TKDAppDelegate.h */,
 				54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */,
 				54C1654F19073AFF005E20F8 /* Main.storyboard */,
+				545FF06B19AA16E7003B6681 /* TKDNewRecordViewController.h */,
+				545FF06C19AA16E7003B6681 /* TKDNewRecordViewController.m */,
+				545FF06519A9EAAD003B6681 /* TKDRecordTableViewController.h */,
+				545FF06619A9EAAD003B6681 /* TKDRecordTableViewController.m */,
+				545FF06819A9EB2C003B6681 /* TKDRecordDataSource.h */,
+				545FF06919A9EB2C003B6681 /* TKDRecordDataSource.m */,
 				54C1655219073AFF005E20F8 /* TKDViewController.h */,
 				54C1655319073AFF005E20F8 /* TKDViewController.m */,
 				548225391997401400FA5BD0 /* TKDPreviewView.h */,
@@ -210,6 +227,7 @@
 				5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */,
 				5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */,
 				5482254C19975FAA00FA5BD0 /* plane_sweep.cpp */,
+				54971DD519AA26E70064E4F8 /* debug.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -351,7 +369,10 @@
 			files = (
 				5482255519975FC700FA5BD0 /* bipartitedensecrf.cpp in Sources */,
 				5482255619975FC700FA5BD0 /* densecrf.cpp in Sources */,
+				545FF06D19AA16E7003B6681 /* TKDNewRecordViewController.m in Sources */,
 				5482255719975FC700FA5BD0 /* filter.cpp in Sources */,
+				54971DD619AA26E70064E4F8 /* debug.cpp in Sources */,
+				545FF06A19A9EB2C003B6681 /* TKDRecordDataSource.m in Sources */,
 				5482255819975FC700FA5BD0 /* permutohedral.cpp in Sources */,
 				5482255919975FC700FA5BD0 /* util.cpp in Sources */,
 				5482254D19975FAA00FA5BD0 /* bundle_adjustment.cpp in Sources */,
@@ -361,6 +382,7 @@
 				5482253B1997401400FA5BD0 /* TKDPreviewView.m in Sources */,
 				54C1654A19073AFF005E20F8 /* main.m in Sources */,
 				548225381997377B00FA5BD0 /* TKDDepthEstimator.mm in Sources */,
+				545FF06719A9EAAD003B6681 /* TKDRecordTableViewController.m in Sources */,
 				54C1655419073AFF005E20F8 /* TKDViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
