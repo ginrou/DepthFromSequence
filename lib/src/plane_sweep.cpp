@@ -20,8 +20,8 @@ void PlaneSweep::sweep(Mat3b &img) {
 
     DenseCRF2D crf(W,H,_depth_variation.size());
     crf.setUnaryEnergy(unary);
-    crf.addPairwiseGaussian(8,8,8);
-    crf.addPairwiseBilateral(10, 10, 30, 30, 30, img_buf, 10);
+    crf.addPairwiseGaussian(8,8,1000);
+    crf.addPairwiseBilateral(8, 8, 30, 30, 30, img_buf, 1000);
 
     short *map = new short[W*H];
     crf.map(10, map);
@@ -52,7 +52,7 @@ float *PlaneSweep::compute_unary_energy() {
 
             for( int d = 0; d < M; ++d ) {
 
-                double err = 10.0; // offset
+                double err = 1.0; // offset
                 for( int n = 1; n < _N; ++n ) { // skip ref image
 
                     Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
@@ -66,7 +66,7 @@ float *PlaneSweep::compute_unary_energy() {
                     }
 
                 }// n
-                unary[h*W*M + w*M +d] = log(err);
+                unary[h*W*M + w*M +d] = err/1000.0;
                 if ( err < min_val ) {
                     min_val = err;
                     min_idx = d;

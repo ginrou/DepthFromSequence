@@ -4,6 +4,34 @@
 #include <cstdlib>
 #include <ctime>
 
+template<typename T> void print_histogram(vector<T> v, T bin_size) {
+    T min = v[0], max = v[0], sum = v[0];
+    for ( int i = 1; i < v.size(); ++i ) {
+        if ( v[i] < min ) min = v[i];
+        if ( v[i] > max ) max = v[i];
+        sum += v[i];
+    }
+
+    int size = (max-min)/bin_size + 1;
+    vector<int> count(size);
+    for ( int i = 0; i < v.size(); ++i ) {
+        int bin = (v[i] - min)/bin_size;
+        count[bin]++;
+    }
+
+    for ( int i = 0; i < size; ++i ) {
+        printf("%3d - %3d : ", (int)(i*bin_size), (int)((i+1)*bin_size));
+        for ( int j = 0; j < count[i]; ++j ) printf("#");
+        printf("\n");
+    }
+
+    double mean = sum/(double)v.size(), var = 0.0;
+    for ( int i = 0; i < v.size(); ++i ) var += (v[i]-mean)*(v[i]-mean);
+
+    printf("variance = %lf\n", sqrt(var)/(double)v.size());
+}
+
+
 inline double drand() { return (double)rand()/RAND_MAX; }
 
 std::vector<Camera> initial_camera_params(int N, cv::Size img_size, double focal_length) {
@@ -90,9 +118,9 @@ void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
 
         if ( pt_max < pt_avg[j] ) pt_max = pt_avg[j];
     }
+    print_histogram(pt_avg, 3.0);
 
     double a = pt_max * min_depth; // 最も近い点と最も移動量が大きい点を対応付ける
-
     double z_avg = 0.0;
     for ( int j = 0; j < Np; ++j ) {
         points[j].x = (2.0 * captured_in[0][j].x - W ) * tan_fov / focal_length;
@@ -236,7 +264,7 @@ void BundleAdjustment::Solver::run_one_step() {
 bool BundleAdjustment::Solver::get_should_continue( double error_before, double error_after, double update_norm ) {
 
     if ( update_norm < 1.0e-5 ) return false;
-    if ( fabsf(error_after - error_before) < 1.0e-6 ) return false;
+    if ( fabs((error_after - error_before)/error_after) < 1.0e-4 ) return false;
     if ( ittr >= MAX_ITTR ) return false;
 
     return true;

@@ -79,3 +79,4 @@ inline double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, i
 // デバッグ用関数
 void print_params(BundleAdjustment::Solver &s); // Pointとcamera_paramsを表示
 void print_ittr_status(BundleAdjustment::Solver &s); // 反復の状態を表示
+template<typename T> void print_histogram(vector<T> v, T bin_size);
