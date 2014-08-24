@@ -23,7 +23,8 @@ TKDDepthEstimatorDelegate
 @property (weak, nonatomic) IBOutlet TKDPreviewView *previewView;
 @property (weak, nonatomic) IBOutlet UIImageView *rawDepthMap;
 @property (weak, nonatomic) IBOutlet UIImageView *smoothDepthMap;
-@property (weak, nonatomic) IBOutlet UILabel *logLabel;
+@property (weak, nonatomic) IBOutlet UITextView *logTextView;
+
 
 // Buttons
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *cancelButton;
@@ -155,6 +156,11 @@ TKDDepthEstimatorDelegate
     self.smoothDepthMap.image = estimator.smoothDepthMap;
     self.statusLabel.text = @"completed";
     self.saveButton.enabled = YES;
+}
+
+- (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine
+{
+    self.logTextView.text = newLine;
 }
 
 @end

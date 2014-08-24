@@ -22,6 +22,7 @@ using namespace cv;
 }
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (atomic) BOOL running;
+@property NSFileHandle *pipeReadHandle;
 @end
 
 @implementation TKDDepthEstimator
@@ -30,12 +31,21 @@ using namespace cv;
     if (self) {
         full_color_images = new vector<Mat3b>;
         _queue = dispatch_queue_create("DepthEstimationQueue", NULL);
+
+        self.log = [NSMutableString string];
+        NSPipe *pipe = [NSPipe pipe];
+        self.pipeReadHandle = [pipe fileHandleForReading];
+        dup2([[pipe fileHandleForWriting] fileDescriptor], fileno(stdout));
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(readSTDOUT:) name:NSFileHandleReadCompletionNotification object:nil];
+        [self.pipeReadHandle readInBackgroundAndNotify];
     }
     return self;
 }
 
 - (void)dealloc {
     delete full_color_images;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    dup2(fileno(stdout), self.pipeReadHandle.fileDescriptor);
 }
 
 + (Mat3b)sampleBufferToMat:(CMSampleBufferRef)sampleBuffer {
@@ -57,6 +67,17 @@ using namespace cv;
     CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
 
     return mat3b;
+}
+
+- (void)readSTDOUT:(NSNotification *)n {
+    [self.pipeReadHandle readInBackgroundAndNotify];
+    NSString *str = [[NSString alloc] initWithData:n.userInfo[NSFileHandleNotificationDataItem] encoding:NSASCIIStringEncoding];
+    [self.log appendString:str];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.delegate depthEstimator:self getLog:self.log];
+    });
+
 }
 
 - (void)addImage:(CMSampleBufferRef)sampleBuffer {
@@ -126,8 +147,11 @@ using namespace cv;
     PlaneSweep *ps = new PlaneSweep(*full_color_images, solver.camera_params, depths);
     ps->sweep(full_color_images->front()); // ref imageは最初の画像
 
-    self.rawDepthMap = MatToUIImage(ps->_depth_raw);
-    self.smoothDepthMap = MatToUIImage(ps->_depth_smooth);
+    UIImage *raw = MatToUIImage(8*(ps->_depth_raw));
+    self.rawDepthMap = [UIImage imageWithCGImage:raw.CGImage scale:2.0 orientation:UIImageOrientationLeft];
+
+    UIImage *smooth = MatToUIImage(8*(ps->_depth_smooth));
+    self.smoothDepthMap = [UIImage imageWithCGImage:smooth.CGImage scale:2.0 orientation:UIImageOrientationLeft];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.delegate depthEstimator:self

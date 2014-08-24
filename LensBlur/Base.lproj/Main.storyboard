@@ -193,12 +193,14 @@
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="356"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Ug-Xh-peS">
-                                                    <rect key="frame" x="20" y="20" width="42" height="21"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OPe-yb-u4y">
+                                                    <rect key="frame" x="20" y="15" width="280" height="326"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                </textView>
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -232,7 +234,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="cancelButton" destination="5fT-cI-UDy" id="Jry-0H-bil"/>
-                        <outlet property="logLabel" destination="5Ug-Xh-peS" id="aVm-Sj-c04"/>
+                        <outlet property="logTextView" destination="OPe-yb-u4y" id="xXk-8R-fTO"/>
                         <outlet property="previewView" destination="PMe-al-Lzz" id="Q71-Y7-fiO"/>
                         <outlet property="rawDepthMap" destination="yLn-da-2CA" id="Ww7-iW-oVh"/>
                         <outlet property="saveButton" destination="Biq-q7-T93" id="UGn-lX-auj"/>

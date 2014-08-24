@@ -13,6 +13,7 @@
 
 @interface TKDDepthEstimator : NSObject
 @property (nonatomic, weak) id<TKDDepthEstimatorDelegate> delegate;
+@property (nonatomic, strong) NSMutableString *log;
 @property (nonatomic, strong) UIImage *rawDepthMap;
 @property (nonatomic, strong) UIImage *smoothDepthMap;
 
@@ -24,6 +25,7 @@
 @protocol TKDDepthEstimatorDelegate <NSObject>
 - (void)depthEstimator:(UIImage *)estimatedDepthMap;
 - (void)depthEstimator:(TKDDepthEstimator *)estimator statusUpdated:(NSString *)status;
+- (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine;
 - (void)depthEstimatorImagesPrepared:(TKDDepthEstimator *)estimator;
 - (void)depthEstimator:(TKDDepthEstimator *)estimator estimationCompleted:(UIImage *)smoothDepthMap;
 @end

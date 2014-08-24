@@ -24,8 +24,8 @@ public:
     FeatureTracker() {
         sub_pix_win_size = cv::Size(10, 10);
         term_crit = cv::TermCriteria( cv::TermCriteria::COUNT|cv::TermCriteria::EPS,20,0.03 );
-        MAX_CORNERS = 500;
-        QUALITY_LEVEL = 0.005;
+        MAX_CORNERS = 100;
+        QUALITY_LEVEL = 0.001;
     }
 
     void add_image(cv::Mat image);
