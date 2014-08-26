@@ -12,8 +12,50 @@ static NSString * const kdepthEstimationRecordDirectoryPathComponent = @"depthEs
 
 @implementation TKDDepthEstimationRecord
 
-+ (TKDDepthEstimationRecord *)recordFromURL:(NSURL *)url {
-    return nil;
+
++ (TKDDepthEstimationRecord *)recordFromURL:(NSURL *)dirUrl {
+
+    TKDDepthEstimationRecord *recored = [TKDDepthEstimationRecord new];
+    recored.key = dirUrl.pathComponents.lastObject;
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSMutableArray *images = [NSMutableArray array];
+    NSArray *contentsInDirectory = [fm contentsOfDirectoryAtURL:dirUrl
+                                     includingPropertiesForKeys:@[]
+                                                        options:NSDirectoryEnumerationSkipsHiddenFiles
+                                                          error:nil];
+
+    NSPredicate *logFilePredicate = [NSPredicate predicateWithFormat:@"self = 'log.txt'"];
+    NSPredicate *capturedPredicate = [NSPredicate predicateWithFormat:@"self matches 'captured-[0-9]{2}.jpg$'"];
+    NSPredicate *rawDepthPredicate = [NSPredicate predicateWithFormat:@"self = 'depth-raw.png'"];
+    NSPredicate *smoothDepthPredicate = [NSPredicate predicateWithFormat:@"self = 'depth-smooth.png'"];
+
+    for (NSURL *url in contentsInDirectory) {
+        NSString *filename = url.pathComponents.lastObject;
+
+        if ([@[filename] filteredArrayUsingPredicate:logFilePredicate].count == 1) {
+
+            recored.log = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:nil];
+
+        } else if ([@[filename] filteredArrayUsingPredicate:capturedPredicate].count == 1) {
+
+            [images addObject:[UIImage imageWithContentsOfFile:url.path]];
+
+        } else if ([@[filename] filteredArrayUsingPredicate:rawDepthPredicate].count == 1) {
+
+            recored.rawDepthMap = [UIImage imageWithContentsOfFile:url.path];
+
+        } else if ([@[filename] filteredArrayUsingPredicate:smoothDepthPredicate].count == 1) {
+
+            recored.smoothDepthMap = [UIImage imageWithContentsOfFile:url.path];
+
+        }
+
+    }
+
+    recored.capturedImages = images;
+
+    return recored;
 }
 
 + (TKDDepthEstimationRecord *)saveRecordTo:(NSURL *)dirURL
@@ -86,8 +128,8 @@ static NSString * const kdepthEstimationRecordDirectoryPathComponent = @"depthEs
         NSLog(@"%@", directoryURL);
 
         NSDirectoryEnumerator *enumerator = [fileManager enumeratorAtURL:directoryURL
-                                              includingPropertiesForKeys:@[NSURLIsDirectoryKey]
-                                                                 options:0
+                                              includingPropertiesForKeys:@[NSURLIsDirectoryKey, NSURLNameKey]
+                                                                 options:NSDirectoryEnumerationSkipsSubdirectoryDescendants
                                                             errorHandler:^BOOL(NSURL *url, NSError *error) {
                                                                 block(nil, error);
                                                                 return NO;
@@ -95,6 +137,7 @@ static NSString * const kdepthEstimationRecordDirectoryPathComponent = @"depthEs
 
         NSMutableArray *result = [NSMutableArray array];
         for (NSURL *url in enumerator) {
+            NSLog(@"%@", url);
             TKDDepthEstimationRecord *record = [TKDDepthEstimationRecord recordFromURL:url];
             if (record) [result addObject:record];
         }

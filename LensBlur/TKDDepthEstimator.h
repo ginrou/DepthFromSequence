@@ -19,6 +19,7 @@
 
 - (void)addImage:(CMSampleBufferRef)sampleBuffer;
 - (void)runEstimation;
+- (NSArray *)convertToUIImages;
 
 @end
 

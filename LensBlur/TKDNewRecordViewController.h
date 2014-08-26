@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "TKDRecordDataSource.h"
 
 @interface TKDNewRecordViewController : UITableViewController
 
+// avaiable after estimation
+@property (nonatomic, strong) TKDDepthEstimationRecord *createdRecord;
 @end

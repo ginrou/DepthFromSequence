@@ -8,6 +8,8 @@
 
 #import "TKDRecordDataSource.h"
 #import "TKDRecordTableViewController.h"
+#import "TKDNewRecordViewController.h"
+#import "TKDRecordViewerViewController.h"
 
 @interface TKDRecordTableViewController ()
 @property (nonatomic, strong) NSMutableArray *records;
@@ -58,24 +60,30 @@
 }
 
 
-/*
 #pragma mark - Navigation
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+    if ([segue.identifier isEqualToString:@"showRecordViewer"]) {
+        TKDRecordViewerViewController *dst = segue.destinationViewController;
+        NSInteger index = self.tableView.indexPathForSelectedRow.row;
+        dst.record = self.records[index];
+    }
 }
-*/
+
 
 - (IBAction)createNewRecordCanceled:(UIStoryboardSegue *)segue{
     // storyboad close modal automatically
 }
 
-- (IBAction)createNewRecordCaptured:(UIStoryboardSegue *)segue
-{
+- (IBAction)createNewRecordCaptured:(UIStoryboardSegue *)segue {
+    TKDDepthEstimationRecord *record = [(TKDNewRecordViewController *)segue.sourceViewController createdRecord];
 
+    [self.tableView beginUpdates];
+    [self.records addObject:record];
+    NSIndexPath *ip = [NSIndexPath indexPathForRow:self.records.count-1 inSection:0];
+    [self.tableView insertRowsAtIndexPaths:@[ip] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self.tableView endUpdates];
 }
 
 

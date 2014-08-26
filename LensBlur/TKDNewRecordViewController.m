@@ -9,7 +9,6 @@
 @import AVFoundation;
 
 #import "TKDNewRecordViewController.h"
-
 #import "TKDDepthEstimator.h"
 #import "TKDPreviewView.h"
 
@@ -122,6 +121,18 @@ TKDDepthEstimatorDelegate
 }
 
 - (IBAction)saveButtonTapped:(id)sender {
+    NSArray *images = [self.depthEstimator convertToUIImages];
+    [TKDRecordDataSource writeDepthEstimationRecord:self.logTextView.text
+                                     capturedImages:images
+                                        rawDepthMap:self.rawDepthMap.image
+                                     smoothDepthMap:self.smoothDepthMap.image completion:^(TKDDepthEstimationRecord *recored, NSError *error) {
+                                         if (error || recored == nil) {
+                                             NSLog(@"error : %@", error);
+                                         } else {
+                                             self.createdRecord = recored;
+                                             [self performSegueWithIdentifier:@"TKDNewRecordViewController#estimationCompleted" sender:self];
+                                         }
+                                     }];
 }
 
 #pragma mark - Delegate

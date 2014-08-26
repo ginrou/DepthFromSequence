@@ -61,12 +61,22 @@ using namespace cv;
     // put buffer in open cv, no memory copied
     Mat4b mat = cv::Mat(bufferHeight,bufferWidth,CV_8UC4,pixel);
     Mat3b mat3b(bufferHeight, bufferWidth);
-    cvtColor(mat, mat3b, CV_BGRA2BGR);
+    cvtColor(mat, mat3b, CV_BGRA2RGB);
 
     //End processing
     CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
 
     return mat3b;
+}
+
+- (NSArray *)convertToUIImages {
+    NSMutableArray *array = [NSMutableArray array];
+    for (int i = 0; i < full_color_images->size(); ++i) {
+        Mat3b mat = (*full_color_images)[i];
+        UIImage *img = MatToUIImage(mat);
+        [array addObject:[UIImage imageWithCGImage:img.CGImage scale:2.0 orientation:UIImageOrientationRight]];
+    }
+    return array;
 }
 
 - (void)readSTDOUT:(NSNotification *)n {
@@ -148,10 +158,10 @@ using namespace cv;
     ps->sweep(full_color_images->front()); // ref imageは最初の画像
 
     UIImage *raw = MatToUIImage(8*(ps->_depth_raw));
-    self.rawDepthMap = [UIImage imageWithCGImage:raw.CGImage scale:2.0 orientation:UIImageOrientationLeft];
+    self.rawDepthMap = [UIImage imageWithCGImage:raw.CGImage scale:2.0 orientation:UIImageOrientationRight];
 
     UIImage *smooth = MatToUIImage(8*(ps->_depth_smooth));
-    self.smoothDepthMap = [UIImage imageWithCGImage:smooth.CGImage scale:2.0 orientation:UIImageOrientationLeft];
+    self.smoothDepthMap = [UIImage imageWithCGImage:smooth.CGImage scale:2.0 orientation:UIImageOrientationRight];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.delegate depthEstimator:self
