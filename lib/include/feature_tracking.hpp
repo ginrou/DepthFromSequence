@@ -11,6 +11,7 @@ public:
     // params
     int MAX_CORNERS;
     double QUALITY_LEVEL;
+    double MIN_TRACK_MOVE;
     cv::Size sub_pix_win_size;
     cv::TermCriteria term_crit;
 
@@ -26,6 +27,7 @@ public:
         term_crit = cv::TermCriteria( cv::TermCriteria::COUNT|cv::TermCriteria::EPS,20,0.03 );
         MAX_CORNERS = 100;
         QUALITY_LEVEL = 0.001;
+        MIN_TRACK_MOVE = 10.0;
     }
 
     bool add_image(cv::Mat image); // return true if added

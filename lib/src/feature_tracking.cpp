@@ -42,18 +42,14 @@ bool FeatureTracker::add_image(cv::Mat image) {
 bool FeatureTracker::points_moved_enough(vector<cv::Point2f> prev_points, vector<cv::Point2f> next_points, vector<uchar> status) {
 
     double move_sum = 0.0;
-
     for (int i = 0; i < status.size(); ++i) {
         if (!status[i]) continue;
 
         cv::Point2f pt = prev_points[i] - next_points[i];
         move_sum += sqrt(pt.x*pt.x + pt.y*pt.y);
-
     }
-
-    cout << "move_sum = " << move_sum << endl;
-
-    return true;
+    cout << move_sum / (double)status.size() << endl;
+    return move_sum / (double)status.size() > MIN_TRACK_MOVE;
 }
 
 int FeatureTracker::count_track_points() {
