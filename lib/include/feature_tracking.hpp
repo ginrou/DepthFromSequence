@@ -28,7 +28,8 @@ public:
         QUALITY_LEVEL = 0.001;
     }
 
-    void add_image(cv::Mat image);
+    bool add_image(cv::Mat image); // return true if added
+    bool points_moved_enough(vector<cv::Point2f> prev_points, vector<cv::Point2f> next_points, vector<uchar> status);
     int count_track_points();
 
     vector< vector<cv::Point2d> > pickup_stable_points();

@@ -19,6 +19,7 @@ using namespace cv;
 @interface TKDDepthEstimator ()
 {
     vector<Mat3b> *full_color_images;
+    FeatureTracker *tracker;
 }
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (atomic) BOOL running;
@@ -30,6 +31,7 @@ using namespace cv;
     self = [super init];
     if (self) {
         full_color_images = new vector<Mat3b>;
+        tracker = new FeatureTracker;
         _queue = dispatch_queue_create("DepthEstimationQueue", NULL);
 
         self.log = [NSMutableString string];
@@ -101,8 +103,19 @@ using namespace cv;
     }
 
     Mat3b new_image = [[self class] sampleBufferToMat:sampleBuffer];
+
     dispatch_async(_queue, ^{
-        full_color_images->push_back(new_image);
+
+        Mat1b *gray = new Mat1b(new_image.size());
+        cvtColor(new_image, *gray, CV_BGR2GRAY);
+        bool added = tracker->add_image(*gray);
+
+        if (added) {
+            full_color_images->push_back(new_image);
+            cout << tracker->count_track_points() << endl;
+        }
+
+        delete gray;
     });
 
 }
@@ -118,19 +131,7 @@ using namespace cv;
 
 - (void)runEstimationImpl {
 
-    // 画像をロード
-    FeatureTracker tracker;
-    cout << "Feature Tracking, tracking points" << endl;
-    for (int i = 0; i < full_color_images->size(); ++i) {
-        Mat3b img = (*full_color_images)[i];
-        Mat1b *gray = new Mat1b(img.size());
-        cvtColor(img, *gray, CV_BGR2GRAY);
-        tracker.add_image(*gray);
-        cout << tracker.count_track_points() << " ";
-        delete gray;
-    }
-    cout << endl;
-    vector< vector<Point2d> > track_points = tracker.pickup_stable_points();
+    vector< vector<Point2d> > track_points = tracker->pickup_stable_points();
 
     // Solver を初期化
     BundleAdjustment::Solver solver( track_points );

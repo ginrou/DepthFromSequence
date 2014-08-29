@@ -18,19 +18,42 @@ void FeatureTracker::track() {
 
 }
 
-void FeatureTracker::add_image(cv::Mat image) {
+bool FeatureTracker::add_image(cv::Mat image) {
     if ( images.size() == 0 ) {
         initialize_tracker(image);
         images.push_back(image);
+        return true;
     } else {
         std::vector<uchar> status;
         std::vector<Point2f> prev_point = all_track_points.back();
         std::vector<Point2f> new_points = track_for_image(images.back(), image, prev_point, status);
+
+        if (points_moved_enough(prev_point, new_points, status) == false) return false;
+
         all_track_points.push_back(new_points);
         images.push_back(image);
         for(int j = 0; j < status.size(); ++j )
             total_status[j] &= status[j];
+
+        return true;
     }
+}
+
+bool FeatureTracker::points_moved_enough(vector<cv::Point2f> prev_points, vector<cv::Point2f> next_points, vector<uchar> status) {
+
+    double move_sum = 0.0;
+
+    for (int i = 0; i < status.size(); ++i) {
+        if (!status[i]) continue;
+
+        cv::Point2f pt = prev_points[i] - next_points[i];
+        move_sum += sqrt(pt.x*pt.x + pt.y*pt.y);
+
+    }
+
+    cout << "move_sum = " << move_sum << endl;
+
+    return true;
 }
 
 int FeatureTracker::count_track_points() {
