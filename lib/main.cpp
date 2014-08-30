@@ -8,15 +8,17 @@ int main(int argc, char* argv[]) {
     vector<Mat1b> gray_images;
     cout << "Feature Tracking, tracking points" << endl;
     for( int i = 1; i < argc; ++i ) {
-        input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_COLOR) );
-        gray_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
-        tracker.add_image( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
 
-        if ( i == 1 ) imwrite("tmp/ft-01.png",tracker.track_points_image());
-        else if ( i == argc/2 ) imwrite("tmp/ft-02.png",tracker.track_points_image());
-        else if ( i == argc-1 ) imwrite("tmp/ft-03.png",tracker.track_points_image());
+        Mat1b input = imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE);
+        if ( tracker.add_image(input) == true ) {
+            input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_COLOR) );
+            gray_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
+            if ( i == 1 ) imwrite("tmp/ft-01.png",tracker.track_points_image());
+            else if ( i == argc/2 ) imwrite("tmp/ft-02.png",tracker.track_points_image());
+            else if ( i == argc-1 ) imwrite("tmp/ft-03.png",tracker.track_points_image());
+            cout << tracker.count_track_points() << " " ;
+        }
 
-        cout << tracker.count_track_points() << " " ;
     }
     cout << endl;
 
