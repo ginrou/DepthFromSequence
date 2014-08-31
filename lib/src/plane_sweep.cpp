@@ -19,9 +19,10 @@ public:
 const double PlaneSweep::OutOfRangeIntensity = -1;
 
 void PlaneSweep::sweep(Mat3b &img) {
-    int W = img.size().width, H = img.size().height;
+    int W = img.size().width, H = img.size().height, M = _depth_variation.size();
 
-    float *unary = this->compute_unary_energy();
+    float *unary = new float[W*H*M];
+    this->compute_unary_energy(unary, _stable_region);
     cout << "unary energy computed" << endl;
 
     unsigned char *img_buf = new unsigned char[W*H*3];
@@ -44,11 +45,15 @@ void PlaneSweep::sweep(Mat3b &img) {
     crf.map(5, map);
     cout << "smooth map computed" << endl;
 
+    Mat1b smooth_full(H, W);
     for( int h = 0; h < H; ++h ) {
         for( int w = 0; w < W; ++w ) {
-            _depth_smooth.at<unsigned char>(h,w) = map[h*W+w];
+            smooth_full.at<unsigned char>(h,w) = map[h*W+w];
         }
     }
+
+    cout << _stable_region << endl;
+    _depth_smooth = smooth_full(_stable_region);
 
     delete [] unary;
     delete [] img_buf;
@@ -56,16 +61,17 @@ void PlaneSweep::sweep(Mat3b &img) {
     delete metrifc_function;
 }
 
-float *PlaneSweep::compute_unary_energy() {
+void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
     Mat3b ref_img = _images[0];
     int W = ref_img.cols, H = ref_img.rows, M = _depth_variation.size();
 
-    float *unary = new float[W*H*M];
+    int left = W, top = H, right = 0, bottom = 0;
 
     for( int h = 0; h < H; ++h ) {
         for( int w = 0; w < W; ++w ) {
 
             Vec3b ref_val = ref_img.at<Vec3b>(h,w);
+            int out_of_ranges = 0;
             int min_idx;
             double min_val = DBL_MAX;
 
@@ -77,6 +83,7 @@ float *PlaneSweep::compute_unary_energy() {
                     Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
                     if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
                         err += 1000 * 3*255*255; // とりあえずはずれの場合は最大誤差を入れる
+                        out_of_ranges++;
                     } else {
                         Vec3b val = _images[n].at<Vec3b>((int)pt.y, (int)pt.x);
                         err += (ref_val.val[0] - val.val[0]) * (ref_val.val[0] - val.val[0]);
@@ -92,10 +99,21 @@ float *PlaneSweep::compute_unary_energy() {
                 }
             }// d
             _depth_raw.at<uchar>(h,w) = min_idx;
+
+            if ( 1.0 - (double)out_of_ranges / (double)M*_N >= _sufficient_input) {
+                if ( w < W/2 && w < left   ) left = w;
+                if ( w > W/2 && w > right  ) right = w;
+                if ( h < H/2 && h < top    ) top = h;
+                if ( h > H/2 && h > bottom ) bottom = h;
+            }
+
         }//w
     }//h
 
-    return unary;
+    good_region.x = left;
+    good_region.y = top;
+    good_region.width = right - left + 1;
+    good_region.height = bottom - top + 1;
 }
 
 Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point) {

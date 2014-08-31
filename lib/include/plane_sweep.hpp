@@ -19,10 +19,12 @@ public:
     // ouput
     Mat1b _depth_smooth; // depth map smooth by dence_crf
     Mat1b _depth_raw; // raw depth map
+    cv::Rect _stable_region; // region where depth map is computed from sufficient images
 
     // for used in inside
     int _N; // number of images,
     double _crf_threshold;
+    double _sufficient_input;
     vector< vector< Matx33d > > _homography_matrix; // homography_matrix[ img_index ][ depth_index];
 
     PlaneSweep(vector<Mat3b> images, vector<Camera> cameras, vector<double> depth_variation)
@@ -34,9 +36,9 @@ public:
 
             _N = images.size();
             _crf_threshold = 0.15;
+            _sufficient_input = 0.75;
 
             // allocate
-            _depth_smooth = Mat(img_size, CV_8UC1);
             _depth_raw = Mat(img_size, CV_8UC1);
 
             // compute all homography matrix
@@ -52,7 +54,7 @@ public:
 
     void sweep(Mat3b &img);
 
-    float *compute_unary_energy();
+    void compute_unary_energy(float *unary, cv::Rect &good_region);
 
     // homography matrix to see target_cam image from ref_cam params assuming all points are on the depth
     static Matx33d homography_matrix( Camera ref_cam, Camera dst_cam, double depth ) {
