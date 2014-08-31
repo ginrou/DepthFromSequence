@@ -22,6 +22,7 @@ public:
 
     // for used in inside
     int _N; // number of images,
+    double _crf_threshold;
     vector< vector< Matx33d > > _homography_matrix; // homography_matrix[ img_index ][ depth_index];
 
     PlaneSweep(vector<Mat3b> images, vector<Camera> cameras, vector<double> depth_variation)
@@ -32,6 +33,7 @@ public:
             cv::Size img_size = images[0].size();
 
             _N = images.size();
+            _crf_threshold = 0.15;
 
             // allocate
             _depth_smooth = Mat(img_size, CV_8UC1);

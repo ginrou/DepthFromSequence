@@ -1,12 +1,28 @@
 #include "plane_sweep.hpp"
 #include "densecrf.h"
 
+class PlaneSweepMetricFunction : public SemiMetricFunction {
+public:
+    double threshold;
+
+    void apply( float * out_values, const float * in_values, int value_size ) const {
+        for(int j = 0; j < value_size; ++j ) {
+            out_values[j] = 0.0;
+            for(int i = 0; i < value_size; ++i ){
+                out_values[j] += MIN(threshold, fabs(i-j)) * in_values[i];
+            }
+        }
+    }
+};
+
+
 const double PlaneSweep::OutOfRangeIntensity = -1;
 
 void PlaneSweep::sweep(Mat3b &img) {
     int W = img.size().width, H = img.size().height;
 
     float *unary = this->compute_unary_energy();
+    cout << "unary energy computed" << endl;
 
     unsigned char *img_buf = new unsigned char[W*H*3];
     for( int h = 0; h < H; ++h ) {
@@ -20,11 +36,13 @@ void PlaneSweep::sweep(Mat3b &img) {
 
     DenseCRF2D crf(W,H,_depth_variation.size());
     crf.setUnaryEnergy(unary);
-    crf.addPairwiseGaussian(8,8,1000);
-    crf.addPairwiseBilateral(8, 8, 30, 30, 30, img_buf, 1000);
+    PlaneSweepMetricFunction *metrifc_function = new PlaneSweepMetricFunction;
+    metrifc_function->threshold = _crf_threshold * (double)_depth_variation.size();
+    crf.addPairwiseBilateral(50, 50, 20, 20, 20, img_buf, 256*256, metrifc_function);
 
     short *map = new short[W*H];
-    crf.map(10, map);
+    crf.map(5, map);
+    cout << "smooth map computed" << endl;
 
     for( int h = 0; h < H; ++h ) {
         for( int w = 0; w < W; ++w ) {
@@ -35,6 +53,7 @@ void PlaneSweep::sweep(Mat3b &img) {
     delete [] unary;
     delete [] img_buf;
     delete [] map;
+    delete metrifc_function;
 }
 
 float *PlaneSweep::compute_unary_energy() {
@@ -66,7 +85,7 @@ float *PlaneSweep::compute_unary_energy() {
                     }
 
                 }// n
-                unary[h*W*M + w*M +d] = err/1000.0;
+                unary[h*W*M + w*M +d] = err/(double)(_N*3);
                 if ( err < min_val ) {
                     min_val = err;
                     min_idx = d;
