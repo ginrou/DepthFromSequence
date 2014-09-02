@@ -11,4 +11,5 @@
 
 @interface TKDPreviewView : UIView
 @property (nonatomic, strong) AVCaptureSession* session;
+- (void)setVideoGravity:(NSString *)gravity;
 @end

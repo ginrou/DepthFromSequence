@@ -24,4 +24,9 @@
     [(AVCaptureVideoPreviewLayer *)[self layer] setSession:session];
 }
 
+- (void)setVideoGravity:(NSString *)gravity {
+    AVCaptureVideoPreviewLayer *layer = (AVCaptureVideoPreviewLayer *)self.layer;
+    layer.videoGravity = gravity;
+}
+
 @end

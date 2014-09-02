@@ -37,6 +37,8 @@
 		54C1655F19073B00005E20F8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C1654119073AFF005E20F8 /* UIKit.framework */; };
 		54C1656719073B00005E20F8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 54C1656519073B00005E20F8 /* InfoPlist.strings */; };
 		54C1656919073B00005E20F8 /* LensBlurTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 54C1656819073B00005E20F8 /* LensBlurTests.m */; };
+		54FB782619B5740A00BD5A5A /* LensBlur.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 54FB782519B5740A00BD5A5A /* LensBlur.storyboard */; };
+		54FB782919B5750000BD5A5A /* TKDLensBlurCaptureViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 54FB782819B5750000BD5A5A /* TKDLensBlurCaptureViewController.m */; };
 		F17195FE04E7458894F756F4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9161F61295AC46938A6786B2 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -92,6 +94,9 @@
 		54C1656419073B00005E20F8 /* LensBlurTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LensBlurTests-Info.plist"; sourceTree = "<group>"; };
 		54C1656619073B00005E20F8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		54C1656819073B00005E20F8 /* LensBlurTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LensBlurTests.m; sourceTree = "<group>"; };
+		54FB782519B5740A00BD5A5A /* LensBlur.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LensBlur.storyboard; sourceTree = "<group>"; };
+		54FB782719B5750000BD5A5A /* TKDLensBlurCaptureViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDLensBlurCaptureViewController.h; sourceTree = "<group>"; };
+		54FB782819B5750000BD5A5A /* TKDLensBlurCaptureViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDLensBlurCaptureViewController.m; sourceTree = "<group>"; };
 		9161F61295AC46938A6786B2 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -167,22 +172,18 @@
 		54C1654319073AFF005E20F8 /* LensBlur */ = {
 			isa = PBXGroup;
 			children = (
+				54FB782A19B5751000BD5A5A /* Experiments */,
 				548225351997370700FA5BD0 /* DepthFromSequence */,
 				54C1654C19073AFF005E20F8 /* TKDAppDelegate.h */,
 				54C1654D19073AFF005E20F8 /* TKDAppDelegate.m */,
 				54C1654F19073AFF005E20F8 /* Main.storyboard */,
-				54971DD719AC41240064E4F8 /* TKDRecordViewerViewController.h */,
-				54971DD819AC41240064E4F8 /* TKDRecordViewerViewController.m */,
-				545FF06B19AA16E7003B6681 /* TKDNewRecordViewController.h */,
-				545FF06C19AA16E7003B6681 /* TKDNewRecordViewController.m */,
-				545FF06519A9EAAD003B6681 /* TKDRecordTableViewController.h */,
-				545FF06619A9EAAD003B6681 /* TKDRecordTableViewController.m */,
-				545FF06819A9EB2C003B6681 /* TKDRecordDataSource.h */,
-				545FF06919A9EB2C003B6681 /* TKDRecordDataSource.m */,
+				54FB782519B5740A00BD5A5A /* LensBlur.storyboard */,
 				548225391997401400FA5BD0 /* TKDPreviewView.h */,
 				5482253A1997401400FA5BD0 /* TKDPreviewView.m */,
 				54C1655519073AFF005E20F8 /* Images.xcassets */,
 				54C1654419073AFF005E20F8 /* Supporting Files */,
+				54FB782719B5750000BD5A5A /* TKDLensBlurCaptureViewController.h */,
+				54FB782819B5750000BD5A5A /* TKDLensBlurCaptureViewController.m */,
 			);
 			path = LensBlur;
 			sourceTree = "<group>";
@@ -214,6 +215,21 @@
 				54C1656519073B00005E20F8 /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		54FB782A19B5751000BD5A5A /* Experiments */ = {
+			isa = PBXGroup;
+			children = (
+				54971DD719AC41240064E4F8 /* TKDRecordViewerViewController.h */,
+				54971DD819AC41240064E4F8 /* TKDRecordViewerViewController.m */,
+				545FF06B19AA16E7003B6681 /* TKDNewRecordViewController.h */,
+				545FF06C19AA16E7003B6681 /* TKDNewRecordViewController.m */,
+				545FF06519A9EAAD003B6681 /* TKDRecordTableViewController.h */,
+				545FF06619A9EAAD003B6681 /* TKDRecordTableViewController.m */,
+				545FF06819A9EB2C003B6681 /* TKDRecordDataSource.h */,
+				545FF06919A9EB2C003B6681 /* TKDRecordDataSource.m */,
+			);
+			name = Experiments;
 			sourceTree = "<group>";
 		};
 		9A11A57A19976DF9007A1CB6 /* src */ = {
@@ -316,6 +332,7 @@
 				54C1654819073AFF005E20F8 /* InfoPlist.strings in Resources */,
 				5482254419975D3900FA5BD0 /* include in Resources */,
 				54C1655119073AFF005E20F8 /* Main.storyboard in Resources */,
+				54FB782619B5740A00BD5A5A /* LensBlur.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,6 +390,7 @@
 				5482255719975FC700FA5BD0 /* filter.cpp in Sources */,
 				54971DD619AA26E70064E4F8 /* debug.cpp in Sources */,
 				545FF06A19A9EB2C003B6681 /* TKDRecordDataSource.m in Sources */,
+				54FB782919B5750000BD5A5A /* TKDLensBlurCaptureViewController.m in Sources */,
 				5482255819975FC700FA5BD0 /* permutohedral.cpp in Sources */,
 				5482255919975FC700FA5BD0 /* util.cpp in Sources */,
 				5482254D19975FAA00FA5BD0 /* bundle_adjustment.cpp in Sources */,
@@ -453,7 +471,7 @@
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",

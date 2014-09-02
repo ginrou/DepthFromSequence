@@ -54,8 +54,8 @@ int main(int argc, char* argv[]) {
     ps->sweep(color_image);
 
     // output
-    imwrite("depth_smooth.png", ps->_depth_smooth);
-    imwrite("depth_raw.png", ps->_depth_raw);
+    imwrite("depth_smooth.png", 8 * ps->_depth_smooth);
+    imwrite("depth_raw.png", 8 * ps->_depth_raw);
 
     delete ps;
     return 0;
