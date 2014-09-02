@@ -49,7 +49,7 @@ public:
             c = 0.00001;
             should_continue = true;
             ittr = 0;
-            MAX_ITTR = 45;
+            MAX_ITTR = 5;
         }
 
     void init_with_first_image( vector< vector<Point2d> > captured_in, cv::Size img_size, double focal_length, double mean_depth, double fov);
@@ -58,6 +58,7 @@ public:
     double reprojection_error();
     void run_one_step();
     bool get_should_continue( double error_before, double error_after, double update_norm );
+    bool good_reporjection();
 
     vector<double> depth_variation(int resolution);
 

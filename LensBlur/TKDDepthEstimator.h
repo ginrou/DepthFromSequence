@@ -13,22 +13,36 @@
 
 @interface TKDDepthEstimator : NSObject
 @property (nonatomic, weak) id<TKDDepthEstimatorDelegate> delegate;
+@property (nonatomic, assign) BOOL captureLog;
+
+// outputs
 @property (nonatomic, strong) NSMutableString *log;
 @property (nonatomic, strong) UIImage *rawDepthMap;
 @property (nonatomic, strong) UIImage *smoothDepthMap;
+@property (nonatomic, readonly) NSDictionary *computationLog;
 
-- (void)checkStability:(CMSampleBufferRef)sampleBuffer;
-- (void)addImage:(CMSampleBufferRef)sampleBuffer;
-- (void)runEstimation;
+- (void)checkStability:(CMSampleBufferRef)sampleBuffer block:(void(^)(CGFloat stability))block;
+
+- (void)addImage:(CMSampleBufferRef)sampleBuffer block:(void(^)(BOOL added, BOOL prepared))block;
+- (NSInteger)numberOfRquiredImages;
 - (NSArray *)convertToUIImages;
+
+- (NSProgress *)runEstimationOnSuccess:(void(^)(UIImage *depthMap))onSuccess
+                               onError:(void(^)(NSError *error))onError;
+
 
 @end
 
 @protocol TKDDepthEstimatorDelegate <NSObject>
-- (void)depthEstimator:(UIImage *)estimatedDepthMap;
-- (void)depthEstimator:(TKDDepthEstimator *)estimator stabilityUpdated:(CGFloat)stability;
-- (void)depthEstimator:(TKDDepthEstimator *)estimator statusUpdated:(NSString *)status;
+@optional
 - (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine;
-- (void)depthEstimatorImagesPrepared:(TKDDepthEstimator *)estimator;
-- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationCompleted:(UIImage *)smoothDepthMap;
 @end
+
+FOUNDATION_EXTERN NSString *TKDDepthEstimatorErrorDomain;
+
+typedef NS_ENUM(NSInteger, TKDDepthEstimatorErrorCode) {
+    TKDDepthEstimatorInvalidInputError = 0,
+    TKDDepthEstimatorFewFeaturesError,
+    TKDDepthEstimatorBundleAdjustmentFailed,
+    TKDDepthEstimatorErrorCodeCount
+};

@@ -56,6 +56,7 @@ TKDDepthEstimatorDelegate
 
     self.depthEstimator = [TKDDepthEstimator new];
     self.depthEstimator.delegate = self;
+    self.depthEstimator.captureLog = YES;
     self.shouldCapture = NO;
 
     self.session = [AVCaptureSession new];
@@ -135,21 +136,9 @@ TKDDepthEstimatorDelegate
                                      }];
 }
 
-#pragma mark - Delegate
-- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
-{
-    if (self.shouldCapture) {
-        [self.depthEstimator addImage:sampleBuffer];
-    }
-}
+- (void)runEstimation {
+    __weak typeof(self) weakSelf = self;
 
-- (void)depthEstimator:(TKDDepthEstimator *)estimator statusUpdated:(NSString *)status
-{
-    self.statusLabel.text = status;
-}
-
-- (void)depthEstimatorImagesPrepared:(TKDDepthEstimator *)estimator
-{
     dispatch_async(self.videoDataQueue, ^{
         self.shouldCapture = NO;
         self.cancelButton.enabled = NO;
@@ -157,16 +146,27 @@ TKDDepthEstimatorDelegate
         dispatch_async(self.sessionQueue, ^{
             [self.session stopRunning];
         });
-        [self.depthEstimator runEstimation];
+        [self.depthEstimator runEstimationOnSuccess:^(UIImage *depthMap) {
+            weakSelf.rawDepthMap.image = weakSelf.depthEstimator.rawDepthMap;
+            weakSelf.smoothDepthMap.image = depthMap;
+            weakSelf.saveButton.enabled = YES;
+        } onError:^(NSError *error) {
+            NSLog(@"%@", error);
+        }];
     });
 }
 
-- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationCompleted:(UIImage *)smoothDepthMap
+#pragma mark - Delegate
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
-    self.rawDepthMap.image = estimator.rawDepthMap;
-    self.smoothDepthMap.image = estimator.smoothDepthMap;
-    self.statusLabel.text = @"completed";
-    self.saveButton.enabled = YES;
+    if (self.shouldCapture) {
+        __weak typeof(self) weakSelf = self;
+        [self.depthEstimator addImage:sampleBuffer block:^(BOOL added, BOOL prepared) {
+            if (prepared) {
+                [weakSelf runEstimation];
+            }
+        }];
+    }
 }
 
 - (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine

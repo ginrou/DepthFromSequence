@@ -10,6 +10,8 @@
 
 #import "TKDLensBlurCaptureViewController.h"
 #import "TKDDepthEstimator.h"
+#import "TKDHowToUseGuide.h"
+#import "TKDCountDownGuide.h"
 
 @interface TKDLensBlurCaptureViewController () <
 AVCaptureVideoDataOutputSampleBufferDelegate,
@@ -19,12 +21,16 @@ TKDDepthEstimatorDelegate
 @property (weak, nonatomic) IBOutlet UIView *stabilityIcon;
 @property (weak, nonatomic) IBOutlet UIButton *captureButton;
 @property (weak, nonatomic) IBOutlet TKDPreviewView *previewView;
-@property (assign, nonatomic) BOOL readyToCapture;
+
+// Guide
+@property (weak, nonatomic) TKDGuideView *guide;
 
 // AVCaptures
+@property (assign, nonatomic) BOOL readyToCapture;
 @property (nonatomic, strong) AVCaptureSession *session;
 @property (nonatomic, strong) dispatch_queue_t sessionQueue;
 @property (nonatomic, strong) dispatch_queue_t videoDataQueue;
+@property (atomic, assign) BOOL useVideoBufferToEstimate;
 
 // depth estimator
 @property (nonatomic, assign) int round;
@@ -46,6 +52,20 @@ static const CGFloat kNotReadyStability = -1;
     [self setupAVCapture];
     self.depthEstimator = [TKDDepthEstimator new];
     self.depthEstimator.delegate = self;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self.session startRunning];
+
+    self.guide = [TKDGuideView guideViewWithXibName:@"TKDHowToUseGuide"];
+    [self.guide showOnView:self.view removeAutomatically:YES];
+
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.session stopRunning];
 }
 
 - (void)didReceiveMemoryWarning
@@ -93,6 +113,24 @@ static const CGFloat kNotReadyStability = -1;
     }
 }
 
+- (void)updateGuideView {
+    [(TKDCountDownGuide *)self.guide setNumber:self.depthEstimator.numberOfRquiredImages];
+}
+
+- (void)showHogeViewController {
+    
+}
+
+- (IBAction)captureButtonTapped:(id)sender {
+    dispatch_async(self.videoDataQueue, ^{
+        self.useVideoBufferToEstimate = YES;
+        self.guide = [TKDGuideView guideViewWithXibName:@"TKDCountDownGuide"];
+        [self updateGuideView];
+    });
+}
+
+#pragma mark - AVFoundation and About DepthEstimator
+
 - (void)setupAVCapture {
     [self setStability:kNotReadyStability];
 
@@ -137,8 +175,6 @@ static const CGFloat kNotReadyStability = -1;
 
         [self.previewView setVideoGravity:AVLayerVideoGravityResizeAspect];
 
-        [self.session startRunning];
-
         dispatch_async(dispatch_get_main_queue(), ^{
             self.readyToCapture = YES;
         });
@@ -155,36 +191,21 @@ static const CGFloat kNotReadyStability = -1;
     return devices.firstObject;
 }
 
-- (void)depthEstimator:(TKDDepthEstimator *)estimator statusUpdated:(NSString *)status
-{
-
-}
-
-- (void)depthEstimator:(TKDDepthEstimator *)estimator stabilityUpdated:(CGFloat)stability
-{
-    [self setStability:stability];
-}
-
-- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationCompleted:(UIImage *)smoothDepthMap
-{
-
-}
-
-- (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine
-{
-
-}
-
-- (void)depthEstimatorImagesPrepared:(TKDDepthEstimator *)estimator
-{
-
-}
-
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
-    if (_round++%5 == 0) {
-        [self.depthEstimator checkStability:sampleBuffer];
+    __weak typeof(self) weakSelf = self;
+
+    if (self.useVideoBufferToEstimate) {
+        [self.depthEstimator addImage:sampleBuffer block:^(BOOL added, BOOL prepared) {
+            [weakSelf updateGuideView];
+            if (prepared) [weakSelf showHogeViewController];
+        }];
+    } else if (_round++%5 == 0) {
+        [self.depthEstimator checkStability:sampleBuffer block:^(CGFloat stability) {
+            [weakSelf setStability:stability];
+        }];
     }
 }
+
 
 @end

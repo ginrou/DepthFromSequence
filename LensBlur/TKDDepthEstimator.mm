@@ -11,6 +11,7 @@
 #include "depth_from_sequence.hpp"
 #import <ios.h>
 
+NSString *TKDDepthEstimatorErrorDomain = @"tkd.depthEstimator.error";
 static int const kMaxImages = 20;
 
 using namespace std;
@@ -24,6 +25,13 @@ using namespace cv;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (atomic) BOOL running;
 @property NSFileHandle *pipeReadHandle;
+
+// processing status
+@property (nonatomic, assign) int trackingPoints;
+@property (nonatomic, assign) int bundleAdjustmentIttr;
+@property (nonatomic, assign) double reprojectionError;
+
+
 @end
 
 @implementation TKDDepthEstimator
@@ -35,19 +43,43 @@ using namespace cv;
         _queue = dispatch_queue_create("DepthEstimationQueue", NULL);
 
         self.log = [NSMutableString string];
-        NSPipe *pipe = [NSPipe pipe];
-        self.pipeReadHandle = [pipe fileHandleForReading];
-        dup2([[pipe fileHandleForWriting] fileDescriptor], fileno(stdout));
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(readSTDOUT:) name:NSFileHandleReadCompletionNotification object:nil];
-        [self.pipeReadHandle readInBackgroundAndNotify];
     }
     return self;
 }
 
 - (void)dealloc {
     delete full_color_images;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    dup2(fileno(stdout), self.pipeReadHandle.fileDescriptor);
+    self.captureLog = NO;
+}
+
+- (void)setCaptureLog:(BOOL)captureLog {
+    if (_captureLog != captureLog) {
+        [self willChangeValueForKey:@"captureLog"];
+        _captureLog = captureLog;
+        [self didChangeValueForKey:@"captureLog"];
+
+        if (captureLog) {
+            NSPipe *pipe = [NSPipe pipe];
+            self.pipeReadHandle = [pipe fileHandleForReading];
+            dup2([[pipe fileHandleForWriting] fileDescriptor], fileno(stdout));
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(readSTDOUT:) name:NSFileHandleReadCompletionNotification object:nil];
+            [self.pipeReadHandle readInBackgroundAndNotify];
+        } else {
+            [[NSNotificationCenter defaultCenter] removeObserver:self];
+            dup2(fileno(stdout), self.pipeReadHandle.fileDescriptor);
+        }
+    }
+}
+
+- (NSInteger)numberOfRquiredImages {
+    return kMaxImages - full_color_images->size();
+}
+
+- (NSDictionary *)computationLog {
+    return @{@"reprojection_error": @(self.reprojectionError),
+             @"bundl_adjustment_ittr": @(self.bundleAdjustmentIttr),
+             @"tracking_points": @(self.trackingPoints),
+             };
 }
 
 + (Mat3b)sampleBufferToMat:(CMSampleBufferRef)sampleBuffer {
@@ -92,7 +124,9 @@ using namespace cv;
 
 }
 
-- (void)checkStability:(CMSampleBufferRef)sampleBuffer {
+- (void)checkStability:(CMSampleBufferRef)sampleBuffer
+                 block:(void (^)(CGFloat))block
+{
     Mat3b mat = [[self class] sampleBufferToMat:sampleBuffer];
     dispatch_async(_queue, ^{
         Mat1b *gray = new Mat1b(mat.size());
@@ -100,19 +134,17 @@ using namespace cv;
         int features = tracker->good_features_to_track(*gray);
         dispatch_async(dispatch_get_main_queue(), ^{
             CGFloat st = (CGFloat)features/(CGFloat)tracker->MAX_CORNERS;
-            [self.delegate depthEstimator:self stabilityUpdated:st];
+            if (block) block(st);
         });
         delete gray;
     });
 }
 
-- (void)addImage:(CMSampleBufferRef)sampleBuffer {
 
+- (void)addImage:(CMSampleBufferRef)sampleBuffer block:(void (^)(BOOL, BOOL))block
+{
     if (full_color_images->size() >= kMaxImages) {
-        NSLog(@"%lu do not add anymore", full_color_images->size());
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.delegate depthEstimatorImagesPrepared:self];
-        });
+        if (block) block(NO, YES);
         return;
     }
 
@@ -129,22 +161,49 @@ using namespace cv;
             cout << tracker->count_track_points() << endl;
         }
 
+        if (block) {
+            BOOL prepared = (full_color_images->size() >= kMaxImages);
+            block(added, prepared);
+        }
+
         delete gray;
     });
 
+
 }
 
-- (void)runEstimation {
-    dispatch_async(_queue, ^{
-        if (self.running == NO) {
-            self.running = YES;
-            [self runEstimationImpl];
-        }
-    });
+- (NSProgress *)runEstimationOnSuccess:(void (^)(UIImage *))onSuccess
+                               onError:(void (^)(NSError *))onError
+{
+    if (self.running == NO) {
+        self.running = YES;
+
+        NSProgress *progress = [NSProgress progressWithTotalUnitCount:100];
+
+        dispatch_async(_queue, ^{
+            [self runEstimationImpl:progress onSuccess:^(UIImage *image) {
+                self.running = NO;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    onSuccess(image);
+                });
+            } onError:^(NSError *error) {
+                self.running = NO;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    onError(error);
+                });
+            }];
+        });
+        return progress;
+    } else {
+        return nil;
+    }
+
 }
 
-- (void)runEstimationImpl {
-
+- (void)runEstimationImpl:(NSProgress *)progress
+                onSuccess:(void (^)(UIImage *))onSuccess
+                  onError:(void (^)(NSError *))onError
+{
     vector< vector<Point2d> > track_points = tracker->pickup_stable_points();
 
     // Solver を初期化
@@ -158,31 +217,41 @@ using namespace cv;
     // bundle adjustment を実行
     while ( solver.should_continue ) {
         solver.run_one_step();
-        print_ittr_status(solver);
+        progress.completedUnitCount = MIN(solver.ittr*10, 50);
     }
 
-    print_params(solver);
+    if (solver.good_reporjection()) {
+        NSError *error = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain
+                                             code:TKDDepthEstimatorBundleAdjustmentFailed
+                                         userInfo:nil];
+        onError(error);
+        return;
+    }
+
+    progress.completedUnitCount = 50; // BundleAdjustmentで50%
+
     // plane sweep の準備
     vector<double> depths = solver.depth_variation(32);
-
-    for(int i = 0; i < depths.size(); ++i )
-        cout << depths[i] << endl;
 
     // plane sweep + dencecrf で奥行きを求める
     PlaneSweep *ps = new PlaneSweep(*full_color_images, solver.camera_params, depths);
     ps->sweep(full_color_images->front()); // ref imageは最初の画像
+    progress.completedUnitCount = 100;
 
-    UIImage *raw = MatToUIImage(8*(ps->_depth_raw));
-    self.rawDepthMap = [UIImage imageWithCGImage:raw.CGImage scale:2.0 orientation:UIImageOrientationRight];
+    UIImage *raw = MatToUIImage(ps->_depth_raw);
+    self.rawDepthMap = [UIImage imageWithCGImage:raw.CGImage scale:2.0
+                                     orientation:UIImageOrientationRight];
 
-    UIImage *smooth = MatToUIImage(8*(ps->_depth_smooth));
-    self.smoothDepthMap = [UIImage imageWithCGImage:smooth.CGImage scale:2.0 orientation:UIImageOrientationRight];
+    UIImage *smooth = MatToUIImage(ps->_depth_smooth);
+    self.smoothDepthMap = [UIImage imageWithCGImage:smooth.CGImage scale:2.0
+                                        orientation:UIImageOrientationRight];
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.delegate depthEstimator:self
-                  estimationCompleted:self.smoothDepthMap];
-    });
+    self.bundleAdjustmentIttr = solver.ittr;
+    self.reprojectionError = solver.reprojection_error();
+    self.trackingPoints = solver.Np;
 
+    onSuccess(self.smoothDepthMap);
+    
     delete ps;
 
 }

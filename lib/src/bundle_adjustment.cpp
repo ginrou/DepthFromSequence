@@ -270,6 +270,10 @@ bool BundleAdjustment::Solver::get_should_continue( double error_before, double 
     return true;
 }
 
+bool BundleAdjustment::Solver::good_reporjection() {
+    return this->reprojection_error() < 1.0; // 1.0より大きいと割と推定に失敗する
+}
+
 vector<double> BundleAdjustment::Solver::depth_variation(int resolution) {
     double min = DBL_MAX, max = 0.0;
     for ( int j = 0; j < Np; ++j ) {
