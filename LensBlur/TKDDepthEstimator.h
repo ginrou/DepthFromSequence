@@ -17,6 +17,7 @@
 @property (nonatomic, strong) UIImage *rawDepthMap;
 @property (nonatomic, strong) UIImage *smoothDepthMap;
 
+- (void)checkStability:(CMSampleBufferRef)sampleBuffer;
 - (void)addImage:(CMSampleBufferRef)sampleBuffer;
 - (void)runEstimation;
 - (NSArray *)convertToUIImages;
@@ -25,6 +26,7 @@
 
 @protocol TKDDepthEstimatorDelegate <NSObject>
 - (void)depthEstimator:(UIImage *)estimatedDepthMap;
+- (void)depthEstimator:(TKDDepthEstimator *)estimator stabilityUpdated:(CGFloat)stability;
 - (void)depthEstimator:(TKDDepthEstimator *)estimator statusUpdated:(NSString *)status;
 - (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine;
 - (void)depthEstimatorImagesPrepared:(TKDDepthEstimator *)estimator;

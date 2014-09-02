@@ -92,6 +92,20 @@ using namespace cv;
 
 }
 
+- (void)checkStability:(CMSampleBufferRef)sampleBuffer {
+    Mat3b mat = [[self class] sampleBufferToMat:sampleBuffer];
+    dispatch_async(_queue, ^{
+        Mat1b *gray = new Mat1b(mat.size());
+        cvtColor(mat, *gray, CV_RGB2GRAY);
+        int features = tracker->good_features_to_track(*gray);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            CGFloat st = (CGFloat)features/(CGFloat)tracker->MAX_CORNERS;
+            [self.delegate depthEstimator:self stabilityUpdated:st];
+        });
+        delete gray;
+    });
+}
+
 - (void)addImage:(CMSampleBufferRef)sampleBuffer {
 
     if (full_color_images->size() >= kMaxImages) {

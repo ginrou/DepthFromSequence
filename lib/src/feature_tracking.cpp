@@ -68,6 +68,12 @@ void FeatureTracker::initialize_tracker(cv::Mat base_image) {
     total_status = std::vector<uchar>( points.size(), 1 );
 }
 
+int FeatureTracker::good_features_to_track(cv::Mat1b img) {
+    vector<Point2f> points;
+    cv::goodFeaturesToTrack(img, points, MAX_CORNERS, QUALITY_LEVEL, 10, noArray(), 5, true, 0.08);
+    return points.size();
+}
+
 std::vector<Point2f> FeatureTracker::track_for_image( cv::Mat prev_image,
                                                       cv::Mat next_image,
                                                       std::vector<Point2f> prev_point,

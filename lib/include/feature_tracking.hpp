@@ -26,7 +26,7 @@ public:
         sub_pix_win_size = cv::Size(10, 10);
         term_crit = cv::TermCriteria( cv::TermCriteria::COUNT|cv::TermCriteria::EPS,20,0.03 );
         MAX_CORNERS = 100;
-        QUALITY_LEVEL = 0.001;
+        QUALITY_LEVEL = 0.01;
         MIN_TRACK_MOVE = 10.0;
     }
 
@@ -35,6 +35,8 @@ public:
     int count_track_points();
 
     vector< vector<cv::Point2d> > pickup_stable_points();
+
+    int good_features_to_track(cv::Mat1b img);
 
 private:
     void initialize_tracker(cv::Mat base_image);

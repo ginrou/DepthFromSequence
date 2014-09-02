@@ -9,9 +9,11 @@
 @import AVFoundation;
 
 #import "TKDLensBlurCaptureViewController.h"
+#import "TKDDepthEstimator.h"
 
 @interface TKDLensBlurCaptureViewController () <
-AVCaptureVideoDataOutputSampleBufferDelegate
+AVCaptureVideoDataOutputSampleBufferDelegate,
+TKDDepthEstimatorDelegate
 >
 @property (weak, nonatomic) IBOutlet UILabel *stabilityLabel;
 @property (weak, nonatomic) IBOutlet UIView *stabilityIcon;
@@ -24,10 +26,15 @@ AVCaptureVideoDataOutputSampleBufferDelegate
 @property (nonatomic, strong) dispatch_queue_t sessionQueue;
 @property (nonatomic, strong) dispatch_queue_t videoDataQueue;
 
+// depth estimator
+@property (nonatomic, assign) int round;
+@property (nonatomic, strong) TKDDepthEstimator *depthEstimator;
+
 @end
 
 static const char * sessionQueueLabel = "TKDLensBlurCaptureViewController#sessionQueue";
 static const char * videoDataQueueLabel = "TKDLensBlurCaptureViewController#videoDataQueue";
+static const CGFloat kNotReadyStability = -1;
 
 @implementation TKDLensBlurCaptureViewController
 
@@ -37,6 +44,8 @@ static const char * videoDataQueueLabel = "TKDLensBlurCaptureViewController#vide
     self.stabilityIcon.layer.cornerRadius = self.stabilityIcon.frame.size.width/2.0;
     self.captureButton.enabled = NO;
     [self setupAVCapture];
+    self.depthEstimator = [TKDDepthEstimator new];
+    self.depthEstimator.delegate = self;
 }
 
 - (void)didReceiveMemoryWarning
@@ -44,6 +53,18 @@ static const char * videoDataQueueLabel = "TKDLensBlurCaptureViewController#vide
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+/*
+ #pragma mark - Navigation
+
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+ {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
+
 
 - (void)setReadyToCapture:(BOOL)readyToCapture {
     if (_readyToCapture != readyToCapture) {
@@ -55,13 +76,25 @@ static const char * videoDataQueueLabel = "TKDLensBlurCaptureViewController#vide
     }
 }
 
-- (void)setStabilityLabelText:(NSString *)text color:(UIColor *)color {
-    self.stabilityLabel.text = text;
-    self.stabilityIcon.backgroundColor = color;
+- (void)setStability:(CGFloat)stability {
+    if (stability == kNotReadyStability) {
+        self.stabilityLabel.text = @"Preparing...";
+        self.stabilityIcon.backgroundColor = [UIColor grayColor];
+    } else {
+
+        self.stabilityLabel.text = [NSString stringWithFormat:@"stability : %d%%", (int)(100.0*stability)];
+
+        if (stability < 0.5) self.stabilityIcon.backgroundColor = [UIColor redColor];
+        else if (stability < 0.7) self.stabilityIcon.backgroundColor = [UIColor yellowColor];
+        else self.stabilityIcon.backgroundColor = [UIColor greenColor];
+
+        self.readyToCapture = stability < 0.5;
+
+    }
 }
 
 - (void)setupAVCapture {
-    [self setStabilityLabelText:@"preparing..." color:[UIColor redColor]];
+    [self setStability:kNotReadyStability];
 
     self.session = [AVCaptureSession new];
     if ([self.session canSetSessionPreset:AVCaptureSessionPreset1280x720]) {
@@ -122,15 +155,36 @@ static const char * videoDataQueueLabel = "TKDLensBlurCaptureViewController#vide
     return devices.firstObject;
 }
 
-/*
- #pragma mark - Navigation
+- (void)depthEstimator:(TKDDepthEstimator *)estimator statusUpdated:(NSString *)status
+{
 
- // In a storyboard-based application, you will often want to do a little preparation before navigation
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
- {
- // Get the new view controller using [segue destinationViewController].
- // Pass the selected object to the new view controller.
- }
- */
+}
+
+- (void)depthEstimator:(TKDDepthEstimator *)estimator stabilityUpdated:(CGFloat)stability
+{
+    [self setStability:stability];
+}
+
+- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationCompleted:(UIImage *)smoothDepthMap
+{
+
+}
+
+- (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine
+{
+
+}
+
+- (void)depthEstimatorImagesPrepared:(TKDDepthEstimator *)estimator
+{
+
+}
+
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
+{
+    if (_round++%5 == 0) {
+        [self.depthEstimator checkStability:sampleBuffer];
+    }
+}
 
 @end
