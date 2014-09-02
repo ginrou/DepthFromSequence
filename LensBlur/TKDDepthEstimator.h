@@ -17,6 +17,7 @@
 
 // outputs
 @property (nonatomic, strong) NSMutableString *log;
+@property (nonatomic, readonly) UIImage *referenceImage;
 @property (nonatomic, strong) UIImage *rawDepthMap;
 @property (nonatomic, strong) UIImage *smoothDepthMap;
 @property (nonatomic, readonly) NSDictionary *computationLog;

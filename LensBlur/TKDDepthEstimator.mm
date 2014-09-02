@@ -40,7 +40,8 @@ using namespace cv;
     if (self) {
         full_color_images = new vector<Mat3b>;
         tracker = new FeatureTracker;
-        _queue = dispatch_queue_create("DepthEstimationQueue", NULL);
+        tracker->MAX_IMAGES = kMaxImages;
+        _queue = dispatch_queue_create("DepthEstimationQueue", DISPATCH_QUEUE_SERIAL);
 
         self.log = [NSMutableString string];
     }
@@ -80,6 +81,12 @@ using namespace cv;
              @"bundl_adjustment_ittr": @(self.bundleAdjustmentIttr),
              @"tracking_points": @(self.trackingPoints),
              };
+}
+
+- (UIImage *)referenceImage {
+    Mat3b mat = full_color_images->front();
+    UIImage *img = MatToUIImage(mat);
+    return [UIImage imageWithCGImage:img.CGImage scale:2.0 orientation:UIImageOrientationRight];
 }
 
 + (Mat3b)sampleBufferToMat:(CMSampleBufferRef)sampleBuffer {
@@ -143,14 +150,14 @@ using namespace cv;
 
 - (void)addImage:(CMSampleBufferRef)sampleBuffer block:(void (^)(BOOL, BOOL))block
 {
-    if (full_color_images->size() >= kMaxImages) {
-        if (block) block(NO, YES);
-        return;
-    }
-
     Mat3b new_image = [[self class] sampleBufferToMat:sampleBuffer];
 
     dispatch_async(_queue, ^{
+
+        if (full_color_images->size() >= kMaxImages) {
+            if (block) block(NO, YES);
+            return;
+        }
 
         Mat1b *gray = new Mat1b(new_image.size());
         cvtColor(new_image, *gray, CV_BGR2GRAY);
@@ -168,8 +175,6 @@ using namespace cv;
 
         delete gray;
     });
-
-
 }
 
 - (NSProgress *)runEstimationOnSuccess:(void (^)(UIImage *))onSuccess

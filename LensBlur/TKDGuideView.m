@@ -26,7 +26,9 @@
         if (autoRemove) {
             [UIView animateWithDuration:0.7 delay:3.0 options:0 animations:^{
                 self.alpha = 0.0;
-            } completion:nil];
+            } completion:^(BOOL finished) {
+                [self removeFromSuperview];
+            }];
         }
     }];
 }

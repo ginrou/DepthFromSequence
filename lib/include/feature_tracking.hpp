@@ -10,6 +10,7 @@ public:
 
     // params
     int MAX_CORNERS;
+    int MAX_IMAGES;
     double QUALITY_LEVEL;
     double MIN_TRACK_MOVE;
     cv::Size sub_pix_win_size;
@@ -28,6 +29,7 @@ public:
         MAX_CORNERS = 100;
         QUALITY_LEVEL = 0.01;
         MIN_TRACK_MOVE = 10.0;
+        MAX_IMAGES = INT_MAX;
     }
 
     bool add_image(cv::Mat image); // return true if added

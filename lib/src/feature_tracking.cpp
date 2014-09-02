@@ -23,6 +23,8 @@ bool FeatureTracker::add_image(cv::Mat image) {
         initialize_tracker(image);
         images.push_back(image);
         return true;
+    } else if (images.size() >= MAX_IMAGES ) {
+        return false;
     } else {
         std::vector<uchar> status;
         std::vector<Point2f> prev_point = all_track_points.back();

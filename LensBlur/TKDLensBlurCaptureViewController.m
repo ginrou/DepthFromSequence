@@ -9,6 +9,7 @@
 @import AVFoundation;
 
 #import "TKDLensBlurCaptureViewController.h"
+#import "TKDLensBlurEditViewController.h"
 #import "TKDDepthEstimator.h"
 #import "TKDHowToUseGuide.h"
 #import "TKDCountDownGuide.h"
@@ -56,8 +57,11 @@ static const CGFloat kNotReadyStability = -1;
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [self.session startRunning];
-
+    dispatch_async(self.sessionQueue, ^{
+        if (self.session.isRunning == NO) {
+            [self.session startRunning];
+        }
+    });
     self.guide = [TKDGuideView guideViewWithXibName:@"TKDHowToUseGuide"];
     [self.guide showOnView:self.view removeAutomatically:YES];
 
@@ -65,7 +69,11 @@ static const CGFloat kNotReadyStability = -1;
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    [self.session stopRunning];
+    dispatch_async(self.sessionQueue, ^{
+        if (self.session.isRunning) {
+            [self.session stopRunning];
+        }
+    });
 }
 
 - (void)didReceiveMemoryWarning
@@ -73,18 +81,6 @@ static const CGFloat kNotReadyStability = -1;
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
-/*
- #pragma mark - Navigation
-
- // In a storyboard-based application, you will often want to do a little preparation before navigation
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
- {
- // Get the new view controller using [segue destinationViewController].
- // Pass the selected object to the new view controller.
- }
- */
-
 
 - (void)setReadyToCapture:(BOOL)readyToCapture {
     if (_readyToCapture != readyToCapture) {
@@ -108,7 +104,7 @@ static const CGFloat kNotReadyStability = -1;
         else if (stability < 0.7) self.stabilityIcon.backgroundColor = [UIColor yellowColor];
         else self.stabilityIcon.backgroundColor = [UIColor greenColor];
 
-        self.readyToCapture = stability < 0.5;
+        self.readyToCapture = stability > 0.5;
 
     }
 }
@@ -117,16 +113,37 @@ static const CGFloat kNotReadyStability = -1;
     [(TKDCountDownGuide *)self.guide setNumber:self.depthEstimator.numberOfRquiredImages];
 }
 
-- (void)showHogeViewController {
-    
-}
-
-- (IBAction)captureButtonTapped:(id)sender {
+#pragma mark - User Interactions
+- (IBAction)captureButtonTouchDown:(id)sender {
     dispatch_async(self.videoDataQueue, ^{
         self.useVideoBufferToEstimate = YES;
-        self.guide = [TKDGuideView guideViewWithXibName:@"TKDCountDownGuide"];
-        [self updateGuideView];
     });
+    self.guide = [TKDGuideView guideViewWithXibName:@"TKDCountDownGuide"];
+    [self.guide showOnView:self.view removeAutomatically:NO];
+    [self updateGuideView];
+}
+
+- (IBAction)captureButtonTouchUp:(id)sender {
+    dispatch_async(self.videoDataQueue, ^{
+        self.useVideoBufferToEstimate = NO;
+        self.depthEstimator = [TKDDepthEstimator new];
+        self.depthEstimator.delegate = self;
+    });
+
+    [self.guide removeFromSuperview];
+}
+
+
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"showEditViewCotnroller"]) {
+        TKDLensBlurEditViewController *vc = segue.destinationViewController;
+        vc.depthEstimator = self.depthEstimator;
+    }
+
 }
 
 #pragma mark - AVFoundation and About DepthEstimator
@@ -174,6 +191,7 @@ static const CGFloat kNotReadyStability = -1;
         }
 
         [self.previewView setVideoGravity:AVLayerVideoGravityResizeAspect];
+        [self.session startRunning];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             self.readyToCapture = YES;
@@ -197,8 +215,14 @@ static const CGFloat kNotReadyStability = -1;
 
     if (self.useVideoBufferToEstimate) {
         [self.depthEstimator addImage:sampleBuffer block:^(BOOL added, BOOL prepared) {
-            [weakSelf updateGuideView];
-            if (prepared) [weakSelf showHogeViewController];
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf updateGuideView];
+            });
+
+            if (prepared && added) {
+                [weakSelf performSegueWithIdentifier:@"showEditViewController" sender:weakSelf];
+            }
         }];
     } else if (_round++%5 == 0) {
         [self.depthEstimator checkStability:sampleBuffer block:^(CGFloat stability) {

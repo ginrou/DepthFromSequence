@@ -44,6 +44,7 @@
 		54FB783319B5D5AD00BD5A5A /* TKDGuideView.m in Sources */ = {isa = PBXBuildFile; fileRef = 54FB783219B5D5AD00BD5A5A /* TKDGuideView.m */; };
 		54FB783619B5D6D800BD5A5A /* TKDCountDownGuide.m in Sources */ = {isa = PBXBuildFile; fileRef = 54FB783519B5D6D800BD5A5A /* TKDCountDownGuide.m */; };
 		54FB783819B5D71700BD5A5A /* TKDCountDownGuide.xib in Resources */ = {isa = PBXBuildFile; fileRef = 54FB783719B5D71700BD5A5A /* TKDCountDownGuide.xib */; };
+		54FB783B19B5E92700BD5A5A /* TKDLensBlurEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 54FB783A19B5E92700BD5A5A /* TKDLensBlurEditViewController.m */; };
 		F17195FE04E7458894F756F4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9161F61295AC46938A6786B2 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -110,6 +111,8 @@
 		54FB783419B5D6D800BD5A5A /* TKDCountDownGuide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDCountDownGuide.h; sourceTree = "<group>"; };
 		54FB783519B5D6D800BD5A5A /* TKDCountDownGuide.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDCountDownGuide.m; sourceTree = "<group>"; };
 		54FB783719B5D71700BD5A5A /* TKDCountDownGuide.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TKDCountDownGuide.xib; sourceTree = "<group>"; };
+		54FB783919B5E92700BD5A5A /* TKDLensBlurEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDLensBlurEditViewController.h; sourceTree = "<group>"; };
+		54FB783A19B5E92700BD5A5A /* TKDLensBlurEditViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDLensBlurEditViewController.m; sourceTree = "<group>"; };
 		9161F61295AC46938A6786B2 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -198,6 +201,8 @@
 				54C1654419073AFF005E20F8 /* Supporting Files */,
 				54FB782719B5750000BD5A5A /* TKDLensBlurCaptureViewController.h */,
 				54FB782819B5750000BD5A5A /* TKDLensBlurCaptureViewController.m */,
+				54FB783919B5E92700BD5A5A /* TKDLensBlurEditViewController.h */,
+				54FB783A19B5E92700BD5A5A /* TKDLensBlurEditViewController.m */,
 			);
 			path = LensBlur;
 			sourceTree = "<group>";
@@ -434,6 +439,7 @@
 				54C1654E19073AFF005E20F8 /* TKDAppDelegate.m in Sources */,
 				5482253B1997401400FA5BD0 /* TKDPreviewView.m in Sources */,
 				54C1654A19073AFF005E20F8 /* main.m in Sources */,
+				54FB783B19B5E92700BD5A5A /* TKDLensBlurEditViewController.m in Sources */,
 				548225381997377B00FA5BD0 /* TKDDepthEstimator.mm in Sources */,
 				545FF06719A9EAAD003B6681 /* TKDRecordTableViewController.m in Sources */,
 			);

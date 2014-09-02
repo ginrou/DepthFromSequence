@@ -43,7 +43,9 @@
                                             <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
                                         </state>
                                         <connections>
-                                            <action selector="captureButtonTapped:" destination="kUs-Kf-roe" eventType="touchDown" id="rAx-PM-htQ"/>
+                                            <action selector="captureButtonTouchDown:" destination="kUs-Kf-roe" eventType="touchDown" id="nuw-Vf-MsE"/>
+                                            <action selector="captureButtonTouchUp:" destination="kUs-Kf-roe" eventType="touchUpOutside" id="Bhj-tC-0Ve"/>
+                                            <action selector="captureButtonTouchUp:" destination="kUs-Kf-roe" eventType="touchUpInside" id="U99-nm-8dH"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -117,11 +119,30 @@
                         <outlet property="previewView" destination="Pkl-rj-Wfd" id="XUQ-av-ck1"/>
                         <outlet property="stabilityIcon" destination="wBL-tY-GQj" id="5s8-Qr-cfY"/>
                         <outlet property="stabilityLabel" destination="m4S-Rp-cg2" id="LSO-Cc-d4f"/>
+                        <segue destination="Q7L-DC-yCm" kind="modal" identifier="showEditViewController" modalTransitionStyle="crossDissolve" id="Zhr-B2-0yY"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="uQS-9s-6pH" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="377" y="-180"/>
+            <point key="canvasLocation" x="47" y="-162"/>
+        </scene>
+        <!--Lens Blur Edit View Controller-->
+        <scene sceneID="SPJ-PE-OJF">
+            <objects>
+                <viewController id="Q7L-DC-yCm" customClass="TKDLensBlurEditViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="LTj-Wt-JCX"/>
+                        <viewControllerLayoutGuide type="bottom" id="3JR-63-nBZ"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="vjG-pP-AZ0">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="EHJ-aK-UdL" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="606" y="-162"/>
         </scene>
     </scenes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
