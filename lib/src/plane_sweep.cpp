@@ -19,7 +19,7 @@ public:
 const double PlaneSweep::OutOfRangeIntensity = -1;
 
 void PlaneSweep::sweep(Mat3b &img) {
-    int W = img.size().width, H = img.size().height, M = _depth_variation.size();
+    int W = _roi.width, H = _roi.height, M = _depth_variation.size();
 
     float *unary = new float[W*H*M];
     this->compute_unary_energy(unary, _stable_region);
@@ -28,7 +28,8 @@ void PlaneSweep::sweep(Mat3b &img) {
     unsigned char *img_buf = new unsigned char[W*H*3];
     for( int h = 0; h < H; ++h ) {
         for( int w = 0; w < W; ++w ) {
-            Vec3b intenisty = img.at<Vec3b>(h,w);
+            int y = h + _roi.y, x = w + _roi.x;
+            Vec3b intenisty = img.at<Vec3b>(y,x);
             img_buf[h*W*3 + w*3 + 0] = intenisty.val[0]; // b
             img_buf[h*W*3 + w*3 + 1] = intenisty.val[1]; // g
             img_buf[h*W*3 + w*3 + 2] = intenisty.val[2]; // r
@@ -37,21 +38,17 @@ void PlaneSweep::sweep(Mat3b &img) {
 
     DenseCRF2D crf(W,H,_depth_variation.size());
     crf.setUnaryEnergy(unary);
-    crf.addPairwiseBilateral(50, 50, 20, 20, 20, img_buf, 256*256, NULL);
+    crf.addPairwiseBilateral(35, 35, 20, 20, 20, img_buf, 256*256, NULL);
 
     short *map = new short[W*H];
     crf.map(5, map);
     cout << "smooth map computed" << endl;
 
-    Mat1b smooth_full(H, W);
     for( int h = 0; h < H; ++h ) {
         for( int w = 0; w < W; ++w ) {
-            smooth_full.at<unsigned char>(h,w) = map[h*W+w];
+            _depth_smooth.at<unsigned char>(h,w) = map[h*W+w];
         }
     }
-
-    cout << _stable_region << endl;
-    _depth_smooth = smooth_full(_stable_region);
 
     delete [] unary;
     delete [] img_buf;
@@ -60,12 +57,12 @@ void PlaneSweep::sweep(Mat3b &img) {
 
 void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
     Mat3b ref_img = _images[0];
-    int W = ref_img.cols, H = ref_img.rows, M = _depth_variation.size();
+    int W = _roi.width, H = _roi.height, M = _depth_variation.size();
 
     int left = W, top = H, right = 0, bottom = 0;
 
-    for( int h = 0; h < H; ++h ) {
-        for( int w = 0; w < W; ++w ) {
+    for( int h = _roi.y; h < _roi.br().y; ++h ) {
+        for( int w = _roi.x; w < _roi.br().x; ++w ) {
 
             Vec3b ref_val = ref_img.at<Vec3b>(h,w);
             int out_of_ranges = 0;
@@ -78,7 +75,7 @@ void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
                 for( int n = 1; n < _N; ++n ) { // skip ref image
 
                     Point2d pt = ps_homogenious_point( _homography_matrix[n][d], Point2d(w, h));
-                    if( pt.x < 0 || pt.x >= W || pt.y < 0 || pt.y >= H ) {
+                    if(pt.x < 0 || pt.x >= _images[n].cols || pt.y < 0 || pt.y >= _images[n].rows) {
                         err += 1000 * 3*255*255; // とりあえずはずれの場合は最大誤差を入れる
                         out_of_ranges++;
                     } else {
@@ -89,13 +86,15 @@ void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
                     }
 
                 }// n
-                unary[h*W*M + w*M +d] = err/(double)(_N*3);
+
+                int idx = (h-_roi.y)*W*M + (w-_roi.x)*M + d;
+                unary[idx] = err/(double)(_N*3);
                 if ( err < min_val ) {
                     min_val = err;
                     min_idx = d;
                 }
             }// d
-            _depth_raw.at<uchar>(h,w) = min_idx;
+            _depth_raw.at<uchar>(h-_roi.y, w-_roi.x) = min_idx;
 
             if ( 1.0 - (double)out_of_ranges / (double)M*_N >= _sufficient_input) {
                 if ( w < W/2 && w < left   ) left = w;

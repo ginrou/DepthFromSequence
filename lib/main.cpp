@@ -48,7 +48,14 @@ int main(int argc, char* argv[]) {
     save_warped_images(gray_images, solver.camera_params, depths);
 
     // plane sweep + dencecrf で奥行きを求める
-    PlaneSweep *ps = new PlaneSweep(input_images, solver.camera_params, depths);
+    cv::Rect roi;
+    if ( img_size.width > img_size.height ) {
+        roi = Rect( (img_size.width-img_size.height)/2, 0, img_size.height, img_size.height);
+    } else {
+        roi = Rect( 0, (img_size.height-img_size.width)/2, img_size.height, img_size.height);
+    }
+
+    PlaneSweep *ps = new PlaneSweep(input_images, solver.camera_params, depths, roi);
     // 読み込みがカラー画像になるようにする
     Mat3b color_image = imread(argv[1],  CV_LOAD_IMAGE_COLOR);
     ps->sweep(color_image);

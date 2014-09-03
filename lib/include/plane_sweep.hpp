@@ -15,6 +15,7 @@ public:
     vector<Mat3b> _images;
     vector<Camera> _cameras;
     vector<double> _depth_variation;
+    cv::Rect _roi; //region to get depth
 
     // ouput
     Mat1b _depth_smooth; // depth map smooth by dence_crf
@@ -27,12 +28,13 @@ public:
     double _sufficient_input;
     vector< vector< Matx33d > > _homography_matrix; // homography_matrix[ img_index ][ depth_index];
 
-    PlaneSweep(vector<Mat3b> images, vector<Camera> cameras, vector<double> depth_variation)
+    PlaneSweep(vector<Mat3b> images, vector<Camera> cameras, vector<double> depth_variation, cv::Rect roi)
         :_images(images),
          _cameras(cameras),
-         _depth_variation(depth_variation)
+         _depth_variation(depth_variation),
+         _roi(roi)
         {
-            cv::Size img_size = images[0].size();
+            cv::Size img_size = roi.size();
 
             _N = images.size();
             _crf_threshold = 0.15;
@@ -40,6 +42,7 @@ public:
 
             // allocate
             _depth_raw = Mat(img_size, CV_8UC1);
+            _depth_smooth = Mat(img_size, CV_8UC1);
 
             // compute all homography matrix
             Camera ref_cam = cameras[0];
