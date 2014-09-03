@@ -150,6 +150,9 @@ TKDDepthEstimatorDelegate
             weakSelf.rawDepthMap.image = weakSelf.depthEstimator.rawDepthMap;
             weakSelf.smoothDepthMap.image = depthMap;
             weakSelf.saveButton.enabled = YES;
+
+        } onProgress:^(CGFloat fraction) {
+            NSLog(@"%lf", fraction);
         } onError:^(NSError *error) {
             NSLog(@"%@", error);
         }];

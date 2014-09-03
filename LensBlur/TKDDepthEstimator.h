@@ -28,8 +28,9 @@
 - (NSInteger)numberOfRquiredImages;
 - (NSArray *)convertToUIImages;
 
-- (NSProgress *)runEstimationOnSuccess:(void(^)(UIImage *depthMap))onSuccess
-                               onError:(void(^)(NSError *error))onError;
+- (void)runEstimationOnSuccess:(void(^)(UIImage *depthMap))onSuccess
+                    onProgress:(void(^)(CGFloat fraction))onProgress
+                       onError:(void(^)(NSError *error))onError;
 
 
 @end
@@ -45,5 +46,6 @@ typedef NS_ENUM(NSInteger, TKDDepthEstimatorErrorCode) {
     TKDDepthEstimatorInvalidInputError = 0,
     TKDDepthEstimatorFewFeaturesError,
     TKDDepthEstimatorBundleAdjustmentFailed,
+    TKDDepthEstimatorAlredyRunning,
     TKDDepthEstimatorErrorCodeCount
 };

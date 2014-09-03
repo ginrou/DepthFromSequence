@@ -139,10 +139,14 @@ static const CGFloat kNotReadyStability = -1;
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    if ([segue.identifier isEqualToString:@"showEditViewCotnroller"]) {
+    if ([segue.identifier isEqualToString:@"showEditViewController"]) {
         TKDLensBlurEditViewController *vc = segue.destinationViewController;
         vc.depthEstimator = self.depthEstimator;
     }
+
+}
+
+- (IBAction)editCompletedSegue:(UIStoryboardSegue *)segue {
 
 }
 
@@ -218,11 +222,11 @@ static const CGFloat kNotReadyStability = -1;
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf updateGuideView];
+                if (prepared && added) {
+                    [weakSelf performSegueWithIdentifier:@"showEditViewController" sender:weakSelf];
+                }
             });
 
-            if (prepared && added) {
-                [weakSelf performSegueWithIdentifier:@"showEditViewController" sender:weakSelf];
-            }
         }];
     } else if (_round++%5 == 0) {
         [self.depthEstimator checkStability:sampleBuffer block:^(CGFloat stability) {

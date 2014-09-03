@@ -37,9 +37,7 @@ void PlaneSweep::sweep(Mat3b &img) {
 
     DenseCRF2D crf(W,H,_depth_variation.size());
     crf.setUnaryEnergy(unary);
-    PlaneSweepMetricFunction *metrifc_function = new PlaneSweepMetricFunction;
-    metrifc_function->threshold = _crf_threshold * (double)_depth_variation.size();
-    crf.addPairwiseBilateral(50, 50, 20, 20, 20, img_buf, 256*256, metrifc_function);
+    crf.addPairwiseBilateral(50, 50, 20, 20, 20, img_buf, 256*256, NULL);
 
     short *map = new short[W*H];
     crf.map(5, map);
@@ -58,7 +56,6 @@ void PlaneSweep::sweep(Mat3b &img) {
     delete [] unary;
     delete [] img_buf;
     delete [] map;
-    delete metrifc_function;
 }
 
 void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {

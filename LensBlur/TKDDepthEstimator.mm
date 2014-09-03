@@ -12,7 +12,7 @@
 #import <ios.h>
 
 NSString *TKDDepthEstimatorErrorDomain = @"tkd.depthEstimator.error";
-static int const kMaxImages = 20;
+static int const kMaxImages = 12;
 
 using namespace std;
 using namespace cv;
@@ -177,38 +177,48 @@ using namespace cv;
     });
 }
 
-- (NSProgress *)runEstimationOnSuccess:(void (^)(UIImage *))onSuccess
-                               onError:(void (^)(NSError *))onError
+- (void)runEstimationOnSuccess:(void (^)(UIImage *))onSuccess
+                    onProgress:(void (^)(CGFloat))onProgress
+                       onError:(void (^)(NSError *))onError
 {
     if (self.running == NO) {
         self.running = YES;
 
-        NSProgress *progress = [NSProgress progressWithTotalUnitCount:100];
-
         dispatch_async(_queue, ^{
-            [self runEstimationImpl:progress onSuccess:^(UIImage *image) {
+            [self runEstimationImplOnSuccess:^(UIImage *image) {
                 self.running = NO;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     onSuccess(image);
                 });
+            } onProgress:^(CGFloat fraction) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    onProgress(fraction);
+                });
             } onError:^(NSError *error) {
-                self.running = NO;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     onError(error);
                 });
             }];
         });
-        return progress;
     } else {
-        return nil;
+        NSError *error = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain
+                                             code:TKDDepthEstimatorAlredyRunning
+                                         userInfo:nil];
+        onError(error);
     }
 
 }
 
-- (void)runEstimationImpl:(NSProgress *)progress
-                onSuccess:(void (^)(UIImage *))onSuccess
-                  onError:(void (^)(NSError *))onError
+- (void)runEstimationImplOnSuccess:(void (^)(UIImage *))onSuccess
+                        onProgress:(void (^)(CGFloat))onProgress
+                           onError:(void (^)(NSError *))onError
 {
+    CGFloat unitPerBAItter = 20; // BundleAdjustment一回あたりの進み具合
+    CGFloat baComputationUnit = 5 * unitPerBAItter; // MAX_ITRR * unitPerIttr
+    CGFloat psComputationUnit = full_color_images->front().rows;
+    CGFloat totalUnit = baComputationUnit + psComputationUnit;
+
+    // feature trackingの結果を得る
     vector< vector<Point2d> > track_points = tracker->pickup_stable_points();
 
     // Solver を初期化
@@ -222,10 +232,12 @@ using namespace cv;
     // bundle adjustment を実行
     while ( solver.should_continue ) {
         solver.run_one_step();
-        progress.completedUnitCount = MIN(solver.ittr*10, 50);
+        onProgress(unitPerBAItter * (solver.ittr+1)/totalUnit);
     }
 
-    if (solver.good_reporjection()) {
+    onProgress(baComputationUnit/totalUnit); // complate ba_coputation
+
+    if (solver.good_reporjection() == false) {
         NSError *error = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain
                                              code:TKDDepthEstimatorBundleAdjustmentFailed
                                          userInfo:nil];
@@ -233,7 +245,6 @@ using namespace cv;
         return;
     }
 
-    progress.completedUnitCount = 50; // BundleAdjustmentで50%
 
     // plane sweep の準備
     vector<double> depths = solver.depth_variation(32);
@@ -241,7 +252,7 @@ using namespace cv;
     // plane sweep + dencecrf で奥行きを求める
     PlaneSweep *ps = new PlaneSweep(*full_color_images, solver.camera_params, depths);
     ps->sweep(full_color_images->front()); // ref imageは最初の画像
-    progress.completedUnitCount = 100;
+    onProgress(totalUnit);
 
     UIImage *raw = MatToUIImage(ps->_depth_raw);
     self.rawDepthMap = [UIImage imageWithCGImage:raw.CGImage scale:2.0
