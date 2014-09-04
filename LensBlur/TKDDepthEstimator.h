@@ -22,6 +22,8 @@
 @property (nonatomic, strong) UIImage *smoothDepthMap;
 @property (nonatomic, readonly) NSDictionary *computationLog;
 
+- (instancetype)initWithImageSize:(CGSize)size roi:(CGRect)roi;
+
 - (void)checkStability:(CMSampleBufferRef)sampleBuffer block:(void(^)(CGFloat stability))block;
 
 - (void)addImage:(CMSampleBufferRef)sampleBuffer block:(void(^)(BOOL added, BOOL prepared))block;

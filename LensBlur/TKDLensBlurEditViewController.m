@@ -41,7 +41,7 @@
 
     __weak typeof(self) weakSelf = self;
     [self.depthEstimator runEstimationOnSuccess:^(UIImage *depthMap) {
-
+        [weakSelf setupViews];
     } onProgress:^(CGFloat fraction) {
         int persentage = 100.0 * fraction;
         weakSelf.label.text = [NSString stringWithFormat:@"%d %%", persentage];

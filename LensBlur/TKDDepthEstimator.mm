@@ -31,18 +31,20 @@ using namespace cv;
 @property (nonatomic, assign) int bundleAdjustmentIttr;
 @property (nonatomic, assign) double reprojectionError;
 
+// parameters
+@property (nonatomic, assign, readonly) cv::Rect roi;
 
 @end
 
 @implementation TKDDepthEstimator
-- (instancetype)init {
-    self = [super init];
+- (instancetype)initWithImageSize:(CGSize)size roi:(CGRect)roi {
+    self = [self init];
     if (self) {
         full_color_images = new vector<Mat3b>;
         tracker = new FeatureTracker;
         tracker->MAX_IMAGES = kMaxImages;
         _queue = dispatch_queue_create("DepthEstimationQueue", DISPATCH_QUEUE_SERIAL);
-
+        _roi = cv::Rect(roi.origin.x, roi.origin.y, roi.size.width, roi.size.height);
         self.log = [NSMutableString string];
     }
     return self;
@@ -84,7 +86,8 @@ using namespace cv;
 }
 
 - (UIImage *)referenceImage {
-    Mat3b mat = full_color_images->front();
+    Mat3b mat(full_color_images->front().size());
+    full_color_images->front()(_roi).copyTo(mat);
     UIImage *img = MatToUIImage(mat);
     return [UIImage imageWithCGImage:img.CGImage scale:2.0 orientation:UIImageOrientationRight];
 }
@@ -233,6 +236,7 @@ using namespace cv;
     while ( solver.should_continue ) {
         solver.run_one_step();
         onProgress(unitPerBAItter * (solver.ittr+1)/totalUnit);
+        print_ittr_status(solver);
     }
 
     onProgress(baComputationUnit/totalUnit); // complate ba_coputation
@@ -250,15 +254,15 @@ using namespace cv;
     vector<double> depths = solver.depth_variation(32);
 
     // plane sweep + dencecrf で奥行きを求める
-    PlaneSweep *ps = new PlaneSweep(*full_color_images, solver.camera_params, depths);
+    PlaneSweep *ps = new PlaneSweep(*full_color_images, solver.camera_params, depths, _roi);
     ps->sweep(full_color_images->front()); // ref imageは最初の画像
-    onProgress(totalUnit);
+    onProgress(1.0);
 
-    UIImage *raw = MatToUIImage(ps->_depth_raw);
+    UIImage *raw = MatToUIImage(8*ps->_depth_raw);
     self.rawDepthMap = [UIImage imageWithCGImage:raw.CGImage scale:2.0
                                      orientation:UIImageOrientationRight];
 
-    UIImage *smooth = MatToUIImage(ps->_depth_smooth);
+    UIImage *smooth = MatToUIImage(8*ps->_depth_smooth);
     self.smoothDepthMap = [UIImage imageWithCGImage:smooth.CGImage scale:2.0
                                         orientation:UIImageOrientationRight];
 

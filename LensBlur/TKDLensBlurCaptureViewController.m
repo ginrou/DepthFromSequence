@@ -42,6 +42,8 @@ TKDDepthEstimatorDelegate
 static const char * sessionQueueLabel = "TKDLensBlurCaptureViewController#sessionQueue";
 static const char * videoDataQueueLabel = "TKDLensBlurCaptureViewController#videoDataQueue";
 static const CGFloat kNotReadyStability = -1;
+static const CGSize kImageSize = {1280, 720};
+static const CGRect kROI = {{320, 40}, {640, 640}};
 
 @implementation TKDLensBlurCaptureViewController
 
@@ -51,7 +53,7 @@ static const CGFloat kNotReadyStability = -1;
     self.stabilityIcon.layer.cornerRadius = self.stabilityIcon.frame.size.width/2.0;
     self.captureButton.enabled = NO;
     [self setupAVCapture];
-    self.depthEstimator = [TKDDepthEstimator new];
+    self.depthEstimator = [[TKDDepthEstimator alloc] initWithImageSize:kImageSize roi:kROI];
     self.depthEstimator.delegate = self;
 }
 

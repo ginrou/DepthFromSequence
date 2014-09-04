@@ -238,7 +238,6 @@
                             <constraint firstAttribute="trailing" secondItem="3Cs-Id-YF4" secondAttribute="trailing" id="kpT-GV-36i"/>
                         </constraints>
                     </view>
-                    <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
                     <connections>
                         <outlet property="apertureSizeSlider" destination="T3o-8T-QqQ" id="Yv9-5f-GRC"/>
                         <outlet property="flipButton" destination="2xH-7A-1Fm" id="033-Yd-Z8i"/>
