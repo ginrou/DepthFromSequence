@@ -1,4 +1,5 @@
 #include "depth_from_sequence.hpp"
+#include "refocus.hpp"
 
 int main(int argc, char* argv[]) {
 
@@ -63,6 +64,27 @@ int main(int argc, char* argv[]) {
     // output
     imwrite("depth_smooth.png", 8 * ps->_depth_smooth);
     imwrite("depth_raw.png", 8 * ps->_depth_raw);
+
+
+    // refocus
+    // aperture
+    Mat1b aperture(64, 64);
+    aperture.setTo(0);
+    cv::circle(aperture, cv::Point2d(32,32), 32, cv::Scalar::all(255), -1);
+    imwrite("aperture.png", aperture);
+
+    // disparity sequence
+    std::vector<double> disp_seq(depths.size());
+    for(int i = 0; i < disp_seq.size(); ++i ) disp_seq[i] = i+1;
+
+    // initialize
+    Mat3b crop_image(roi.size());
+    color_image(roi).copyTo(crop_image);
+    Refocus refocus(crop_image, aperture, ps->_depth_smooth, disp_seq, 0.8);
+
+    // compute
+    Mat3b r = refocus.refocus_to(cv::Point2d(100, 200));
+    imwrite("refocus.png", r);
 
     delete ps;
     return 0;
