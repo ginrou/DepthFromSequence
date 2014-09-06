@@ -7,8 +7,9 @@
 //
 
 #import "TKDLensBlurEditViewController.h"
+#import "TKDAsyncRefoucs.h"
 
-@interface TKDLensBlurEditViewController ()
+@interface TKDLensBlurEditViewController () <TKDAsyncRefocusDelegate>
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UINavigationBar *myNavigationBar;
 @property (weak, nonatomic) IBOutlet UINavigationItem *navigationTitle;
@@ -19,6 +20,9 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *label; //あとで消す
 
+// refocus engine
+@property (strong, nonatomic) TKDAsyncRefoucs *asyncRefocus;
+
 @end
 
 @implementation TKDLensBlurEditViewController
@@ -26,7 +30,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -42,11 +45,12 @@
     __weak typeof(self) weakSelf = self;
     [self.depthEstimator runEstimationOnSuccess:^(UIImage *depthMap) {
         [weakSelf setupViews];
+        [weakSelf setupAsyncRefocus:depthMap];
     } onProgress:^(CGFloat fraction) {
         int persentage = 100.0 * fraction;
         weakSelf.label.text = [NSString stringWithFormat:@"%d %%", persentage];
     } onError:^(NSError *error) {
-        NSString *message = [NSString stringWithFormat:@"code : %d", error.code];
+        NSString *message = [NSString stringWithFormat:@"code : %ld", (long)error.code];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"error" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
     }];
@@ -78,14 +82,33 @@
     self.flipButton.enabled = YES;
 
     // imageview にtapGestureRecognizerを入れる
+    UITapGestureRecognizer *r = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageViewTapped:)];
+    self.imageView.userInteractionEnabled = YES;
+    [self.imageView addGestureRecognizer:r];
 }
 
+- (void)setupAsyncRefocus:(UIImage *)dispMap {
+    self.asyncRefocus = [TKDAsyncRefoucs new];
+    self.asyncRefocus.referenceImage = self.depthEstimator.referenceImage;
+    self.asyncRefocus.disparityMap = dispMap;
+
+    NSInteger depthCount = self.depthEstimator.depthResolution;
+    NSMutableArray *array = [NSMutableArray arrayWithCapacity:depthCount];
+    for (int i = 0; i < depthCount; ++i) [array addObject:@(i+1)];
+    self.asyncRefocus.disparitySequence = array;
+
+    self.asyncRefocus.delegate = self;
+}
 
 #pragma mark - User Interaction
 - (IBAction)saveButtonTapped:(id)sender {
+    self.view.userInteractionEnabled = NO;
+    UIImageWriteToSavedPhotosAlbum(self.imageView.image, self, @selector(image:didFinishSavingWithError:contextInfo:), NULL);
 }
 
 - (IBAction)sliderValueChanged:(id)sender {
+    NSLog(@"%f", self.apertureSizeSlider.value);
+    self.asyncRefocus.apertureSize = 1.5 * self.apertureSizeSlider.value + 0.5;
 }
 
 - (IBAction)flipButtonTapped:(id)sender {
@@ -100,6 +123,33 @@
     }
 }
 
+- (void)imageViewTapped:(UITapGestureRecognizer *)r
+{
+    NSLog(@"%@", r);
 
+    if (self.depthMapMode) return;
+    if (r.state != UIGestureRecognizerStateRecognized) return;
+
+    CGPoint touchPoint = [r locationInView:self.imageView];
+    NSLog(@"%@", NSStringFromCGPoint(touchPoint));
+    [self.asyncRefocus refocusTo:touchPoint];
+}
+
+#pragma mark - AsyncRefocus Delegate
+- (void)asyncRefocus:(TKDAsyncRefoucs *)asyncRefocus refocusCompleted:(UIImage *)refocusedImage
+{
+    NSLog(@"done");
+    self.imageView.image = refocusedImage;
+}
+
+- (void)asyncRefocus:(TKDAsyncRefoucs *)asyncRefocus refocusFailed:(NSError *)error
+{
+    NSLog(@"%@", error);
+}
+
+- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
+{
+    
+}
 
 @end

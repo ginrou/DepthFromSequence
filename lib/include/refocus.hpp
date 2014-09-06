@@ -24,6 +24,15 @@ public:
 
     cv::Mat3b refocus_to(cv::Point2d focal_point);
 
+    static cv::Mat1b circuler_aperture(int size) {
+        cv::Mat1b img(size, size);
+        img.setTo(0);
+        cv::circle(img,
+                   cv::Point2d(size/2, size/2), size/2,
+                   cv::Scalar::all(255), -1);
+        return img;
+    }
+
 private:
     std::vector<double> get_blur_size(cv::Point2d focal_point);
     std::vector<Mat1d> get_kernels(std::vector<double> kernel_sizes);

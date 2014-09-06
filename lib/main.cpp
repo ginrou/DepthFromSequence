@@ -65,12 +65,9 @@ int main(int argc, char* argv[]) {
     imwrite("depth_smooth.png", 8 * ps->_depth_smooth);
     imwrite("depth_raw.png", 8 * ps->_depth_raw);
 
-
     // refocus
     // aperture
-    Mat1b aperture(64, 64);
-    aperture.setTo(0);
-    cv::circle(aperture, cv::Point2d(32,32), 32, cv::Scalar::all(255), -1);
+    Mat1b aperture = Refocus::circuler_aperture(64);
     imwrite("aperture.png", aperture);
 
     // disparity sequence

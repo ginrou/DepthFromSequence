@@ -20,7 +20,7 @@ cv::Mat3b Refocus::refocus_to(cv::Point2d focal_point) {
     // make blur images for each depth
     std::vector<Mat3b> blur_images(kernels.size());
     for ( int d = 0; d < kernels.size(); ++ d ) {
-        blur_images[d] = Mat3d(ref_image_.size());
+        blur_images[d] = Mat3b(ref_image_.size());
         cv::filter2D(ref_image_, blur_images[d], -1, kernels[d]);
     }
 

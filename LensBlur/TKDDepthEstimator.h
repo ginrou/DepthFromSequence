@@ -21,6 +21,7 @@
 @property (nonatomic, strong) UIImage *rawDepthMap;
 @property (nonatomic, strong) UIImage *smoothDepthMap;
 @property (nonatomic, readonly) NSDictionary *computationLog;
+@property (nonatomic, readonly) NSUInteger depthResolution;
 
 - (instancetype)initWithImageSize:(CGSize)size roi:(CGRect)roi;
 
