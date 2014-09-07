@@ -1,5 +1,5 @@
 //
-//  TKDDepthEstimator.h
+//  TKDDepthEstimatorOld.h
 //  LensBlur
 //
 //  Created by 武田 祐一 on 2014/08/10.
@@ -9,10 +9,10 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
-@protocol TKDDepthEstimatorDelegate;
+@protocol TKDDepthEstimatorOldDelegate;
 
-@interface TKDDepthEstimator : NSObject
-@property (nonatomic, weak) id<TKDDepthEstimatorDelegate> delegate;
+@interface TKDDepthEstimatorOld : NSObject
+@property (nonatomic, weak) id<TKDDepthEstimatorOldDelegate> delegate;
 @property (nonatomic, assign) BOOL captureLog;
 
 // outputs
@@ -38,17 +38,17 @@
 
 @end
 
-@protocol TKDDepthEstimatorDelegate <NSObject>
+@protocol TKDDepthEstimatorOldDelegate <NSObject>
 @optional
-- (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine;
+- (void)depthEstimator:(TKDDepthEstimatorOld *)estimator getLog:(NSString *)newLine;
 @end
 
-FOUNDATION_EXTERN NSString *TKDDepthEstimatorErrorDomain;
+FOUNDATION_EXTERN NSString *TKDDepthEstimatorOldErrorDomain;
 
-typedef NS_ENUM(NSInteger, TKDDepthEstimatorErrorCode) {
-    TKDDepthEstimatorInvalidInputError = 0,
-    TKDDepthEstimatorFewFeaturesError,
-    TKDDepthEstimatorBundleAdjustmentFailed,
-    TKDDepthEstimatorAlredyRunning,
-    TKDDepthEstimatorErrorCodeCount
+typedef NS_ENUM(NSInteger, TKDDepthEstimatorOldErrorCode) {
+    TKDDepthEstimatorOldInvalidInputError = 0,
+    TKDDepthEstimatorOldFewFeaturesError,
+    TKDDepthEstimatorOldBundleAdjustmentFailed,
+    TKDDepthEstimatorOldAlredyRunning,
+    TKDDepthEstimatorOldErrorCodeCount
 };

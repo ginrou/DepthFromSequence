@@ -10,13 +10,13 @@
 
 #import "TKDLensBlurCaptureViewController.h"
 #import "TKDLensBlurEditViewController.h"
-#import "TKDDepthEstimator.h"
+#import "TKDDepthEstimatorOld.h"
 #import "TKDHowToUseGuide.h"
 #import "TKDCountDownGuide.h"
 
 @interface TKDLensBlurCaptureViewController () <
 AVCaptureVideoDataOutputSampleBufferDelegate,
-TKDDepthEstimatorDelegate
+TKDDepthEstimatorOldDelegate
 >
 @property (weak, nonatomic) IBOutlet UILabel *stabilityLabel;
 @property (weak, nonatomic) IBOutlet UIView *stabilityIcon;
@@ -35,7 +35,7 @@ TKDDepthEstimatorDelegate
 
 // depth estimator
 @property (nonatomic, assign) int round;
-@property (nonatomic, strong) TKDDepthEstimator *depthEstimator;
+@property (nonatomic, strong) TKDDepthEstimatorOld *depthEstimator;
 
 @end
 
@@ -53,7 +53,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     self.stabilityIcon.layer.cornerRadius = self.stabilityIcon.frame.size.width/2.0;
     self.captureButton.enabled = NO;
     [self setupAVCapture];
-    self.depthEstimator = [[TKDDepthEstimator alloc] initWithImageSize:kImageSize roi:kROI];
+    self.depthEstimator = [[TKDDepthEstimatorOld alloc] initWithImageSize:kImageSize roi:kROI];
     self.depthEstimator.delegate = self;
 }
 
@@ -128,7 +128,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 - (IBAction)captureButtonTouchUp:(id)sender {
     dispatch_async(self.videoDataQueue, ^{
         self.useVideoBufferToEstimate = NO;
-        self.depthEstimator = [TKDDepthEstimator new];
+        self.depthEstimator = [TKDDepthEstimatorOld new];
         self.depthEstimator.delegate = self;
     });
 

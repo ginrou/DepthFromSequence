@@ -9,12 +9,12 @@
 @import AVFoundation;
 
 #import "TKDNewRecordViewController.h"
-#import "TKDDepthEstimator.h"
+#import "TKDDepthEstimatorOld.h"
 #import "TKDPreviewView.h"
 
 @interface TKDNewRecordViewController () <
 AVCaptureVideoDataOutputSampleBufferDelegate,
-TKDDepthEstimatorDelegate
+TKDDepthEstimatorOldDelegate
 >
 
 // UIParts
@@ -40,7 +40,7 @@ TKDDepthEstimatorDelegate
 
 
 // Depth Estimator
-@property (nonatomic, strong) TKDDepthEstimator *depthEstimator;
+@property (nonatomic, strong) TKDDepthEstimatorOld *depthEstimator;
 
 @end
 
@@ -54,7 +54,7 @@ TKDDepthEstimatorDelegate
     self.saveButton.enabled = NO;
     self.statusLabel.text = @"Preparing...";
 
-    self.depthEstimator = [TKDDepthEstimator new];
+    self.depthEstimator = [TKDDepthEstimatorOld new];
     self.depthEstimator.delegate = self;
     self.depthEstimator.captureLog = YES;
     self.shouldCapture = NO;
@@ -172,7 +172,7 @@ TKDDepthEstimatorDelegate
     }
 }
 
-- (void)depthEstimator:(TKDDepthEstimator *)estimator getLog:(NSString *)newLine
+- (void)depthEstimator:(TKDDepthEstimatorOld *)estimator getLog:(NSString *)newLine
 {
     self.logTextView.text = newLine;
 }

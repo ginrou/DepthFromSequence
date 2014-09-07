@@ -1,23 +1,23 @@
 //
-//  TKDDepthEstimator.m
+//  TKDDepthEstimatorOld.m
 //  LensBlur
 //
 //  Created by 武田 祐一 on 2014/08/10.
 //  Copyright (c) 2014年 Yuichi Takeda. All rights reserved.
 //
 
-#import "TKDDepthEstimator.h"
+#import "TKDDepthEstimatorOld.h"
 #import <opencv.hpp>
 #include "depth_from_sequence.hpp"
 #import <ios.h>
 
-NSString *TKDDepthEstimatorErrorDomain = @"tkd.depthEstimator.error";
+NSString *TKDDepthEstimatorOldErrorDomain = @"tkd.depthEstimator.error";
 static int const kMaxImages = 12;
 
 using namespace std;
 using namespace cv;
 
-@interface TKDDepthEstimator ()
+@interface TKDDepthEstimatorOld ()
 {
     vector<Mat3b> *full_color_images;
     FeatureTracker *tracker;
@@ -36,7 +36,7 @@ using namespace cv;
 
 @end
 
-@implementation TKDDepthEstimator
+@implementation TKDDepthEstimatorOld
 - (instancetype)initWithImageSize:(CGSize)size roi:(CGRect)roi {
     self = [self init];
     if (self) {
@@ -205,8 +205,8 @@ using namespace cv;
             }];
         });
     } else {
-        NSError *error = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain
-                                             code:TKDDepthEstimatorAlredyRunning
+        NSError *error = [NSError errorWithDomain:TKDDepthEstimatorOldErrorDomain
+                                             code:TKDDepthEstimatorOldAlredyRunning
                                          userInfo:nil];
         onError(error);
     }
@@ -243,8 +243,8 @@ using namespace cv;
     onProgress(baComputationUnit/totalUnit); // complate ba_coputation
 
     if (solver.good_reporjection() == false) {
-        NSError *error = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain
-                                             code:TKDDepthEstimatorBundleAdjustmentFailed
+        NSError *error = [NSError errorWithDomain:TKDDepthEstimatorOldErrorDomain
+                                             code:TKDDepthEstimatorOldBundleAdjustmentFailed
                                          userInfo:nil];
         onError(error);
         return;
