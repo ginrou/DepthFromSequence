@@ -10,13 +10,14 @@
 
 #import "TKDLensBlurCaptureViewController.h"
 #import "TKDLensBlurEditViewController.h"
-#import "TKDDepthEstimatorOld.h"
+//#import "TKDDepthEstimatorOld.h"
+#import "TKDDepthEstimator.h"
 #import "TKDHowToUseGuide.h"
 #import "TKDCountDownGuide.h"
 
 @interface TKDLensBlurCaptureViewController () <
 AVCaptureVideoDataOutputSampleBufferDelegate,
-TKDDepthEstimatorOldDelegate
+TKDDepthEstimatorCaptureDelegate
 >
 @property (weak, nonatomic) IBOutlet UILabel *stabilityLabel;
 @property (weak, nonatomic) IBOutlet UIView *stabilityIcon;
@@ -31,11 +32,11 @@ TKDDepthEstimatorOldDelegate
 @property (nonatomic, strong) AVCaptureSession *session;
 @property (nonatomic, strong) dispatch_queue_t sessionQueue;
 @property (nonatomic, strong) dispatch_queue_t videoDataQueue;
-@property (atomic, assign) BOOL useVideoBufferToEstimate;
+@property (atomic, assign) BOOL trackingMode;
 
 // depth estimator
 @property (nonatomic, assign) int round;
-@property (nonatomic, strong) TKDDepthEstimatorOld *depthEstimator;
+@property (nonatomic, strong) TKDDepthEstimator *depthEstimator;
 
 @end
 
@@ -53,8 +54,8 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     self.stabilityIcon.layer.cornerRadius = self.stabilityIcon.frame.size.width/2.0;
     self.captureButton.enabled = NO;
     [self setupAVCapture];
-    self.depthEstimator = [[TKDDepthEstimatorOld alloc] initWithImageSize:kImageSize roi:kROI];
-    self.depthEstimator.delegate = self;
+    self.depthEstimator = [TKDDepthEstimator new];
+    self.depthEstimator.captureDelegate = self;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -102,8 +103,8 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 
         self.stabilityLabel.text = [NSString stringWithFormat:@"stability : %d%%", (int)(100.0*stability)];
 
-        if (stability < 0.5) self.stabilityIcon.backgroundColor = [UIColor redColor];
-        else if (stability < 0.7) self.stabilityIcon.backgroundColor = [UIColor yellowColor];
+        if (stability < 0.7) self.stabilityIcon.backgroundColor = [UIColor redColor];
+        else if (stability < 0.86) self.stabilityIcon.backgroundColor = [UIColor yellowColor];
         else self.stabilityIcon.backgroundColor = [UIColor greenColor];
 
         self.readyToCapture = stability > 0.5;
@@ -112,13 +113,14 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 }
 
 - (void)updateGuideView {
-    [(TKDCountDownGuide *)self.guide setNumber:self.depthEstimator.numberOfRquiredImages];
+    NSInteger n = self.depthEstimator.capturingImages - self.depthEstimator.capturedImages;
+    [(TKDCountDownGuide *)self.guide setNumber:n];
 }
 
 #pragma mark - User Interactions
 - (IBAction)captureButtonTouchDown:(id)sender {
     dispatch_async(self.videoDataQueue, ^{
-        self.useVideoBufferToEstimate = YES;
+        self.trackingMode = YES;
     });
     self.guide = [TKDGuideView guideViewWithXibName:@"TKDCountDownGuide"];
     [self.guide showOnView:self.view removeAutomatically:NO];
@@ -127,9 +129,9 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 
 - (IBAction)captureButtonTouchUp:(id)sender {
     dispatch_async(self.videoDataQueue, ^{
-        self.useVideoBufferToEstimate = NO;
-        self.depthEstimator = [TKDDepthEstimatorOld new];
-        self.depthEstimator.delegate = self;
+        self.trackingMode = NO;
+        self.depthEstimator = [TKDDepthEstimator new];
+        self.depthEstimator.captureDelegate = self;
     });
 
     [self.guide removeFromSuperview];
@@ -142,8 +144,8 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString:@"showEditViewController"]) {
-        TKDLensBlurEditViewController *vc = segue.destinationViewController;
-        vc.depthEstimator = self.depthEstimator;
+//        TKDLensBlurEditViewController *vc = segue.destinationViewController;
+//        vc.depthEstimator = self.depthEstimator;
     }
 
 }
@@ -215,27 +217,55 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     return devices.firstObject;
 }
 
+#pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
-    __weak typeof(self) weakSelf = self;
-
-    if (self.useVideoBufferToEstimate) {
-        [self.depthEstimator addImage:sampleBuffer block:^(BOOL added, BOOL prepared) {
-
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [weakSelf updateGuideView];
-                if (prepared && added) {
-                    [weakSelf performSegueWithIdentifier:@"showEditViewController" sender:weakSelf];
-                }
-            });
-
-        }];
-    } else if (_round++%5 == 0) {
-        [self.depthEstimator checkStability:sampleBuffer block:^(CGFloat stability) {
-            [weakSelf setStability:stability];
-        }];
+    if (self.trackingMode) {
+        [self.depthEstimator trackImage:sampleBuffer];
+    } else {
+        if (_round++%5 == 0) {
+            [self.depthEstimator checkStability:sampleBuffer];
+        }
     }
 }
 
+#pragma mark - TKDDepthEstimatorCaptureDelegate
+- (void)depthEstimatorStabilityUpdated:(TKDDepthEstimator *)estimator
+{
+    [self setStability:estimator.stability];
+}
+
+- (void)depthEstimator:(TKDDepthEstimator *)estimator didTrack:(BOOL)added
+{
+    if (added) {
+        [self updateGuideView];
+    }
+}
+
+- (void)depthEstimator:(TKDDepthEstimator *)estimator trackingFailed:(NSError *)error
+{
+    NSLog(@"%@", error);
+
+    // TODO: いい感じのライブラリに置き換える
+    // TODO: 2回呼ばれてしまうので対応する
+    if (error.code == TKDDepthEstimatorFewFeaturesError) {
+        NSString *message = @"特徴点追跡に失敗しました。明るいところでお試しください。";
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"エラー" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alert show];
+
+        self.depthEstimator = [TKDDepthEstimator new];
+        self.depthEstimator.captureDelegate = self;
+        dispatch_async(self.videoDataQueue, ^{
+            self.trackingMode = NO;
+        });
+    }
+
+}
+
+- (void)depthEstimatorTrackingCompleted:(TKDDepthEstimator *)estimator
+{
+    [self updateGuideView];
+    [self performSegueWithIdentifier:@"showEditViewController" sender:self];
+}
 
 @end

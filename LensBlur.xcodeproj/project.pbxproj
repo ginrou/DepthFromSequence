@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5412C13019BAD426000A73AE /* TKDImageConverter.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5412C12F19BAD426000A73AE /* TKDImageConverter.mm */; };
+		5412C13319BC490A000A73AE /* TKDDepthEstimator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5412C13219BC490A000A73AE /* TKDDepthEstimator.mm */; };
 		545FF06719A9EAAD003B6681 /* TKDRecordTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 545FF06619A9EAAD003B6681 /* TKDRecordTableViewController.m */; };
 		545FF06A19A9EB2C003B6681 /* TKDRecordDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 545FF06919A9EB2C003B6681 /* TKDRecordDataSource.m */; };
 		545FF06D19AA16E7003B6681 /* TKDNewRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 545FF06C19AA16E7003B6681 /* TKDNewRecordViewController.m */; };
@@ -65,6 +66,8 @@
 		34823DE6731B465DA94B0273 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		5412C12E19BAD426000A73AE /* TKDImageConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDImageConverter.h; sourceTree = "<group>"; };
 		5412C12F19BAD426000A73AE /* TKDImageConverter.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TKDImageConverter.mm; sourceTree = "<group>"; };
+		5412C13119BC490A000A73AE /* TKDDepthEstimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDDepthEstimator.h; sourceTree = "<group>"; };
+		5412C13219BC490A000A73AE /* TKDDepthEstimator.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TKDDepthEstimator.mm; sourceTree = "<group>"; };
 		545FF06519A9EAAD003B6681 /* TKDRecordTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDRecordTableViewController.h; sourceTree = "<group>"; };
 		545FF06619A9EAAD003B6681 /* TKDRecordTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDRecordTableViewController.m; sourceTree = "<group>"; };
 		545FF06819A9EB2C003B6681 /* TKDRecordDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDRecordDataSource.h; sourceTree = "<group>"; };
@@ -159,6 +162,8 @@
 				548225371997377B00FA5BD0 /* TKDDepthEstimatorOld.mm */,
 				5412C12E19BAD426000A73AE /* TKDImageConverter.h */,
 				5412C12F19BAD426000A73AE /* TKDImageConverter.mm */,
+				5412C13119BC490A000A73AE /* TKDDepthEstimator.h */,
+				5412C13219BC490A000A73AE /* TKDDepthEstimator.mm */,
 				54FB786019BAD06500BD5A5A /* TKDAsyncRefoucs.h */,
 				54FB786119BAD06500BD5A5A /* TKDAsyncRefoucs.mm */,
 			);
@@ -435,6 +440,7 @@
 			files = (
 				5482255519975FC700FA5BD0 /* bipartitedensecrf.cpp in Sources */,
 				5482255619975FC700FA5BD0 /* densecrf.cpp in Sources */,
+				5412C13319BC490A000A73AE /* TKDDepthEstimator.mm in Sources */,
 				5412C13019BAD426000A73AE /* TKDImageConverter.mm in Sources */,
 				545FF06D19AA16E7003B6681 /* TKDNewRecordViewController.m in Sources */,
 				5482255719975FC700FA5BD0 /* filter.cpp in Sources */,
