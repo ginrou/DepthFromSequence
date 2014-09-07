@@ -56,6 +56,8 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     [self setupAVCapture];
     self.depthEstimator = [TKDDepthEstimator new];
     self.depthEstimator.captureDelegate = self;
+//    self.depthEstimator.roi = kROI;
+    self.depthEstimator.roi = CGRectMake(320, 40, 640, 640);
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -132,6 +134,8 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
         self.trackingMode = NO;
         self.depthEstimator = [TKDDepthEstimator new];
         self.depthEstimator.captureDelegate = self;
+        self.depthEstimator.roi = kROI;
+        self.depthEstimator.roi = CGRectMake(320, 40, 640, 640);
     });
 
     [self.guide removeFromSuperview];
@@ -144,8 +148,8 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString:@"showEditViewController"]) {
-//        TKDLensBlurEditViewController *vc = segue.destinationViewController;
-//        vc.depthEstimator = self.depthEstimator;
+        TKDLensBlurEditViewController *vc = segue.destinationViewController;
+        vc.depthEstimator = self.depthEstimator;
     }
 
 }

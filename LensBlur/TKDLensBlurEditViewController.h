@@ -7,8 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "TKDDepthEstimatorOld.h"
+#import "TKDDepthEstimator.h"
 
-@interface TKDLensBlurEditViewController : UIViewController <TKDDepthEstimatorOldDelegate>
-@property (nonatomic, strong) TKDDepthEstimatorOld *depthEstimator;
+@interface TKDLensBlurEditViewController : UIViewController <TKDDepthEstimatorEstimationDelegate>
+@property (nonatomic, strong) TKDDepthEstimator *depthEstimator;
 @end

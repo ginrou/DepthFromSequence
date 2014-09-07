@@ -30,7 +30,7 @@ static int const kDefaultDepthResolution = 32;
 }
 
 @property (nonatomic, strong) dispatch_queue_t queue;
-
+@property (atomic, assign) BOOL isRunning;
 @end
 
 
@@ -69,6 +69,17 @@ static int const kDefaultDepthResolution = 32;
 
 - (NSInteger)capturedImages {
     return captured_images->size();
+}
+
+- (UIImage *)referenceImage {
+    if (captured_images->size() == 0) {
+        return nil;
+    } else {
+        cv::Rect roi = cvRectFromCGRect(self.roi);
+        Mat3b mat(roi.size());
+        captured_images->front()(roi).copyTo(mat);
+        return matToUIImage(mat, 1.0, UIImageOrientationRight);
+    }
 }
 
 #pragma mark - FeatureTracking
@@ -119,5 +130,86 @@ static int const kDefaultDepthResolution = 32;
 
 }
 
+- (void)runEstimation
+{
+    if (self.isRunning) return;
+    dispatch_async(self.queue, ^{
+        [self runEstimationImpl];
+    });
+}
+
+- (void)runEstimationImpl
+{
+    CGFloat unitPerBAItter = 20; // BundleAdjustment一回あたりの進み具合
+    CGFloat baComputationUnit = 5 * unitPerBAItter; // MAX_ITRR * unitPerIttr
+    CGFloat psComputationUnit = self.roi.size.height;
+    CGFloat totalUnit = baComputationUnit + psComputationUnit;
+
+    // feature trackingの結果を得る
+    std::vector<std::vector<cv::Point2d>> track_points = tracker->pickup_stable_points();
+
+
+    // Solverの初期化
+    BundleAdjustment::Solver solver(track_points);
+    double min_depth = 500.0; // [mm]
+    double fov = 55.0; // [deg]
+    cv::Size img_size = captured_images->front().size();
+    double f = MIN(img_size.width, img_size.height)/2.0;
+    solver.initialize(track_points, min_depth, fov, img_size, f);
+
+    // bundle adjustment を実行
+    while (solver.should_continue) {
+        solver.run_one_step();
+        CGFloat progress = unitPerBAItter*(solver.ittr+1)/totalUnit;
+        [self notifyProgressOnMainQueue:progress];
+    }
+
+    // bundle adjustment 終了
+    [self notifyProgressOnMainQueue:baComputationUnit/totalUnit];
+    print_ittr_status(solver);
+
+    if (solver.good_reporjection() == false) {
+        NSError *e = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain code:TKDDepthEstimatorBundleAdjustmentFailed userInfo:nil];
+        [self notifyErrorOnMainQueue:e];
+        return;
+    }
+
+    // plane sweep の準備
+    std::vector<double> depths = solver.depth_variation(self.depthResolution);
+
+    // plane sweep + densecrf で奥行きを求める
+    cv::Rect roi = cvRectFromCGRect(self.roi);
+    NSLog(@"%@", NSStringFromCGRect(self.roi));
+    cout << roi << endl;
+    PlaneSweep ps(*captured_images, solver.camera_params, depths, roi);
+    ps.sweep(captured_images->front());
+    [self notifyProgressOnMainQueue:1.0];
+
+    // complete
+    _rawDisparityMap = matToUIImage(ps._depth_raw, 1.0, UIImageOrientationRight);
+    _smoothDisparityMap = matToUIImage(ps._depth_smooth, 1.0, UIImageOrientationRight);
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.estimationDelegate depthEstimator:self
+                            estimationCompleted:self.smoothDisparityMap];
+    });
+
+}
+
+- (void)notifyErrorOnMainQueue:(NSError *)error
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.estimationDelegate depthEstimator:self
+                               estimationFailed:error];
+    });
+}
+
+- (void)notifyProgressOnMainQueue:(CGFloat)progress
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.estimationDelegate depthEstimator:self
+                            estimationProceeded:progress];
+    });
+}
 
 @end

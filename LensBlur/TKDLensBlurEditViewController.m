@@ -42,19 +42,8 @@
     self.flipButton.enabled = NO;
     self.apertureSizeSlider.enabled = NO;
 
-    __weak typeof(self) weakSelf = self;
-    [self.depthEstimator runEstimationOnSuccess:^(UIImage *depthMap) {
-        [weakSelf setupViews];
-        [weakSelf setupAsyncRefocus:depthMap];
-    } onProgress:^(CGFloat fraction) {
-        int persentage = 100.0 * fraction;
-        weakSelf.label.text = [NSString stringWithFormat:@"%d %%", persentage];
-    } onError:^(NSError *error) {
-        NSString *message = [NSString stringWithFormat:@"code : %ld", (long)error.code];
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"error" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alert show];
-    }];
-
+    self.depthEstimator.estimationDelegate = self;
+    [self.depthEstimator runEstimation];
 }
 
 - (void)didReceiveMemoryWarning
@@ -77,7 +66,8 @@
 
 - (void)setupViews {
     self.imageView.image = self.depthEstimator.referenceImage;
-    [self.flipButton setImage:self.depthEstimator.smoothDepthMap forState:UIControlStateNormal];
+    [self.flipButton setImage:self.depthEstimator.smoothDisparityMap
+                     forState:UIControlStateNormal];
     self.apertureSizeSlider.enabled = YES;
     self.flipButton.enabled = YES;
 
@@ -119,7 +109,7 @@
     } else {
         self.depthMapMode = YES;
         self.apertureSizeSlider.enabled = NO;
-        self.imageView.image = self.depthEstimator.smoothDepthMap;
+        self.imageView.image = self.depthEstimator.smoothDisparityMap;
     }
 }
 
@@ -133,6 +123,26 @@
     CGPoint touchPoint = [r locationInView:self.imageView];
     NSLog(@"%@", NSStringFromCGPoint(touchPoint));
     [self.asyncRefocus refocusTo:touchPoint];
+}
+
+#pragma mark - DepthEstimater Estimation Delegate
+- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationProceeded:(CGFloat)progress
+{
+    int persentage = 100.0 * progress;
+    self.label.text = [NSString stringWithFormat:@"%d %%", persentage];
+}
+
+- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationCompleted:(UIImage *)disparityMap
+{
+    [self setupViews];
+    [self setupAsyncRefocus:disparityMap];
+}
+
+- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationFailed:(NSError *)error
+{
+    NSString *message = [NSString stringWithFormat:@"code : %ld", (long)error.code];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"error" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [alert show];
 }
 
 #pragma mark - AsyncRefocus Delegate

@@ -20,7 +20,6 @@
 // input
 @property (nonatomic, weak) id<TKDDepthEstimatorCaptureDelegate> captureDelegate;
 @property (nonatomic, assign) NSInteger capturingImages;
-@property (nonatomic, assign) CGRect roi;
 
 // output
 /* stability of feature tracking
@@ -37,13 +36,19 @@
 - (void)trackImage:(CMSampleBufferRef)sampleBuffer;
 
 /*
- Bundle Adjustment and Plan Sweep
+ Bundle Adjustment and Plane Sweep
  */
 // input
 @property (nonatomic, weak) id<TKDDepthEstimatorEstimationDelegate> estimationDelegate;
 @property (nonatomic, assign) NSInteger depthResolution;
+@property (nonatomic, assign) CGRect roi;
 
 // output
+@property (nonatomic, readonly) UIImage *referenceImage;
+@property (nonatomic, readonly) UIImage *rawDisparityMap;
+@property (nonatomic, readonly) UIImage *smoothDisparityMap;
+
+- (void)runEstimation;
 
 @end
 
@@ -56,7 +61,9 @@
 @end
 
 @protocol TKDDepthEstimatorEstimationDelegate <NSObject>
-// TODO: impl
+- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationProceeded:(CGFloat)progress;
+- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationCompleted:(UIImage *)disparityMap;
+- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationFailed:(NSError *)error;
 @end
 
 FOUNDATION_EXTERN NSString *TKDDepthEstimatorErrorDomain;
@@ -68,5 +75,4 @@ typedef NS_ENUM(NSInteger, TKDDepthEstimatorErrorCode) {
     TKDDepthEstimatorAlredyRunning,
     TKDDepthEstimatorErrorCodeCount
 };
-
 
