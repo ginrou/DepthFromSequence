@@ -106,7 +106,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
         self.stabilityLabel.text = [NSString stringWithFormat:@"stability : %d%%", (int)(100.0*stability)];
 
         if (stability < 0.7) self.stabilityIcon.backgroundColor = [UIColor redColor];
-        else if (stability < 0.86) self.stabilityIcon.backgroundColor = [UIColor yellowColor];
+        else if (stability < 0.85) self.stabilityIcon.backgroundColor = [UIColor yellowColor];
         else self.stabilityIcon.backgroundColor = [UIColor greenColor];
 
         self.readyToCapture = stability > 0.5;
@@ -121,21 +121,54 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 
 #pragma mark - User Interactions
 - (IBAction)captureButtonTouchDown:(id)sender {
-    dispatch_async(self.videoDataQueue, ^{
-        self.trackingMode = YES;
+
+    dispatch_async(self.sessionQueue, ^{
+
+        // lock focus, exposure, whitebalanace
+        [self.session beginConfiguration];
+        AVCaptureDevice *device = [[self class] defaultDevice];
+        [device lockForConfiguration:nil];
+        device.whiteBalanceMode = AVCaptureWhiteBalanceModeLocked;
+        device.exposureMode = AVCaptureExposureModeLocked;
+        device.focusMode = AVCaptureFocusModeLocked;
+        [device unlockForConfiguration];
+        [self.session commitConfiguration];
+
+        // start tracking
+        dispatch_async(self.videoDataQueue, ^{
+            self.trackingMode = YES;
+        });
     });
+
     self.guide = [TKDGuideView guideViewWithXibName:@"TKDCountDownGuide"];
     [self.guide showOnView:self.view removeAutomatically:NO];
     [self updateGuideView];
 }
 
 - (IBAction)captureButtonTouchUp:(id)sender {
-    dispatch_async(self.videoDataQueue, ^{
-        self.trackingMode = NO;
-        self.depthEstimator = [TKDDepthEstimator new];
-        self.depthEstimator.captureDelegate = self;
-        self.depthEstimator.roi = kROI;
-        self.depthEstimator.roi = CGRectMake(320, 40, 640, 640);
+
+    dispatch_async(self.sessionQueue, ^{
+
+        // unlock focus, exposure, whitebalanace
+        [self.session beginConfiguration];
+        AVCaptureDevice *device = [[self class] defaultDevice];
+        [device lockForConfiguration:nil];
+        device.whiteBalanceMode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
+        device.exposureMode = AVCaptureExposureModeAutoExpose;
+        device.focusMode = AVCaptureFocusModeAutoFocus;
+        [device unlockForConfiguration];
+        [self.session commitConfiguration];
+
+        dispatch_async(self.videoDataQueue, ^{
+            // stop tracking
+            self.trackingMode = NO;
+
+            // reset depth estimator
+            self.depthEstimator = [TKDDepthEstimator new];
+            self.depthEstimator.captureDelegate = self;
+            self.depthEstimator.roi = kROI;
+            self.depthEstimator.roi = CGRectMake(320, 40, 640, 640);
+        });
     });
 
     [self.guide removeFromSuperview];
