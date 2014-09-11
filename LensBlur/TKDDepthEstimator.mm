@@ -10,8 +10,11 @@
 #import <opencv.hpp>
 
 #import "TKDImageConverter.h"
+#import "TKDFileWatcher.h"
 
 #import "depth_from_sequence.hpp"
+
+#include <fstream>
 
 inline cv::Rect cvRectFromCGRect(CGRect r) {
     return cv::Rect(r.origin.x, r.origin.y, r.size.width, r.size.height);
@@ -23,7 +26,7 @@ static const char kQueueName[] = "TKDDepthEstimator#Queue";
 static int const kDefaultCapturingImages = 12;
 static int const kDefaultDepthResolution = 32;
 
-@interface TKDDepthEstimator ()
+@interface TKDDepthEstimator () <TKDFileWatcherDelegate>
 {
     std::vector<Mat3b> *captured_images;
     FeatureTracker *tracker;
@@ -31,6 +34,7 @@ static int const kDefaultDepthResolution = 32;
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (atomic, assign) BOOL isRunning;
+@property (nonatomic, strong) TKDFileWatcher *watcher;
 @end
 
 
@@ -140,6 +144,7 @@ static int const kDefaultDepthResolution = 32;
 
 - (void)runEstimationImpl
 {
+
     CGFloat unitPerBAItter = 20; // BundleAdjustment一回あたりの進み具合
     CGFloat baComputationUnit = 5 * unitPerBAItter; // MAX_ITRR * unitPerIttr
     CGFloat psComputationUnit = self.roi.size.height;
@@ -177,11 +182,24 @@ static int const kDefaultDepthResolution = 32;
     // plane sweep の準備
     std::vector<double> depths = solver.depth_variation(self.depthResolution);
 
+    // ファイルを使ってログを見る
+    TKDFileWatcher *fileWatcher = [[TKDFileWatcher alloc] initWithFileName:@"estimation_progress.txt"];
+    fileWatcher.delegate = self;
+    [fileWatcher startWatching];
+    string filepath = [fileWatcher.filepath UTF8String];
+
+
     // plane sweep + densecrf で奥行きを求める
     cv::Rect roi = cvRectFromCGRect(self.roi);
     NSLog(@"%@", NSStringFromCGRect(self.roi));
     cout << roi << endl;
-    PlaneSweep ps(*captured_images, solver.camera_params, depths, roi);
+    PlaneSweep ps(*captured_images,
+                  solver.camera_params,
+                  depths,
+                  roi);
+
+    ps.set_callback(*progress_callback, (__bridge void *)self);
+
     ps.sweep(captured_images->front());
     [self notifyProgressOnMainQueue:1.0];
 
@@ -211,5 +229,21 @@ static int const kDefaultDepthResolution = 32;
                             estimationProceeded:progress];
     });
 }
+
+- (void)fileWatcher:(TKDFileWatcher *)watcher stringWritten:(NSString *)writtenString
+{
+    CGFloat lines = [writtenString floatValue];
+    CGFloat progress = lines / self.roi.size.height;
+    [self notifyProgressOnMainQueue:progress];
+}
+
+void progress_callback(void *obj, int lines) {
+    TKDDepthEstimator *estimator = (__bridge TKDDepthEstimator *)obj;
+
+    if ([estimator respondsToSelector:@selector(notifyProgressOnMainQueue:)]) {
+        [estimator notifyProgressOnMainQueue:lines/estimator.roi.size.height];
+    }
+}
+
 
 @end

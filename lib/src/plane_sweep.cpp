@@ -104,6 +104,11 @@ void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
             }
 
         }//w
+
+        if (_p_callback && _callback_observer) {
+            _p_callback(_callback_observer, h-_roi.y);
+        }
+
     }//h
 
     good_region.x = left;

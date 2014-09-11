@@ -2,9 +2,13 @@
 
 #include "depth_from_sequence.hpp"
 
+#include <fstream>
+
 Matx33d ps_homography_matrix( Camera camera, double depth);
 Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point);
 Matx44d ps_projection_matrix(Camera c, double depth );
+
+typedef void (*p_callback_t)(void *observer, int lines);
 
 class PlaneSweep {
 public:
@@ -21,6 +25,8 @@ public:
     Mat1b _depth_smooth; // depth map smooth by dence_crf
     Mat1b _depth_raw; // raw depth map
     cv::Rect _stable_region; // region where depth map is computed from sufficient images
+    p_callback_t _p_callback;
+    void *_callback_observer;
 
     // for used in inside
     int _N; // number of images,
@@ -53,7 +59,13 @@ public:
                     _homography_matrix[i][d] = PlaneSweep::homography_matrix(ref_cam, cameras[i], depth_variation[d]);
                 }
             }
+
         }
+
+    void set_callback(p_callback_t callback, void *observer) {
+        _p_callback = callback;
+        _callback_observer = observer;
+    }
 
     void sweep(Mat3b &img);
 

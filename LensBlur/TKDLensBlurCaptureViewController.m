@@ -10,7 +10,6 @@
 
 #import "TKDLensBlurCaptureViewController.h"
 #import "TKDLensBlurEditViewController.h"
-//#import "TKDDepthEstimatorOld.h"
 #import "TKDDepthEstimator.h"
 #import "TKDHowToUseGuide.h"
 #import "TKDCountDownGuide.h"
@@ -58,6 +57,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     self.depthEstimator.captureDelegate = self;
 //    self.depthEstimator.roi = kROI;
     self.depthEstimator.roi = CGRectMake(320, 40, 640, 640);
+
 }
 
 - (void)viewDidAppear:(BOOL)animated {
