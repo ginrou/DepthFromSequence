@@ -50,6 +50,8 @@ void PlaneSweep::sweep(Mat3b &img) {
         }
     }
 
+    _depth_color = create_color_depth_map(_depth_smooth);
+
     if (_p_callback && _callback_observer) {
         _p_callback(_callback_observer, 1.0);
     }
@@ -108,7 +110,6 @@ void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
             }
 
         }//w
-
         if (_p_callback && _callback_observer) {
             float p = 0.7 * (h-_roi.y+1) / _roi.height;
             _p_callback(_callback_observer, p);
@@ -120,6 +121,24 @@ void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
     good_region.y = top;
     good_region.width = right - left + 1;
     good_region.height = bottom - top + 1;
+}
+
+Mat3b PlaneSweep::create_color_depth_map(Mat1b &depth_map)
+{
+    Mat3b hsv(depth_map.size());
+
+    int ds = (UCHAR_MAX+1)/(2*_depth_variation.size()), saturation = 180, lightness = 200;
+
+    for ( int h = 0; h < hsv.rows; ++h ) {
+        for ( int w = 0; w < hsv.cols; ++w ) {
+            int depth = ds * depth_map.at<uchar>(h,w);
+            hsv.at<Vec3b>(h,w) = Vec3b(depth, saturation, lightness);
+        }
+    }
+
+    Mat3b rgb(hsv.size());
+    cvtColor(hsv, rgb, CV_HSV2RGB);
+    return rgb;
 }
 
 Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point) {

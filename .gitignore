@@ -24,6 +24,7 @@ Pods/
 
 scripts/img/*
 scripts/tmp/*
+*/tmp/
 scripts/points.txt
 
 ## cmake

@@ -24,6 +24,7 @@ public:
     // ouput
     Mat1b _depth_smooth; // depth map smooth by dence_crf
     Mat1b _depth_raw; // raw depth map
+    Mat3b _depth_color;
     cv::Rect _stable_region; // region where depth map is computed from sufficient images
     p_callback_t _p_callback;
     void *_callback_observer;
@@ -60,6 +61,9 @@ public:
                 }
             }
 
+            _p_callback = NULL;
+            _callback_observer = NULL;
+
         }
 
     void set_callback(p_callback_t callback, void *observer) {
@@ -80,6 +84,9 @@ public:
                         M10(1,0), M10(1,1), M10(1,2),
                         M10(2,0), M10(2,1), M10(2,2) );
     }
+
+private:
+    Mat3b create_color_depth_map(Mat1b &depth_map);
 
 }; // class PlaneSweep
 
