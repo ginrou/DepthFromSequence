@@ -50,6 +50,10 @@ void PlaneSweep::sweep(Mat3b &img) {
         }
     }
 
+    if (_p_callback && _callback_observer) {
+        _p_callback(_callback_observer, 1.0);
+    }
+
     delete [] unary;
     delete [] img_buf;
     delete [] map;
@@ -66,7 +70,7 @@ void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
 
             Vec3b ref_val = ref_img.at<Vec3b>(h,w);
             int out_of_ranges = 0;
-            int min_idx;
+            int min_idx = 0;
             double min_val = DBL_MAX;
 
             for( int d = 0; d < M; ++d ) {
@@ -106,7 +110,8 @@ void PlaneSweep::compute_unary_energy(float *unary, cv::Rect &good_region) {
         }//w
 
         if (_p_callback && _callback_observer) {
-            _p_callback(_callback_observer, h-_roi.y);
+            float p = 0.7 * (h-_roi.y+1) / _roi.height;
+            _p_callback(_callback_observer, p);
         }
 
     }//h

@@ -35,6 +35,10 @@ static int const kDefaultDepthResolution = 32;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (atomic, assign) BOOL isRunning;
 @property (nonatomic, strong) TKDFileWatcher *watcher;
+
+// progress counter
+@property (nonatomic ,assign) CGFloat baProgress;
+@property (nonatomic ,assign) CGFloat psProgress;
 @end
 
 
@@ -145,11 +149,6 @@ static int const kDefaultDepthResolution = 32;
 - (void)runEstimationImpl
 {
 
-    CGFloat unitPerBAItter = 20; // BundleAdjustment一回あたりの進み具合
-    CGFloat baComputationUnit = 5 * unitPerBAItter; // MAX_ITRR * unitPerIttr
-    CGFloat psComputationUnit = self.roi.size.height;
-    CGFloat totalUnit = baComputationUnit + psComputationUnit;
-
     // feature trackingの結果を得る
     std::vector<std::vector<cv::Point2d>> track_points = tracker->pickup_stable_points();
 
@@ -165,13 +164,11 @@ static int const kDefaultDepthResolution = 32;
     // bundle adjustment を実行
     while (solver.should_continue) {
         solver.run_one_step();
-        CGFloat progress = unitPerBAItter*(solver.ittr+1)/totalUnit;
-        [self notifyProgressOnMainQueue:progress];
+        self.baProgress = (CGFloat)(solver.ittr+1) / (CGFloat)solver.MAX_ITTR;
     }
 
     // bundle adjustment 終了
-    [self notifyProgressOnMainQueue:baComputationUnit/totalUnit];
-    print_ittr_status(solver);
+    self.baProgress = 1.0;
 
     if (solver.good_reporjection() == false) {
         NSError *e = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain code:TKDDepthEstimatorBundleAdjustmentFailed userInfo:nil];
@@ -182,17 +179,8 @@ static int const kDefaultDepthResolution = 32;
     // plane sweep の準備
     std::vector<double> depths = solver.depth_variation(self.depthResolution);
 
-    // ファイルを使ってログを見る
-    TKDFileWatcher *fileWatcher = [[TKDFileWatcher alloc] initWithFileName:@"estimation_progress.txt"];
-    fileWatcher.delegate = self;
-    [fileWatcher startWatching];
-    string filepath = [fileWatcher.filepath UTF8String];
-
-
     // plane sweep + densecrf で奥行きを求める
     cv::Rect roi = cvRectFromCGRect(self.roi);
-    NSLog(@"%@", NSStringFromCGRect(self.roi));
-    cout << roi << endl;
     PlaneSweep ps(*captured_images,
                   solver.camera_params,
                   depths,
@@ -201,7 +189,9 @@ static int const kDefaultDepthResolution = 32;
     ps.set_callback(*progress_callback, (__bridge void *)self);
 
     ps.sweep(captured_images->front());
-    [self notifyProgressOnMainQueue:1.0];
+
+    // plane sweep 完了
+    self.psProgress = 1.0;
 
     // complete
     _rawDisparityMap = matToUIImage(ps._depth_raw, 1.0, UIImageOrientationRight);
@@ -222,28 +212,37 @@ static int const kDefaultDepthResolution = 32;
     });
 }
 
-- (void)notifyProgressOnMainQueue:(CGFloat)progress
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.estimationDelegate depthEstimator:self
-                            estimationProceeded:progress];
-    });
-}
 
-- (void)fileWatcher:(TKDFileWatcher *)watcher stringWritten:(NSString *)writtenString
-{
-    CGFloat lines = [writtenString floatValue];
-    CGFloat progress = lines / self.roi.size.height;
-    [self notifyProgressOnMainQueue:progress];
-}
+#pragma mark - progress handling
 
-void progress_callback(void *obj, int lines) {
-    TKDDepthEstimator *estimator = (__bridge TKDDepthEstimator *)obj;
-
-    if ([estimator respondsToSelector:@selector(notifyProgressOnMainQueue:)]) {
-        [estimator notifyProgressOnMainQueue:lines/estimator.roi.size.height];
+- (void)setBaProgress:(CGFloat)baProgress {
+    if (_baProgress != baProgress) {
+        _baProgress = baProgress;
+        [self notifyProgressOnMainQueue];
     }
 }
 
+- (void)setPsProgress:(CGFloat)psProgress {
+    if (_psProgress != psProgress) {
+        _psProgress = psProgress;
+        [self notifyProgressOnMainQueue];
+    }
+}
+
+- (void)notifyProgressOnMainQueue
+{
+    CGFloat p = 0.3 * self.baProgress + 0.7 * self.psProgress;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.estimationDelegate depthEstimator:self estimationProceeded:p];
+    });
+}
+
+void progress_callback(void *obj, float progress) {
+    TKDDepthEstimator *estimator = (__bridge TKDDepthEstimator *)obj;
+
+    if ([estimator respondsToSelector:@selector(setPsProgress:)]) {
+        [estimator setPsProgress:progress];
+    }
+}
 
 @end

@@ -8,7 +8,7 @@ Matx33d ps_homography_matrix( Camera camera, double depth);
 Point2d ps_homogenious_point( Matx33d homo_mat, Point2d ref_point);
 Matx44d ps_projection_matrix(Camera c, double depth );
 
-typedef void (*p_callback_t)(void *observer, int lines);
+typedef void (*p_callback_t)(void *observer, float progress);
 
 class PlaneSweep {
 public:
