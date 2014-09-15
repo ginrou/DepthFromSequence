@@ -1,10 +1,13 @@
 PODS:
   - OpenCV (2.4.9)
+  - SVProgressHUD (1.0)
 
 DEPENDENCIES:
   - OpenCV
+  - SVProgressHUD
 
 SPEC CHECKSUMS:
   OpenCV: fc3fdf35e4356162ed479cfc3e12d63595ff9e02
+  SVProgressHUD: 5034c6e22b8c2ca3e09402e48d41ed0340aa1c50
 
 COCOAPODS: 0.33.1

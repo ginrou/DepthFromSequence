@@ -47,6 +47,12 @@
 @property (nonatomic, readonly) UIImage *referenceImage;
 @property (nonatomic, readonly) UIImage *rawDisparityMap;
 @property (nonatomic, readonly) UIImage *smoothDisparityMap;
+@property (nonatomic, readonly) UIImage *colorDisparityMap;
+
+// property
+@property (nonatomic, readonly) BOOL isComputed;
+@property (atomic, assign) BOOL isRunning;
+
 
 - (void)runEstimation;
 
@@ -61,7 +67,7 @@
 @end
 
 @protocol TKDDepthEstimatorEstimationDelegate <NSObject>
-- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationProceeded:(CGFloat)progress;
+- (void)depthEstimator:(TKDDepthEstimator *)estimator estimationProceeded:(CGFloat)progress status:(NSString *)status;
 - (void)depthEstimator:(TKDDepthEstimator *)estimator estimationCompleted:(UIImage *)disparityMap;
 - (void)depthEstimator:(TKDDepthEstimator *)estimator estimationFailed:(NSError *)error;
 @end

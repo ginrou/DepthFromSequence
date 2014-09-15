@@ -24,7 +24,7 @@ TKDDepthEstimatorCaptureDelegate
 @property (weak, nonatomic) IBOutlet TKDPreviewView *previewView;
 
 // Guide
-@property (weak, nonatomic) TKDGuideView *guide;
+//@property (weak, nonatomic) TKDGuideView *guide;
 
 // AVCaptures
 @property (assign, nonatomic) BOOL readyToCapture;
@@ -53,11 +53,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     self.stabilityIcon.layer.cornerRadius = self.stabilityIcon.frame.size.width/2.0;
     self.captureButton.enabled = NO;
     [self setupAVCapture];
-    self.depthEstimator = [TKDDepthEstimator new];
-    self.depthEstimator.captureDelegate = self;
-//    self.depthEstimator.roi = kROI;
-    self.depthEstimator.roi = CGRectMake(320, 40, 640, 640);
-
+    [self initDepthEstimator];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -67,9 +63,6 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
             [self.session startRunning];
         }
     });
-    self.guide = [TKDGuideView guideViewWithXibName:@"TKDHowToUseGuide"];
-    [self.guide showOnView:self.view removeAutomatically:YES];
-
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -116,7 +109,16 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 
 - (void)updateGuideView {
     NSInteger n = self.depthEstimator.capturingImages - self.depthEstimator.capturedImages;
-    [(TKDCountDownGuide *)self.guide setNumber:n];
+//    [(TKDCountDownGuide *)self.guide setNumber:n];
+    NSLog(@"あと%d枚", (int)n);
+}
+
+- (void)initDepthEstimator
+{
+    self.trackingMode = NO;
+    self.depthEstimator = [TKDDepthEstimator new];
+    self.depthEstimator.captureDelegate = self;
+    self.depthEstimator.roi = CGRectMake(320, 40, 640, 640);
 }
 
 #pragma mark - User Interactions
@@ -140,9 +142,6 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
         });
     });
 
-    self.guide = [TKDGuideView guideViewWithXibName:@"TKDCountDownGuide"];
-    [self.guide showOnView:self.view removeAutomatically:NO];
-    [self updateGuideView];
 }
 
 - (IBAction)captureButtonTouchUp:(id)sender {
@@ -153,7 +152,9 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
         [self.session beginConfiguration];
         AVCaptureDevice *device = [[self class] defaultDevice];
         [device lockForConfiguration:nil];
-        device.whiteBalanceMode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
+        if ([device isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeAutoWhiteBalance]) {
+            device.whiteBalanceMode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
+        }
         device.exposureMode = AVCaptureExposureModeAutoExpose;
         device.focusMode = AVCaptureFocusModeAutoFocus;
         [device unlockForConfiguration];
@@ -162,6 +163,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
         dispatch_async(self.videoDataQueue, ^{
             // stop tracking
             self.trackingMode = NO;
+            return ; // 今はキャンセル時の挙動を考えない
 
             // reset depth estimator
             self.depthEstimator = [TKDDepthEstimator new];
@@ -171,7 +173,6 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
         });
     });
 
-    [self.guide removeFromSuperview];
 }
 
 
@@ -188,7 +189,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 }
 
 - (IBAction)editCompletedSegue:(UIStoryboardSegue *)segue {
-
+    [self initDepthEstimator];
 }
 
 #pragma mark - AVFoundation and About DepthEstimator
@@ -249,7 +250,10 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 + (AVCaptureDevice *)defaultDevice {
     NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
     for (AVCaptureDevice *d in devices) {
-        if (d.position == AVCaptureDevicePositionBack) return d;
+        if (d.position == AVCaptureDevicePositionBack) {
+            NSLog(@"%@", d);
+            return d;
+        }
     }
     return devices.firstObject;
 }
@@ -284,16 +288,15 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     NSLog(@"%@", error);
 
     // TODO: いい感じのライブラリに置き換える
-    // TODO: 2回呼ばれてしまうので対応する
-    if (error.code == TKDDepthEstimatorFewFeaturesError) {
+    if (error.code == TKDDepthEstimatorFewFeaturesError && estimator == self.depthEstimator) {
         NSString *message = @"特徴点追跡に失敗しました。明るいところでお試しください。";
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"エラー" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
 
-        self.depthEstimator = [TKDDepthEstimator new];
-        self.depthEstimator.captureDelegate = self;
+        self.depthEstimator = nil;
         dispatch_async(self.videoDataQueue, ^{
             self.trackingMode = NO;
+            [self initDepthEstimator];
         });
     }
 

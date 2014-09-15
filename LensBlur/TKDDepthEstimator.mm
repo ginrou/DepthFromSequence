@@ -33,7 +33,6 @@ static int const kDefaultDepthResolution = 32;
 }
 
 @property (nonatomic, strong) dispatch_queue_t queue;
-@property (atomic, assign) BOOL isRunning;
 @property (nonatomic, strong) TKDFileWatcher *watcher;
 
 // progress counter
@@ -88,6 +87,10 @@ static int const kDefaultDepthResolution = 32;
         captured_images->front()(roi).copyTo(mat);
         return matToUIImage(mat, 1.0, UIImageOrientationRight);
     }
+}
+
+- (BOOL)isComputed {
+    return self.smoothDisparityMap != nil;
 }
 
 #pragma mark - FeatureTracking
@@ -152,7 +155,6 @@ static int const kDefaultDepthResolution = 32;
     // feature trackingの結果を得る
     std::vector<std::vector<cv::Point2d>> track_points = tracker->pickup_stable_points();
 
-
     // Solverの初期化
     BundleAdjustment::Solver solver(track_points);
     double min_depth = 500.0; // [mm]
@@ -169,6 +171,7 @@ static int const kDefaultDepthResolution = 32;
 
     // bundle adjustment 終了
     self.baProgress = 1.0;
+    print_params(solver);
 
     if (solver.good_reporjection() == false) {
         NSError *e = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain code:TKDDepthEstimatorBundleAdjustmentFailed userInfo:nil];
@@ -196,6 +199,7 @@ static int const kDefaultDepthResolution = 32;
     // complete
     _rawDisparityMap = matToUIImage(ps._depth_raw, 1.0, UIImageOrientationRight);
     _smoothDisparityMap = matToUIImage(ps._depth_smooth, 1.0, UIImageOrientationRight);
+    _colorDisparityMap = matToUIImage(ps._depth_color, 1.0, UIImageOrientationRight);
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.estimationDelegate depthEstimator:self
@@ -233,7 +237,8 @@ static int const kDefaultDepthResolution = 32;
 {
     CGFloat p = 0.3 * self.baProgress + 0.7 * self.psProgress;
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self.estimationDelegate depthEstimator:self estimationProceeded:p];
+        NSString *status = self.baProgress < 1.0 ? @"bundleAdjustment" : @"planeSweep";
+        [self.estimationDelegate depthEstimator:self estimationProceeded:p status:status];
     });
 }
 
