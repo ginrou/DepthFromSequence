@@ -22,14 +22,17 @@ bool FeatureTracker::add_image(cv::Mat image) {
     if ( images.size() == 0 ) {
         initialize_tracker(image);
         images.push_back(image);
+        last_try_points = all_track_points.front();
         return true;
     } else if (images.size() >= MAX_IMAGES ) {
         return false;
     } else {
         std::vector<uchar> status;
-        std::vector<Point2f> prev_point = all_track_points.back();
-        std::vector<Point2f> new_points = track_for_image(images.back(), image, prev_point, status);
+        std::vector<Point2f> new_points = track_for_image(images.back(), image, last_try_points, status);
 
+        last_try_points = new_points;
+
+        std::vector<Point2f> prev_point = all_track_points.back();
         if (points_moved_enough(prev_point, new_points, status) == false) return false;
 
         all_track_points.push_back(new_points);
@@ -51,7 +54,7 @@ bool FeatureTracker::points_moved_enough(vector<cv::Point2f> prev_points, vector
         move_sum += sqrt(pt.x*pt.x + pt.y*pt.y);
     }
     cout << move_sum / (double)status.size() << endl;
-    return move_sum / (double)status.size() > MIN_TRACK_MOVE;
+    return move_sum / (double)status.size() > MIN_TRACK_DISTANCE;
 }
 
 int FeatureTracker::count_track_points() {
@@ -64,7 +67,11 @@ int FeatureTracker::count_track_points() {
 
 void FeatureTracker::initialize_tracker(cv::Mat base_image) {
     vector<Point2f> points;
-    cv::goodFeaturesToTrack(base_image, points, MAX_CORNERS, QUALITY_LEVEL, 10, noArray(), 5, true, 0.04);
+    cv::goodFeaturesToTrack(base_image, points,
+                            MAX_CORNERS,
+                            QUALITY_LEVEL,
+                            MIN_FEATURE_DISTANCE,
+                            noArray(), 3, true, 0.04);
     cv::cornerSubPix(base_image, points, sub_pix_win_size, cv::Size(-1,-1), term_crit);
     all_track_points.push_back(points);
     total_status = std::vector<uchar>( points.size(), 1 );
@@ -72,7 +79,11 @@ void FeatureTracker::initialize_tracker(cv::Mat base_image) {
 
 int FeatureTracker::good_features_to_track(cv::Mat1b img) {
     vector<Point2f> points;
-    cv::goodFeaturesToTrack(img, points, MAX_CORNERS, QUALITY_LEVEL, 10, noArray(), 5, true, 0.08);
+    cv::goodFeaturesToTrack(img, points,
+                            MAX_CORNERS,
+                            QUALITY_LEVEL,
+                            MIN_FEATURE_DISTANCE,
+                            noArray(), 3, true, 0.04);
     return points.size();
 }
 

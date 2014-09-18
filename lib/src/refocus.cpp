@@ -9,13 +9,13 @@ cv::Mat3b Refocus::refocus_to(cv::Point2d focal_point) {
     cout << ref_image_.size() << endl;
     cout << disparity_map_.size() << endl;
 
-    for ( int d = 0; d < kernels.size(); ++ d ) {
-        cout << d
-             << " : " << disparity_sequence_[d]
-             << " -> " << blur_sizes[d]
-             << " -> " << kernels[d].size()
-             << endl;
-    }
+//    for ( int d = 0; d < kernels.size(); ++ d ) {
+//        cout << d
+//             << " : " << disparity_sequence_[d]
+//             << " -> " << blur_sizes[d]
+//             << " -> " << kernels[d].size()
+//             << endl;
+//    }
 
     // make blur images for each depth
     std::vector<Mat3b> blur_images(kernels.size());

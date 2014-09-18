@@ -6,13 +6,15 @@ class FeatureTracker {
 public:
     vector<cv::Mat> images;
     vector< vector<cv::Point2f> > all_track_points;
+    vector<cv::Point2f> last_try_points;
     void track();
 
     // params
     int MAX_CORNERS;
     int MAX_IMAGES;
     double QUALITY_LEVEL;
-    double MIN_TRACK_MOVE;
+    double MIN_FEATURE_DISTANCE;
+    double MIN_TRACK_DISTANCE;
     cv::Size sub_pix_win_size;
     cv::TermCriteria term_crit;
 
@@ -26,9 +28,10 @@ public:
     FeatureTracker() {
         sub_pix_win_size = cv::Size(10, 10);
         term_crit = cv::TermCriteria( cv::TermCriteria::COUNT|cv::TermCriteria::EPS,20,0.03 );
-        MAX_CORNERS = 100;
-        QUALITY_LEVEL = 0.01;
-        MIN_TRACK_MOVE = 10.0;
+        MAX_CORNERS = 150;
+        QUALITY_LEVEL = 0.0075;
+        MIN_FEATURE_DISTANCE = 10.0;
+        MIN_TRACK_DISTANCE = 25.0;
         MAX_IMAGES = INT_MAX;
     }
 

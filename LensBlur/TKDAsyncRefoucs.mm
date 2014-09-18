@@ -87,11 +87,12 @@ static const char queue_label[] = "TKDAsyncRefocus#processingQueue";
     NSAssert(self.disparityMap, @"insufficient input, disparityMap");
     NSAssert(self.disparitySequence, @"insufficient input, disparitySequence");
 
+    NSLog(@"refocus to %@", NSStringFromCGPoint(point));
+
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.queue, ^{
 
         Refocus *refocus = new Refocus(*ref_img_mat, aperture_mat, *disp_mat, *disp_seq, _apertureSize);
-
 
         cv::Point2d focal_point(point.x, point.y);
         Mat3b dst = refocus->refocus_to(focal_point);

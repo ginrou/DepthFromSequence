@@ -144,8 +144,22 @@
 
     CGPoint touchPoint = [r locationInView:self.imageView];
     self.lastTouchPoint = touchPoint;
-    [self.asyncRefocus refocusTo:touchPoint];
-    [SVProgressHUD showWithStatus:@"リフォーカス中"];
+    CGFloat sx = self.imageView.image.size.width / self.imageView.frame.size.width;
+    CGFloat sy = self.imageView.image.size.height / self.imageView.frame.size.height;
+    NSLog(@"%f, %f", sx, sy);
+    [self.asyncRefocus refocusTo:CGPointMake(sx * touchPoint.x, sy * touchPoint.y)];
+
+    UIImageView *imgView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"focus"]];
+    imgView.center = touchPoint;
+    [self.imageView addSubview:imgView];
+
+    [UIView animateWithDuration:0.1 delay:0.6 options:0 animations:^{
+        imgView.alpha = 0.f;
+    } completion:^(BOOL finished) {
+        [imgView removeFromSuperview];
+        [SVProgressHUD showWithStatus:@"リフォーカス中"];
+    }];
+
 }
 
 #pragma mark - DepthEstimater Estimation Delegate

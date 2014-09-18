@@ -10,11 +10,8 @@
 #import <opencv.hpp>
 
 #import "TKDImageConverter.h"
-#import "TKDFileWatcher.h"
 
 #import "depth_from_sequence.hpp"
-
-#include <fstream>
 
 inline cv::Rect cvRectFromCGRect(CGRect r) {
     return cv::Rect(r.origin.x, r.origin.y, r.size.width, r.size.height);
@@ -26,14 +23,13 @@ static const char kQueueName[] = "TKDDepthEstimator#Queue";
 static int const kDefaultCapturingImages = 12;
 static int const kDefaultDepthResolution = 32;
 
-@interface TKDDepthEstimator () <TKDFileWatcherDelegate>
+@interface TKDDepthEstimator ()
 {
     std::vector<Mat3b> *captured_images;
     FeatureTracker *tracker;
 }
 
 @property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, strong) TKDFileWatcher *watcher;
 
 // progress counter
 @property (nonatomic ,assign) CGFloat baProgress;
@@ -67,7 +63,7 @@ static int const kDefaultDepthResolution = 32;
 
 - (void)updateStabilityFromFeatures:(NSInteger)currentTrackedPoints
 {
-    _stability = (CGFloat)currentTrackedPoints/(CGFloat)tracker->MAX_CORNERS;
+    _stability = MAX(1.0,(CGFloat)currentTrackedPoints/(CGFloat)tracker->MAX_CORNERS);
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.captureDelegate depthEstimatorStabilityUpdated:self];
     });
@@ -174,6 +170,7 @@ static int const kDefaultDepthResolution = 32;
     print_params(solver);
 
     if (solver.good_reporjection() == false) {
+        print_ittr_status(solver);
         NSError *e = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain code:TKDDepthEstimatorBundleAdjustmentFailed userInfo:nil];
         [self notifyErrorOnMainQueue:e];
         return;

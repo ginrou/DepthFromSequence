@@ -8,6 +8,8 @@
 
 @import AVFoundation;
 
+#import <SVProgressHUD.h>
+
 #import "TKDLensBlurCaptureViewController.h"
 #import "TKDLensBlurEditViewController.h"
 #import "TKDDepthEstimator.h"
@@ -32,6 +34,10 @@ TKDDepthEstimatorCaptureDelegate
 @property (nonatomic, strong) dispatch_queue_t sessionQueue;
 @property (nonatomic, strong) dispatch_queue_t videoDataQueue;
 @property (atomic, assign) BOOL trackingMode;
+
+@property (nonatomic, assign) AVCaptureFocusMode defaultFocusMode;
+@property (nonatomic, assign) AVCaptureWhiteBalanceMode defaultWhiteBalanceMode;
+@property (nonatomic, assign) AVCaptureExposureMode defaultExposureMode;
 
 // depth estimator
 @property (nonatomic, assign) int round;
@@ -90,13 +96,14 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     }
 }
 
-- (void)setStability:(CGFloat)stability {
+- (void)setStability:(CGFloat)stability withStatus:(NSString *)status
+{
     if (stability == kNotReadyStability) {
         self.stabilityLabel.text = @"Preparing...";
         self.stabilityIcon.backgroundColor = [UIColor grayColor];
     } else {
 
-        self.stabilityLabel.text = [NSString stringWithFormat:@"stability : %d%%", (int)(100.0*stability)];
+        self.stabilityLabel.text = status ? : [NSString stringWithFormat:@"stability : %d%%", (int)(100.0*stability)];
 
         if (stability < 0.7) self.stabilityIcon.backgroundColor = [UIColor redColor];
         else if (stability < 0.85) self.stabilityIcon.backgroundColor = [UIColor yellowColor];
@@ -152,11 +159,9 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
         [self.session beginConfiguration];
         AVCaptureDevice *device = [[self class] defaultDevice];
         [device lockForConfiguration:nil];
-        if ([device isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeAutoWhiteBalance]) {
-            device.whiteBalanceMode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
-        }
-        device.exposureMode = AVCaptureExposureModeAutoExpose;
-        device.focusMode = AVCaptureFocusModeAutoFocus;
+        device.whiteBalanceMode = self.defaultWhiteBalanceMode;
+        device.exposureMode = self.defaultExposureMode;
+        device.focusMode = self.defaultFocusMode;
         [device unlockForConfiguration];
         [self.session commitConfiguration];
 
@@ -195,7 +200,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 #pragma mark - AVFoundation and About DepthEstimator
 
 - (void)setupAVCapture {
-    [self setStability:kNotReadyStability];
+    [self setStability:kNotReadyStability withStatus:nil];
 
     self.session = [AVCaptureSession new];
     if ([self.session canSetSessionPreset:AVCaptureSessionPreset1280x720]) {
@@ -211,6 +216,9 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
         NSError *error = nil;
 
         AVCaptureDevice *device = [[self class] defaultDevice];
+        self.defaultExposureMode = device.exposureMode;
+        self.defaultFocusMode = device.focusMode;
+        self.defaultWhiteBalanceMode = device.whiteBalanceMode;
         AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
 
         // TODO: 無理だったときのハンドリング
@@ -273,13 +281,21 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 #pragma mark - TKDDepthEstimatorCaptureDelegate
 - (void)depthEstimatorStabilityUpdated:(TKDDepthEstimator *)estimator
 {
-    [self setStability:estimator.stability];
+    if (self.trackingMode) return;
+
+    if (estimator.stability >= 0.85) {
+        [self setStability:estimator.stability withStatus:@"ボタンを押し続けて撮影"];
+    } else {
+        [self setStability:estimator.stability withStatus:@"明るいところでお試しください"];
+    }
 }
 
 - (void)depthEstimator:(TKDDepthEstimator *)estimator didTrack:(BOOL)added
 {
     if (added) {
-        [self updateGuideView];
+        long imgs = estimator.capturingImages - estimator.capturedImages;
+        NSString *status = [NSString stringWithFormat:@"あと%ldフレーム", imgs];
+        [self setStability:estimator.stability withStatus:status];
     }
 }
 
@@ -287,11 +303,9 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
 {
     NSLog(@"%@", error);
 
-    // TODO: いい感じのライブラリに置き換える
     if (error.code == TKDDepthEstimatorFewFeaturesError && estimator == self.depthEstimator) {
         NSString *message = @"特徴点追跡に失敗しました。明るいところでお試しください。";
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"エラー" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alert show];
+        [SVProgressHUD showErrorWithStatus:message];
 
         self.depthEstimator = nil;
         dispatch_async(self.videoDataQueue, ^{
