@@ -33,6 +33,14 @@ public:
         return img;
     }
 
+    static std::vector<double> depth_to_disparity(std::vector<double> depth, double max_disp) {
+        double min_depth = *min_element(depth.begin(), depth.end());
+        double base_line = max_disp * min_depth;
+        std::vector<double> ret(depth.size());
+        for( int i = 0; i < ret.size(); ++i ) ret[i] = base_line / depth[i];
+        return ret;
+    }
+
 private:
     std::vector<double> get_blur_size(cv::Point2d focal_point);
     std::vector<Mat1d> get_kernels(std::vector<double> kernel_sizes);

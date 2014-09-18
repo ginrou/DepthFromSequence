@@ -1,21 +1,21 @@
 #include "feature_tracking.hpp"
 
-void FeatureTracker::track() {
+void FeatureTracker::add_images_batch(std::vector<cv::Mat> imgs)
+{
     // initialize
-    initialize_tracker(images[0]);
+    initialize_tracker(imgs[0]);
 
     // track image sequence
-    for(int i = 1; i < images.size(); ++i ) {
+    for(int i = 1; i < imgs.size(); ++i ) {
+        if ( images.size () >= MAX_IMAGES ) break;
         std::vector<uchar> status;
         std::vector<Point2f> prev_point = all_track_points[i-1];
-
-        std::vector<Point2f> new_points = track_for_image( images[i-1], images[i], prev_point, status );
+        std::vector<Point2f> new_points = track_for_image(imgs[i-1], imgs[i], prev_point, status);
         all_track_points.push_back(new_points);
-
+        images.push_back(imgs[i]);
         for(int j = 0; j < status.size(); ++j )
             total_status[j] &= status[j];
     }
-
 }
 
 bool FeatureTracker::add_image(cv::Mat image) {

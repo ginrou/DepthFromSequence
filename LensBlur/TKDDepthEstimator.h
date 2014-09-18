@@ -48,6 +48,7 @@
 @property (nonatomic, readonly) UIImage *rawDisparityMap;
 @property (nonatomic, readonly) UIImage *smoothDisparityMap;
 @property (nonatomic, readonly) UIImage *colorDisparityMap;
+@property (nonatomic, readonly) NSArray *depthSequence;
 
 // property
 @property (nonatomic, readonly) BOOL isComputed;

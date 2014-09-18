@@ -67,16 +67,20 @@ static const char queue_label[] = "TKDAsyncRefocus#processingQueue";
     }
 }
 
-- (void)setDisparitySequence:(NSArray *)disparitySequence {
-    if (_disparitySequence != disparitySequence) {
-        _disparitySequence = disparitySequence;
+- (void)setDepthSequence:(NSArray *)depthSequence {
+    if (_depthSequence != depthSequence) {
+        _depthSequence = depthSequence;
 
         dispatch_async(self.queue, ^{
-            if (disp_seq != NULL) delete disp_seq;
-            disp_seq = new std::vector<double>(disparitySequence.count);
-            for (int i = 0; i < disparitySequence.count; ++i) {
-                (*disp_seq)[i] = [disparitySequence[i] doubleValue];
+
+            std::vector<double> depth;
+            for (NSNumber *n in depthSequence) {
+                depth.push_back([n doubleValue]);
             }
+
+            if (disp_seq != NULL) delete disp_seq;
+            disp_seq = new std::vector<double>(depth.size());
+            *disp_seq = Refocus::depth_to_disparity(depth, 32);
         });
     }
 }
@@ -85,7 +89,7 @@ static const char queue_label[] = "TKDAsyncRefocus#processingQueue";
 
     NSAssert(self.referenceImage, @"insufficient input, referenceImage");
     NSAssert(self.disparityMap, @"insufficient input, disparityMap");
-    NSAssert(self.disparitySequence, @"insufficient input, disparitySequence");
+    NSAssert(self.depthSequence, @"insufficient input, disparitySequence");
 
     NSLog(@"refocus to %@", NSStringFromCGPoint(point));
 

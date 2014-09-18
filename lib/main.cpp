@@ -6,22 +6,13 @@ int main(int argc, char* argv[]) {
     // 画像をロード
     FeatureTracker tracker;
     vector<Mat3b> input_images;
-    vector<Mat1b> gray_images;
+    vector<Mat> gray_images;
     cout << "Feature Tracking, tracking points" << endl;
     for( int i = 1; i < argc; ++i ) {
-
-        Mat1b input = imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE);
-        if ( tracker.add_image(input) == true ) {
-            input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_COLOR) );
-            gray_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
-            if ( i == 1 ) imwrite("tmp/ft-01.png",tracker.track_points_image());
-            else if ( i == argc/2 ) imwrite("tmp/ft-02.png",tracker.track_points_image());
-            else if ( i == argc-1 ) imwrite("tmp/ft-03.png",tracker.track_points_image());
-            cout << tracker.count_track_points() << " " ;
-        }
-
+        input_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_COLOR) );
+        gray_images.push_back( imread(argv[i],  CV_LOAD_IMAGE_GRAYSCALE) );
     }
-    cout << endl;
+    tracker.add_images_batch(gray_images);
 
     vector< vector<Point2d> > track_points = tracker.pickup_stable_points();
 
@@ -41,12 +32,10 @@ int main(int argc, char* argv[]) {
 
     print_params(solver);
     // plane sweep の準備
-    vector<double> depths = solver.depth_variation(32);
+    vector<double> depths = solver.depth_variation(20);
 
     for(int i = 0; i < depths.size(); ++i )
         cout << depths[i] << endl;
-
-    save_warped_images(gray_images, solver.camera_params, depths);
 
     // plane sweep + dencecrf で奥行きを求める
     cv::Rect roi;
@@ -67,23 +56,22 @@ int main(int argc, char* argv[]) {
     imwrite("depth_color.png", ps->_depth_color);
 
     // refocus
-    bool refocus = false;
+    bool refocus = true;
     if(refocus){
         // aperture
         Mat1b aperture = Refocus::circuler_aperture(64);
         imwrite("aperture.png", aperture);
 
         // disparity sequence
-        std::vector<double> disp_seq(depths.size());
-        for(int i = 0; i < disp_seq.size(); ++i ) disp_seq[i] = i+1;
+        std::vector<double> disp_seq = Refocus::depth_to_disparity(depths, 48);
 
         // initialize
         Mat3b crop_image(roi.size());
         color_image(roi).copyTo(crop_image);
-        Refocus refocus(crop_image, aperture, ps->_depth_smooth, disp_seq, 0.8);
+        Refocus refocus(crop_image, aperture, ps->_depth_smooth, disp_seq, 1.8);
 
         // compute
-        Mat3b r = refocus.refocus_to(cv::Point2d(100, 200));
+        Mat3b r = refocus.refocus_to(cv::Point2d(480, 300));
         imwrite("refocus.png", r);
     }
 

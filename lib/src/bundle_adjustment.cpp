@@ -118,7 +118,6 @@ void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
 
         if ( pt_max < pt_avg[j] ) pt_max = pt_avg[j];
     }
-    print_histogram(pt_avg, 3.0);
 
     double a = pt_max * min_depth; // 最も近い点と最も移動量が大きい点を対応付ける
     double z_avg = 0.0;
@@ -150,7 +149,7 @@ void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
         c.f = focal_length;
         camera_params[i] = c;
 
-        camera_params[i].t.x /= fabs(0.2*camera_params[1].t.x); // 一つ目のカメラの平行移動を10に正規化
+        camera_params[i].t.x /= fabs(0.2*camera_params[1].t.x); // 一つ目のカメラの平行移動を5に正規化
     }
 
     // zでパラメータ化しているので戻す

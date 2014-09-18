@@ -18,7 +18,7 @@
 @property (nonatomic, strong) UIImage *referenceImage;
 @property (nonatomic, strong) UIImage *aperture;
 @property (nonatomic, strong) UIImage *disparityMap;
-@property (nonatomic, strong) NSArray *disparitySequence;
+@property (nonatomic, strong) NSArray *depthSequence;
 @property (nonatomic, assign) CGFloat apertureSize;
 
 // output

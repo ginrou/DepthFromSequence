@@ -91,12 +91,7 @@
     self.asyncRefocus = [TKDAsyncRefoucs new];
     self.asyncRefocus.referenceImage = self.depthEstimator.referenceImage;
     self.asyncRefocus.disparityMap = dispMap;
-
-    NSInteger depthCount = self.depthEstimator.depthResolution;
-    NSMutableArray *array = [NSMutableArray arrayWithCapacity:depthCount];
-    for (int i = 0; i < depthCount; ++i) [array addObject:@(i+1)];
-    self.asyncRefocus.disparitySequence = array;
-
+    self.asyncRefocus.depthSequence = self.depthEstimator.depthSequence;
     self.asyncRefocus.delegate = self;
 }
 
@@ -190,6 +185,9 @@
     }
 
     [SVProgressHUD showErrorWithStatus:message];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self performSegueWithIdentifier:@"editCompletedSegue" sender:self];
+    });
 }
 
 #pragma mark - AsyncRefocus Delegate

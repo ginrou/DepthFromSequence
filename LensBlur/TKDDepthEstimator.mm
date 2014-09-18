@@ -85,6 +85,15 @@ static int const kDefaultDepthResolution = 32;
     }
 }
 
+- (void)setDepthSequence:(std::vector<double>)depth
+{
+    NSMutableArray *array;
+    for (int i = 0; i < depth.size(); ++i) {
+        [array addObject:@(depth[i])];
+    }
+    _depthSequence = [NSArray arrayWithArray:array];
+}
+
 - (BOOL)isComputed {
     return self.smoothDisparityMap != nil;
 }
@@ -197,6 +206,7 @@ static int const kDefaultDepthResolution = 32;
     _rawDisparityMap = matToUIImage(ps._depth_raw, 1.0, UIImageOrientationRight);
     _smoothDisparityMap = matToUIImage(ps._depth_smooth, 1.0, UIImageOrientationRight);
     _colorDisparityMap = matToUIImage(ps._depth_color, 1.0, UIImageOrientationRight);
+    [self setDepthSequence:depths];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.estimationDelegate depthEstimator:self

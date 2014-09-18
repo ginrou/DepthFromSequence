@@ -69,6 +69,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
             [self.session startRunning];
         }
     });
+    [self captureButtonTouchUp:self]; // reset focus, whitebalane
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
