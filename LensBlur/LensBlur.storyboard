@@ -188,19 +188,37 @@
                                         </connections>
                                     </button>
                                     <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="T3o-8T-QqQ">
-                                        <rect key="frame" x="90" y="47" width="212" height="31"/>
+                                        <rect key="frame" x="112" y="61" width="180" height="31"/>
                                         <connections>
-                                            <action selector="sliderValueChanged:" destination="Q7L-DC-yCm" eventType="valueChanged" id="FZD-XT-8kD"/>
+                                            <action selector="sliderValueChanged:" destination="Q7L-DC-yCm" eventType="touchUpInside" id="asC-av-jWf"/>
                                         </connections>
                                     </slider>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="aperture_narrow" translatesAutoresizingMaskIntoConstraints="NO" id="0os-Za-fXO">
+                                        <rect key="frame" x="99" y="37" width="30" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="JWG-To-OWO"/>
+                                            <constraint firstAttribute="width" constant="30" id="thR-GM-UjK"/>
+                                        </constraints>
+                                    </imageView>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="aperture_wide" translatesAutoresizingMaskIntoConstraints="NO" id="v38-M4-bXp">
+                                        <rect key="frame" x="274" y="37" width="30" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="SmH-7d-SdA"/>
+                                            <constraint firstAttribute="width" constant="30" id="StQ-zg-H13"/>
+                                        </constraints>
+                                    </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
+                                    <constraint firstItem="v38-M4-bXp" firstAttribute="bottom" secondItem="T3o-8T-QqQ" secondAttribute="bottom" constant="-24" id="K5p-Y0-DEH"/>
                                     <constraint firstItem="2xH-7A-1Fm" firstAttribute="leading" secondItem="PK6-Cc-gEc" secondAttribute="leading" constant="20" id="KJH-ka-nLr"/>
-                                    <constraint firstAttribute="trailing" secondItem="T3o-8T-QqQ" secondAttribute="trailing" constant="20" id="Uld-Cz-Uju"/>
-                                    <constraint firstAttribute="centerY" secondItem="T3o-8T-QqQ" secondAttribute="centerY" id="XtL-b3-bmm"/>
-                                    <constraint firstItem="T3o-8T-QqQ" firstAttribute="leading" secondItem="2xH-7A-1Fm" secondAttribute="trailing" constant="8" id="gtY-T0-MPT"/>
+                                    <constraint firstItem="v38-M4-bXp" firstAttribute="trailing" secondItem="T3o-8T-QqQ" secondAttribute="trailing" constant="14" id="LjN-i6-PIZ"/>
+                                    <constraint firstAttribute="trailing" secondItem="T3o-8T-QqQ" secondAttribute="trailing" constant="30" id="Uld-Cz-Uju"/>
+                                    <constraint firstAttribute="centerY" secondItem="T3o-8T-QqQ" secondAttribute="centerY" constant="-14" id="XtL-b3-bmm"/>
+                                    <constraint firstItem="T3o-8T-QqQ" firstAttribute="leading" secondItem="0os-Za-fXO" secondAttribute="leading" constant="15" id="dbU-IL-Sff"/>
+                                    <constraint firstItem="T3o-8T-QqQ" firstAttribute="leading" secondItem="2xH-7A-1Fm" secondAttribute="trailing" constant="30" id="gtY-T0-MPT"/>
                                     <constraint firstAttribute="centerY" secondItem="2xH-7A-1Fm" secondAttribute="centerY" id="tAS-d4-Stc"/>
+                                    <constraint firstItem="T3o-8T-QqQ" firstAttribute="bottom" secondItem="0os-Za-fXO" secondAttribute="bottom" constant="24" id="zzp-LI-Oqh"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -234,6 +252,8 @@
         </scene>
     </scenes>
     <resources>
+        <image name="aperture_narrow" width="30" height="30"/>
+        <image name="aperture_wide" width="30" height="30"/>
         <image name="shutter_button" width="64" height="64"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

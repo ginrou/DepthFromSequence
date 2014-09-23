@@ -8,7 +8,7 @@ void dump_camera(Camera camera){
 void print_params(BundleAdjustment::Solver &s) {
     cout << "BundleAdjustment::Solver estimated"  << endl;
 
-    cout << "points"  << endl;
+    cout << "points : "  << s.Np << endl;
     for(int j = 0; j < s.Np; ++j ) {
         Point3d pt(s.points[j].x/s.points[j].z, s.points[j].y/s.points[j].z, 1.0/s.points[j].z);
         cout << pt << endl;

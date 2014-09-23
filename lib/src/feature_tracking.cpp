@@ -30,11 +30,10 @@ bool FeatureTracker::add_image(cv::Mat image) {
         std::vector<uchar> status;
         std::vector<Point2f> new_points = track_for_image(images.back(), image, last_try_points, status);
 
-        last_try_points = new_points;
-
         std::vector<Point2f> prev_point = all_track_points.back();
         if (points_moved_enough(prev_point, new_points, status) == false) return false;
 
+        last_try_points = new_points;
         all_track_points.push_back(new_points);
         images.push_back(image);
         for(int j = 0; j < status.size(); ++j )
@@ -104,17 +103,18 @@ std::vector< std::vector<cv::Point2d> > FeatureTracker::pickup_stable_points()
 
     for( int i = 0; i < all_track_points.size(); ++i ) {
         std::vector<Point2d> pt_list;
-        std::vector<Point2f> pt_list_2f;
 
         for( int j = 0; j < all_track_points[i].size(); ++j ) {
             if(total_status[j]) {
                 Point2f pt = all_track_points[i][j];
                 pt_list.push_back( Point2d(pt.x, pt.y) );
-                pt_list_2f.push_back(pt);
             }
+
+            if (pt_list.size() >= 100) break;
         }
 
         ret.push_back( pt_list );
+
     }
     return ret;
 }

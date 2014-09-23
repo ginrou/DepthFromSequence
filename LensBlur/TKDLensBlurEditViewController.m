@@ -103,7 +103,7 @@
     UIImageWriteToSavedPhotosAlbum(self.imageView.image, self, @selector(image:didFinishSavingWithError:contextInfo:), NULL);
 }
 
-- (IBAction)sliderValueChanged:(id)sender {
+- (IBAction)sliderValueChanged:(UISlider *)sender {
     if (self.isComputing) return;
 
     NSLog(@"%f", self.apertureSizeSlider.value);

@@ -87,7 +87,7 @@ static int const kDefaultDepthResolution = 32;
 
 - (void)setDepthSequence:(std::vector<double>)depth
 {
-    NSMutableArray *array;
+    NSMutableArray *array = [NSMutableArray array];
     for (int i = 0; i < depth.size(); ++i) {
         [array addObject:@(depth[i])];
     }
@@ -186,7 +186,7 @@ static int const kDefaultDepthResolution = 32;
     }
 
     // plane sweep の準備
-    std::vector<double> depths = solver.depth_variation(self.depthResolution);
+    std::vector<double> depths = solver.depth_variation((int)self.depthResolution);
 
     // plane sweep + densecrf で奥行きを求める
     cv::Rect roi = cvRectFromCGRect(self.roi);
