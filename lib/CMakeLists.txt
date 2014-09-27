@@ -13,7 +13,6 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 
 find_package(OpenCV REQUIRED)
 add_subdirectory(densecrf)
-include_directories("${PROJECT_SOURCE_DIR}/eigen")
 
 file(GLOB SOURCES "${SRC_DIR}/*.cpp" "${SRC_DIR}/*.c")
 

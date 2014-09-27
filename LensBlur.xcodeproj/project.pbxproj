@@ -15,7 +15,6 @@
 		545FF06D19AA16E7003B6681 /* TKDNewRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 545FF06C19AA16E7003B6681 /* TKDNewRecordViewController.m */; };
 		548225381997377B00FA5BD0 /* TKDDepthEstimatorOld.mm in Sources */ = {isa = PBXBuildFile; fileRef = 548225371997377B00FA5BD0 /* TKDDepthEstimatorOld.mm */; };
 		5482253B1997401400FA5BD0 /* TKDPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5482253A1997401400FA5BD0 /* TKDPreviewView.m */; };
-		5482254319975D3900FA5BD0 /* eigen in Resources */ = {isa = PBXBuildFile; fileRef = 5482253F19975D3900FA5BD0 /* eigen */; };
 		5482254419975D3900FA5BD0 /* include in Resources */ = {isa = PBXBuildFile; fileRef = 5482254019975D3900FA5BD0 /* include */; };
 		5482254D19975FAA00FA5BD0 /* bundle_adjustment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */; };
 		5482254E19975FAA00FA5BD0 /* feature_tracking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */; };
@@ -81,7 +80,6 @@
 		548225371997377B00FA5BD0 /* TKDDepthEstimatorOld.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TKDDepthEstimatorOld.mm; sourceTree = "<group>"; };
 		548225391997401400FA5BD0 /* TKDPreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TKDPreviewView.h; sourceTree = "<group>"; };
 		5482253A1997401400FA5BD0 /* TKDPreviewView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TKDPreviewView.m; sourceTree = "<group>"; };
-		5482253F19975D3900FA5BD0 /* eigen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = eigen; path = lib/eigen; sourceTree = SOURCE_ROOT; };
 		5482254019975D3900FA5BD0 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = lib/include; sourceTree = SOURCE_ROOT; };
 		5482254A19975FAA00FA5BD0 /* bundle_adjustment.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bundle_adjustment.cpp; path = ../lib/src/bundle_adjustment.cpp; sourceTree = "<group>"; };
 		5482254B19975FAA00FA5BD0 /* feature_tracking.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = feature_tracking.cpp; path = ../lib/src/feature_tracking.cpp; sourceTree = "<group>"; };
@@ -159,7 +157,6 @@
 			isa = PBXGroup;
 			children = (
 				9A11A57A19976DF9007A1CB6 /* src */,
-				5482253F19975D3900FA5BD0 /* eigen */,
 				5482254019975D3900FA5BD0 /* include */,
 				548225361997377B00FA5BD0 /* TKDDepthEstimatorOld.h */,
 				548225371997377B00FA5BD0 /* TKDDepthEstimatorOld.mm */,
@@ -389,7 +386,6 @@
 			files = (
 				54FB783819B5D71700BD5A5A /* TKDCountDownGuide.xib in Resources */,
 				54FB783019B5D4F500BD5A5A /* TKDHowToUseGuide.xib in Resources */,
-				5482254319975D3900FA5BD0 /* eigen in Resources */,
 				54C1655619073AFF005E20F8 /* Images.xcassets in Resources */,
 				54C1654819073AFF005E20F8 /* InfoPlist.strings in Resources */,
 				5482254419975D3900FA5BD0 /* include in Resources */,

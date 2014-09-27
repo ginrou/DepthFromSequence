@@ -1,5 +1,4 @@
 #include "bundle_adjustment.hpp"
-#include "Eigen/LU"
 
 #include <cstdlib>
 #include <ctime>

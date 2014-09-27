@@ -2,10 +2,8 @@
 
 #include <opencv2/opencv.hpp>
 #include "depth_from_sequence.hpp"
-#include "Eigen/Core"
 
 using namespace cv;
-using namespace Eigen;
 
 namespace BundleAdjustment {
 class Solver {
