@@ -142,6 +142,14 @@ static double const process_size_ratio = 0.5;
     return dst;
 }
 
+// 10x10 mat with scale 2.0 -> 20x20
+- (Mat)upsample:(Mat)mat forScale:(double)scale
+{
+    Mat dst(cv::Size(mat.cols*scale, mat.rows*scale), mat.channels());
+    cv::resize(mat, dst, dst.size());
+    return dst;
+}
+
 - (Mat1b)toGray:(Mat3b)mat
 {
     Mat1b dst(mat.size());
@@ -173,9 +181,18 @@ static double const process_size_ratio = 0.5;
 
 - (void)setResults:(PlaneSweep *)ps depths:(std::vector<double>)depths
 {
-    _rawDisparityMap = matToUIImage([self upsampleToOriginalSize:ps->_depth_raw], 1.0, UIImageOrientationRight);
-    _smoothDisparityMap = matToUIImage([self upsampleToOriginalSize:ps->_depth_smooth], 1.0, UIImageOrientationRight);
-    _colorDisparityMap = matToUIImage([self upsampleToOriginalSize:ps->_depth_color], 1.0, UIImageOrientationRight);
+
+    double scale = _inputBufferSize.width/process_size.width;
+
+    Mat1b depth_raw = [self upsample:ps->_depth_raw forScale:scale];
+    _rawDisparityMap = matToUIImage(depth_raw, 1.0, UIImageOrientationRight);
+
+    Mat1b depth_smooth = [self upsample:ps->_depth_smooth forScale:scale];
+    _smoothDisparityMap = matToUIImage(depth_smooth, 1.0, UIImageOrientationRight);
+
+    Mat3b depth_color = [self upsample:ps->_depth_color forScale:scale];
+    _colorDisparityMap = matToUIImage(depth_color, 1.0, UIImageOrientationRight);
+
     [self setDepthSequence:depths];
 }
 
@@ -268,7 +285,6 @@ static double const process_size_ratio = 0.5;
     std::vector<double> depths = solver.depth_variation((int)self.depthResolution);
 
     // plane sweep + densecrf で奥行きを求める
-    // cv::Rect roi = cvRectFromCGRect(self.roi);
     cv::Rect roi = [self processingROI];
     PlaneSweep ps(*captured_images,
                   solver.camera_params,

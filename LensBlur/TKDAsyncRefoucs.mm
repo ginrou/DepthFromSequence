@@ -59,7 +59,7 @@ static const char queue_label[] = "TKDAsyncRefocus#processingQueue";
 
         dispatch_async(self.queue, ^{
             if (disp_mat != NULL) delete disp_mat;
-            disp_mat = new Mat1b(disparityMap.size.height, disparityMap.size.height);
+            disp_mat = new Mat1b(disparityMap.size.height, disparityMap.size.width);
             UIImageToMat(disparityMap, *disp_mat);
         });
     }
@@ -82,7 +82,6 @@ static const char queue_label[] = "TKDAsyncRefocus#processingQueue";
 }
 
 - (void)refocusTo:(CGPoint)point {
-
     NSAssert(self.referenceImage, @"insufficient input, referenceImage");
     NSAssert(self.disparityMap, @"insufficient input, disparityMap");
     NSAssert(self.depthSequence, @"insufficient input, disparitySequence");

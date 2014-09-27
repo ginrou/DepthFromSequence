@@ -43,7 +43,6 @@ std::vector<Mat1d> Refocus::get_kernels(std::vector<double> kernel_sizes) {
     std::vector<Mat1d> kernels(kernel_sizes.size());
     for ( int i = 0; i < kernels.size(); ++i ) {
         int size = MAX(1, fabs(kernel_sizes[i])); // cannot make (0, 0) mat
-
         kernels[i] = Mat1d(size, size);
         cv::resize(kernel, kernels[i], cv::Size(size, size));
         kernels[i] /= cv::norm(kernels[i], NORM_L1);
