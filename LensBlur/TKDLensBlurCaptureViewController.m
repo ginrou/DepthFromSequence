@@ -48,7 +48,6 @@ TKDDepthEstimatorCaptureDelegate
 static const char * sessionQueueLabel = "TKDLensBlurCaptureViewController#sessionQueue";
 static const char * videoDataQueueLabel = "TKDLensBlurCaptureViewController#videoDataQueue";
 static const CGFloat kNotReadyStability = -1;
-static const CGSize kImageSize = {1280, 720};
 static const CGRect kROI = {{320, 40}, {640, 640}};
 
 @implementation TKDLensBlurCaptureViewController
@@ -126,6 +125,7 @@ static const CGRect kROI = {{320, 40}, {640, 640}};
     self.trackingMode = NO;
     self.depthEstimator = [TKDDepthEstimator new];
     self.depthEstimator.captureDelegate = self;
+    self.depthEstimator.inputBufferSize = CGSizeMake(1280, 720);
     self.depthEstimator.roi = CGRectMake(320, 40, 640, 640);
 }
 

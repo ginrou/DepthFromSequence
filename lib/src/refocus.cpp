@@ -30,7 +30,7 @@ std::vector<double> Refocus::get_blur_size(cv::Point2d focal_point) {
     double focal_depth = disparity_sequence_[depth_index];
     std::vector<double> blur_size(disparity_sequence_.size());
     for ( int i = 0; i < blur_size.size(); ++i ) {
-        blur_size[i] = aperture_size_ * (focal_depth - disparity_sequence_[i] );
+        blur_size[i] = aperture_size_ * (focal_depth - disparity_sequence_[i]);
     }
 
     return blur_size;

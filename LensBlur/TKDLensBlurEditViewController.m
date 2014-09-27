@@ -92,6 +92,7 @@
     self.asyncRefocus.referenceImage = self.depthEstimator.referenceImage;
     self.asyncRefocus.disparityMap = dispMap;
     self.asyncRefocus.depthSequence = self.depthEstimator.depthSequence;
+    self.asyncRefocus.apertureSize = 5.0 * self.apertureSizeSlider.value;
     self.asyncRefocus.delegate = self;
 }
 
@@ -105,9 +106,7 @@
 
 - (IBAction)sliderValueChanged:(UISlider *)sender {
     if (self.isComputing) return;
-
-    NSLog(@"%f", self.apertureSizeSlider.value);
-    self.asyncRefocus.apertureSize = 1.5 * self.apertureSizeSlider.value + 0.5;
+    self.asyncRefocus.apertureSize = 5.0 * self.apertureSizeSlider.value;
     if (self.hasLastTouchPoint) {
         [self.asyncRefocus refocusTo:self.lastTouchPoint];
         [SVProgressHUD showWithStatus:@"リフォーカス中"];
@@ -119,7 +118,7 @@
     if (self.depthMapMode) {
         self.depthMapMode = NO;
         self.apertureSizeSlider.enabled = YES;
-        self.imageView.image = self.depthEstimator.referenceImage;
+        self.imageView.image = self.asyncRefocus.result ? : self.depthEstimator.referenceImage;
         [self.flipButton setImage:self.depthEstimator.colorDisparityMap
                          forState:UIControlStateNormal];
     } else {
@@ -141,7 +140,6 @@
     self.lastTouchPoint = touchPoint;
     CGFloat sx = self.imageView.image.size.width / self.imageView.frame.size.width;
     CGFloat sy = self.imageView.image.size.height / self.imageView.frame.size.height;
-    NSLog(@"%f, %f", sx, sy);
     [self.asyncRefocus refocusTo:CGPointMake(sx * touchPoint.x, sy * touchPoint.y)];
 
     UIImageView *imgView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"focus"]];
@@ -193,7 +191,6 @@
 #pragma mark - AsyncRefocus Delegate
 - (void)asyncRefocus:(TKDAsyncRefoucs *)asyncRefocus refocusCompleted:(UIImage *)refocusedImage
 {
-    NSLog(@"done");
     self.imageView.image = refocusedImage;
     [SVProgressHUD dismiss];
 }

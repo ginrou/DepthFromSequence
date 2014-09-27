@@ -22,10 +22,17 @@ static const char kQueueName[] = "TKDDepthEstimator#Queue";
 
 static int const kDefaultCapturingImages = 12;
 static int const kDefaultDepthResolution = 32;
+static double const process_size_ratio = 0.5;
 
 @interface TKDDepthEstimator ()
 {
     std::vector<Mat3b> *captured_images;
+
+    /// original reference image which is not corpped nor downsampled
+    Mat3b *ref_mat;
+
+    /// images are down sampled to this size
+    cv::Size process_size;
     FeatureTracker *tracker;
 }
 
@@ -48,7 +55,10 @@ static int const kDefaultDepthResolution = 32;
 
         captured_images = new std::vector<cv::Mat3b>;
         tracker = new FeatureTracker;
-        tracker->MAX_IMAGES = _capturingImages;
+        tracker->MAX_IMAGES = (int)_capturingImages;
+        tracker->MIN_FEATURE_DISTANCE = 5.0;
+        tracker->MIN_TRACK_DISTANCE = 10.0;
+        ref_mat = NULL;
 
         _queue = dispatch_queue_create(kQueueName, DISPATCH_QUEUE_SERIAL);
     }
@@ -58,6 +68,7 @@ static int const kDefaultDepthResolution = 32;
 - (void)dealloc
 {
     delete captured_images;
+    delete ref_mat;
     delete tracker;
 }
 
@@ -80,7 +91,7 @@ static int const kDefaultDepthResolution = 32;
     } else {
         cv::Rect roi = cvRectFromCGRect(self.roi);
         Mat3b mat(roi.size());
-        captured_images->front()(roi).copyTo(mat);
+        (*ref_mat)(roi).copyTo(mat);
         return matToUIImage(mat, 1.0, UIImageOrientationRight);
     }
 }
@@ -98,31 +109,94 @@ static int const kDefaultDepthResolution = 32;
     return self.smoothDisparityMap != nil;
 }
 
+- (void)setInputBufferSize:(CGSize)inputBufferSize
+{
+    _inputBufferSize = inputBufferSize;
+    process_size = cv::Size(inputBufferSize.width * process_size_ratio,
+                            inputBufferSize.height * process_size_ratio);
+}
+
+#pragma mark - private
+/// returns processing size considerd rect
+- (cv::Rect)processingROI
+{
+    double r = process_size.width / _inputBufferSize.width;
+    cv::Rect roi = cvRectFromCGRect(self.roi);
+    roi.x *= r; roi.y *= r;
+    roi.width *= r; roi.height *= r;
+    return roi;
+}
+
+/// bufferが来たらまずここに入れる
+- (Mat3b)createProcessingMat:(Mat3b)mat
+{
+    Mat3b dst(process_size);
+    cv::resize(mat, dst, process_size);
+    return dst;
+}
+
+- (Mat)upsampleToOriginalSize:(Mat)mat
+{
+    Mat dst(cv::Size(_inputBufferSize.width, _inputBufferSize.height), mat.channels());
+    cv::resize(mat, dst, dst.size());
+    return dst;
+}
+
+- (Mat1b)toGray:(Mat3b)mat
+{
+    Mat1b dst(mat.size());
+    cvtColor(mat, dst, CV_RGB2GRAY);
+    return dst;
+}
+
+- (Mat1b)createProcessing1bMat:(Mat3b)mat
+{
+    return [self toGray:[self createProcessingMat:mat]];
+}
+
+- (Mat1b)createProcessing1bMatFromBuffer:(CMSampleBufferRef)sampleBuffer
+{
+    return [self createProcessing1bMat:sampleBufferToMat(sampleBuffer)];
+}
+
+- (Mat3b)createProcessingMatFromBuffer:(CMSampleBufferRef)sampleBuffer
+{
+    return [self createProcessingMat:sampleBufferToMat(sampleBuffer)];
+}
+
+- (void)setRefMat:(CMSampleBufferRef)sampleBuffer
+{
+    Mat3b img = sampleBufferToMat(sampleBuffer);
+    ref_mat = new cv::Mat3b(img.size());
+    img.copyTo(*ref_mat);
+}
+
+- (void)setResults:(PlaneSweep *)ps depths:(std::vector<double>)depths
+{
+    _rawDisparityMap = matToUIImage([self upsampleToOriginalSize:ps->_depth_raw], 1.0, UIImageOrientationRight);
+    _smoothDisparityMap = matToUIImage([self upsampleToOriginalSize:ps->_depth_smooth], 1.0, UIImageOrientationRight);
+    _colorDisparityMap = matToUIImage([self upsampleToOriginalSize:ps->_depth_color], 1.0, UIImageOrientationRight);
+    [self setDepthSequence:depths];
+}
+
 #pragma mark - FeatureTracking
 - (void)checkStability:(CMSampleBufferRef)sampleBuffer
 {
-    Mat3b img = sampleBufferToMat(sampleBuffer);
-    Mat1b gray(img.size());
-    cvtColor(img, gray, CV_RGB2GRAY);
+    Mat1b gray = [self createProcessing1bMatFromBuffer:sampleBuffer];
     int features = tracker->good_features_to_track(gray);
     [self updateStabilityFromFeatures:features];
-
 }
 
 - (void)trackImage:(CMSampleBufferRef)sampleBuffer
 {
-    Mat3b new_img = sampleBufferToMat(sampleBuffer);
-
     if (captured_images->size() >= self.capturingImages || self.stability < 0.7) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.captureDelegate depthEstimator:self didTrack:NO];
         });
     }
 
-    Mat1b gray(new_img.size());
-    cvtColor(new_img, gray, CV_RGB2GRAY);
-
-    bool added = tracker->add_image(gray);
+    Mat1b track_mat = [self createProcessing1bMatFromBuffer:sampleBuffer];
+    bool added = tracker->add_image(track_mat);
     [self updateStabilityFromFeatures:tracker->count_track_points()];
 
     if (self.stability < 0.7) {
@@ -131,7 +205,12 @@ static int const kDefaultDepthResolution = 32;
             [self.captureDelegate depthEstimator:self trackingFailed:e];
         });
     } else if (added) {
-        captured_images->push_back(new_img);
+
+        if (ref_mat == NULL) {
+            [self setRefMat:sampleBuffer];
+        }
+
+        captured_images->push_back([self createProcessingMatFromBuffer:sampleBuffer]);
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.captureDelegate depthEstimator:self didTrack:YES];
@@ -178,7 +257,7 @@ static int const kDefaultDepthResolution = 32;
     self.baProgress = 1.0;
     print_params(solver);
 
-    if (solver.good_reporjection() == false) {
+    if (solver.good_reporjection() == false && NO) {
         print_ittr_status(solver);
         NSError *e = [NSError errorWithDomain:TKDDepthEstimatorErrorDomain code:TKDDepthEstimatorBundleAdjustmentFailed userInfo:nil];
         [self notifyErrorOnMainQueue:e];
@@ -189,7 +268,8 @@ static int const kDefaultDepthResolution = 32;
     std::vector<double> depths = solver.depth_variation((int)self.depthResolution);
 
     // plane sweep + densecrf で奥行きを求める
-    cv::Rect roi = cvRectFromCGRect(self.roi);
+    // cv::Rect roi = cvRectFromCGRect(self.roi);
+    cv::Rect roi = [self processingROI];
     PlaneSweep ps(*captured_images,
                   solver.camera_params,
                   depths,
@@ -203,10 +283,7 @@ static int const kDefaultDepthResolution = 32;
     self.psProgress = 1.0;
 
     // complete
-    _rawDisparityMap = matToUIImage(ps._depth_raw, 1.0, UIImageOrientationRight);
-    _smoothDisparityMap = matToUIImage(ps._depth_smooth, 1.0, UIImageOrientationRight);
-    _colorDisparityMap = matToUIImage(ps._depth_color, 1.0, UIImageOrientationRight);
-    [self setDepthSequence:depths];
+    [self setResults:&ps depths:depths];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.estimationDelegate depthEstimator:self

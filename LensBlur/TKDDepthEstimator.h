@@ -41,6 +41,7 @@
 // input
 @property (nonatomic, weak) id<TKDDepthEstimatorEstimationDelegate> estimationDelegate;
 @property (nonatomic, assign) NSInteger depthResolution;
+@property (nonatomic, assign) CGSize inputBufferSize;
 @property (nonatomic, assign) CGRect roi;
 
 // output
