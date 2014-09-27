@@ -177,8 +177,8 @@ void BundleAdjustment::Solver::run_one_step() {
 
     // 領域確保
     int K = this->K -7;
-    Eigen::MatrixXd Jacobian = Eigen::MatrixXd::Zero(2*Nc*Np, K);
-    Eigen::VectorXd target_error = Eigen::VectorXd::Zero(2*Nc*Np);
+    cv::Mat1d Jacobian = cv::Mat1d::zeros(2*Nc*Np, K);
+    cv::Mat1d target_error = cv::Mat1d::zeros(2*Nc*Np, 1);
 
     // 更新前の再投影エラー
     double error_before = this->reprojection_error();
@@ -190,8 +190,8 @@ void BundleAdjustment::Solver::run_one_step() {
 
             Point2d p = captured[i][j];
             Point3d q = ba_reproject3d(points[j], camera_params[i]);
-            target_error[nx] = p.x - q.x/q.z;
-            target_error[ny] = p.y - q.y/q.z;
+            target_error.at<double>(nx, 0) = p.x - q.x/q.z;
+            target_error.at<double>(ny, 0) = p.y - q.y/q.z;
 
             for ( int k = 0, l = 0; k < this->K; ++k ) {
                 if ( k == 0 ) continue;
@@ -207,19 +207,21 @@ void BundleAdjustment::Solver::run_one_step() {
                 grad.y = ba_get_reproject_gradient_y( *this, i, j, k );
                 grad.z = ba_get_reproject_gradient_z( *this, i, j, k );
 
-                Jacobian(nx, l) = (q.x * grad.z - q.z * grad.x ) / (q.z*q.z);
-                Jacobian(ny, l) = (q.y * grad.z - q.z * grad.y ) / (q.z*q.z);
+                Jacobian.at<double>(nx, l) = (q.x * grad.z - q.z * grad.x ) / (q.z*q.z);
+                Jacobian.at<double>(ny, l) = (q.y * grad.z - q.z * grad.y ) / (q.z*q.z);
+
                 l++;
             }
         }
     }
 
     // 更新方向の計算
-    Eigen::VectorXd gradient = -Jacobian.transpose() * target_error;
-    Eigen::MatrixXd Hessian = Jacobian.transpose() * Jacobian + this->c * Eigen::MatrixXd::Identity(K, K);
+    cv::Mat1d gradient = -Jacobian.t() * target_error;
+    cv::Mat1d Hessian = Jacobian.t() * Jacobian + this->c * Mat1d::eye(K,K);
+    cv::Mat1d solved(this->K-7, 1);
+    cv::solve(Hessian, gradient, solved);
 
-    Eigen::VectorXd sol = Hessian.fullPivLu().solve(gradient);
-    Eigen::VectorXd update = Eigen::VectorXd::Zero(this->K);
+    Mat1d update = cv::Mat1d::zeros(this->K-7, 1);
 
     // 更新
     for ( int k = 0, l = 0; k < this->K; ++k ) {
@@ -231,30 +233,30 @@ void BundleAdjustment::Solver::run_one_step() {
         if ( k == 4*Nc ) continue;
         if ( k == 5*Nc ) continue;
 
-        update[k] = sol[l];
+        update.at<double>(k) = solved.at<double>(l);
         l++;
     }
 
     for ( int i = 0; i < Nc; ++i ) {
-        camera_params[i].t.x   += update[i];
-        camera_params[i].t.y   += update[i+Nc];
-        camera_params[i].t.z   += update[i+2*Nc];
-        camera_params[i].rot.x += update[i+3*Nc];
-        camera_params[i].rot.y += update[i+4*Nc];
-        camera_params[i].rot.z += update[i+5*Nc];
+        camera_params[i].t.x   += update.at<double>(i);
+        camera_params[i].t.y   += update.at<double>(i+Nc);
+        camera_params[i].t.z   += update.at<double>(i+2*Nc);
+        camera_params[i].rot.x += update.at<double>(i+3*Nc);
+        camera_params[i].rot.y += update.at<double>(i+4*Nc);
+        camera_params[i].rot.z += update.at<double>(i+5*Nc);
     }
 
     for ( int j = 0; j < Np; ++j ) {
-        points[j].x += update[ j + 0*Np + 6*Nc ];
-        points[j].y += update[ j + 1*Np + 6*Nc ];
-        points[j].z += update[ j + 2*Np + 6*Nc ];
+        points[j].x += update.at<double>( j + 0*Np + 6*Nc );
+        points[j].y += update.at<double>( j + 1*Np + 6*Nc );
+        points[j].z += update.at<double>(  j + 2*Np + 6*Nc );
     }
 
     double error_after = this->reprojection_error();
 
     // 正則化パラメータは更新しないほうが収束が早い
     error_before > error_after ? this->c *= 0.1 : this->c *= 10.0;
-    update_norm = update.norm();
+    update_norm = cv::norm(update);
 
     this->should_continue = get_should_continue( error_before, error_after, update_norm);
 
