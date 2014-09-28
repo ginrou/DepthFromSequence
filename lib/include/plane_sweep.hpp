@@ -90,8 +90,13 @@ private:
 
 }; // class PlaneSweep
 
-// デバッグ用関数
+
+/**
+  for debbuging
+ */
+
+/// draw accumulated image with warped to given depth
 Mat1b warped_image(vector<Mat1b> images, vector<Camera> cameras, double depth);
 
-//saved to tmp/warped-%02d
+/// saved warped images in sequence to tmp/warped-%02d.png
 void save_warped_images(vector<Mat1b> images, vector<Camera> cameras, vector<double> depths);

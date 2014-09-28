@@ -10,47 +10,58 @@ class Solver {
 
 public:
 
-    size_t Nc, Np; // Nc = カメラの数, Np = 特徴点の数
-    size_t K; // 変数の数
+    size_t Nc, Np; // Nc = number of cameras, Np = number of features
+    size_t K; // number of variables
 
-    // inputs
-    // 観測した特徴点  i番目のカメラで撮影したj番目の点については captured[i][j] でアクセスする
+    /**
+        inputs
+     */
+
+    /// tracked feature
+    /// captured[i][j] should be j'th feature point in i'th camera
     vector< vector<Point2d> > captured;
 
-    // outputs
-    // 特徴点の３次元位置
+    /**
+        outputs
+     */
+
+    /// position of feature points in world coordinate
     vector<Point3d> points;
 
-    // カメラの外部パラメータ
+    /// extrinsic camera parameters
     vector<Camera> camera_params;
 
-    // 更新幅の正則化パラメータ
-    double c;
-
-    // run_one_stepのたびに更新される
-    bool should_continue;
-    int ittr;
+    /**
+       parameters for solving
+     */
     int MAX_ITTR;
 
-    // for debug
+    /// normalization term for update
+    double c;
+
+    /// updated for each itteration
+    bool should_continue;
+    int ittr;
+
+    /// for debug
     double update_norm;
 
     Solver( vector< vector<Point2d> > captured_in )
         :captured( captured_in )
         {
-            Nc = captured_in.size(); Np = captured_in[0].size();
+            Nc = captured_in.size(); Np = captured_in.front().size();
             points = vector<Point3d>(Np);
             camera_params = vector<Camera>(Nc);
 
+            /// each camera has 6 dof and points in world has 3 dof
             K = Nc*6 + Np*3;
 
-            c = 0.00001;
+            c = 0.00001; // default value
             should_continue = true;
             ittr = 0;
-            MAX_ITTR = 5;
+            MAX_ITTR = 5; // default value
         }
 
-    void init_with_first_image( vector< vector<Point2d> > captured_in, cv::Size img_size, double focal_length, double mean_depth, double fov);
     void initialize(vector< vector<Point2d> > captured_in, double min_depth, double fov, cv::Size img_size, double focal_length);
 
     double reprojection_error();
@@ -58,24 +69,18 @@ public:
     bool get_should_continue( double error_before, double error_after, double update_norm );
     bool good_reporjection();
 
+    /**
+       returns depth sequence in this scene, assumed from depth of points
+     */
     vector<double> depth_variation(int resolution);
 
 }; // class Solver
 } // namespace BundleAdjustment
 
-/*
-  bundle adjustment の計算をする上で必要な関数の集合
-  状態を持たない。ba_ プレフィックス
-*/
 
-// うまくいったらcam_t, cam_rotをCameraに変更する
-inline Point2d ba_reproject( Point3d pt, Camera cam);
-inline Point3d ba_reproject3d( Point3d pt, Camera cam);
-inline double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k);
-inline double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k);
-inline double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k);
-
-// デバッグ用関数
+/**
+   functions for debugging
+ */
 void print_params(BundleAdjustment::Solver &s); // Pointとcamera_paramsを表示
 void print_ittr_status(BundleAdjustment::Solver &s); // 反復の状態を表示
 template<typename T> void print_histogram(vector<T> v, T bin_size);

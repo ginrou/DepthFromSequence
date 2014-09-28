@@ -3,6 +3,12 @@
 #include <cstdlib>
 #include <ctime>
 
+inline Point2d ba_reproject( Point3d pt, Camera cam);
+inline Point3d ba_reproject3d( Point3d pt, Camera cam);
+inline double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k);
+inline double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k);
+inline double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k);
+
 template<typename T> void print_histogram(vector<T> v, T bin_size) {
     T min = v[0], max = v[0], sum = v[0];
     for ( int i = 1; i < v.size(); ++i ) {
@@ -29,7 +35,6 @@ template<typename T> void print_histogram(vector<T> v, T bin_size) {
 
     printf("variance = %lf\n", sqrt(var)/(double)v.size());
 }
-
 
 inline double drand() { return (double)rand()/RAND_MAX; }
 
@@ -60,35 +65,6 @@ std::vector<Camera> initial_camera_params(int N, cv::Size img_size, double focal
     return ret;
 }
 
-void BundleAdjustment::Solver::init_with_first_image( vector< vector<Point2d> > captured_in,
-                                                      cv::Size img_size,
-                                                      double focal_length,
-                                                      double mean_depth,
-                                                      double fov
-)
-{
-    double W = img_size.width, H = img_size.height;
-    double tan_fov = tan(fov/(2.0*M_PI));
-
-    // 1. initialize points
-    for( int j = 0; j < Np; ++j ) {
-        points[j].x = (2.0 * captured_in[0][j].x - W ) * tan_fov / focal_length;
-        points[j].y = (2.0 * captured_in[0][j].y - H ) * tan_fov / focal_length;
-        points[j].z = (1.0 + 0.01 * drand() ) / mean_depth;
-    }
-
-    // 2. initialize captured
-    for( int i = 0; i < Nc; ++i ) {
-        for( int j = 0; j < Np; ++j ) {
-            captured[i][j].x =  (captured_in[i][j].x - W/2.0 ) / focal_length;
-            captured[i][j].y = -(captured_in[i][j].y - H/2.0 ) / focal_length;
-        }
-    }
-
-    // 3. initialize camera params
-    camera_params = initial_camera_params(Nc, img_size, focal_length);
-}
-
 void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
                                           double min_depth,
                                           double fov,
@@ -106,28 +82,27 @@ void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
         }
     }
 
-    // 各特徴点の平均移動量を計算
+    // average translation for each feature points
     vector<double> pt_avg(Np, 0);
-    double pt_max = 0.0;
     for ( int j = 0; j < Np; ++j ) {
         for ( int i = 0; i < Nc; ++i ) {
             double x = captured_in[i][j].x, y = captured_in[i][j].y;
             pt_avg[j] +=  sqrt(x*x + y*y)/ (double)Np;
         }
-
-        if ( pt_max < pt_avg[j] ) pt_max = pt_avg[j];
     }
 
-    double a = pt_max * min_depth; // 最も近い点と最も移動量が大きい点を対応付ける
+    // min_depth point assumed to be has largest translation
+    double pt_max = *max_element(pt_avg.begin(), pt_avg.end());
+    double a = pt_max * min_depth;
     double z_avg = 0.0;
     for ( int j = 0; j < Np; ++j ) {
         points[j].x = (2.0 * captured_in[0][j].x - W ) * tan_fov / focal_length;
         points[j].y = (2.0 * captured_in[0][j].y - H ) * tan_fov / focal_length;
-        points[j].z = a / pt_avg[j]; // 奥行きは最も近い点の逆数に比例する
+        points[j].z = a / pt_avg[j]; // depth is inverse proportion to translation in image
         z_avg += points[j].z/(double)Np;
     }
 
-    // カメラの外部パラメータなどの初期化
+    // initialize camera parameters
     Camera c;
     c.t = Point3d(0,0,0); c.rot = Point3d(0,0,0);
     c.f = focal_length, c.img_size = img_size;
@@ -148,10 +123,10 @@ void BundleAdjustment::Solver::initialize(vector< vector<Point2d> > captured_in,
         c.f = focal_length;
         camera_params[i] = c;
 
-        camera_params[i].t.x /= fabs(0.2*camera_params[1].t.x); // 一つ目のカメラの平行移動を5に正規化
+        camera_params[i].t.x /= fabs(0.2*camera_params[1].t.x); // fix translation between 0'th camera and 1'st camera to 5.0
     }
 
-    // zでパラメータ化しているので戻す
+    // z is parameterize by inverse of depth
     for ( int j = 0; j < Np; ++j ) points[j].z = 1.0/points[j].z;
 
 }
@@ -174,15 +149,15 @@ double BundleAdjustment::Solver::reprojection_error() {
 void BundleAdjustment::Solver::run_one_step() {
     ittr++;
 
-    // 領域確保
+    // allocation
     int K = this->K -7;
     cv::Mat1d Jacobian = cv::Mat1d::zeros(2*Nc*Np, K);
     cv::Mat1d target_error = cv::Mat1d::zeros(2*Nc*Np, 1);
 
-    // 更新前の再投影エラー
+    // get reprojection_error to compare with after update
     double error_before = this->reprojection_error();
 
-    // Jacobianと誤差を計算
+    // compute Jacobian and error term
     for ( int i = 0; i < Nc; ++i ) {
         for ( int j = 0; j < Np; ++j ) {
             int nx = i*Np + j, ny = i*Np + j + Np*Nc;
@@ -214,7 +189,7 @@ void BundleAdjustment::Solver::run_one_step() {
         }
     }
 
-    // 更新方向の計算
+    // compute update direction
     cv::Mat1d gradient = -Jacobian.t() * target_error;
     cv::Mat1d Hessian = Jacobian.t() * Jacobian + this->c * Mat1d::eye(K,K);
     cv::Mat1d solved(this->K-7, 1);
@@ -222,7 +197,7 @@ void BundleAdjustment::Solver::run_one_step() {
 
     Mat1d update = cv::Mat1d::zeros(this->K-7, 1);
 
-    // 更新
+    // update valiables
     for ( int k = 0, l = 0; k < this->K; ++k ) {
         if ( k == 0 ) continue;
         if ( k == 1 ) continue;
@@ -253,7 +228,6 @@ void BundleAdjustment::Solver::run_one_step() {
 
     double error_after = this->reprojection_error();
 
-    // 正則化パラメータは更新しないほうが収束が早い
     error_before > error_after ? this->c *= 0.1 : this->c *= 10.0;
     update_norm = cv::norm(update);
 
@@ -271,23 +245,20 @@ bool BundleAdjustment::Solver::get_should_continue( double error_before, double 
 }
 
 bool BundleAdjustment::Solver::good_reporjection() {
-    return this->reprojection_error() < 1.0; // 1.0より大きいと割と推定に失敗する
+    // In experiments, estimation tends to fail if error is less than 1.0
+    return this->reprojection_error() < 1.0;
+}
+
+static bool z_inv_compare(Point3d a, Point3d b) {
+    return 1.0/a.z > 1.0/b.z;
 }
 
 vector<double> BundleAdjustment::Solver::depth_variation(int resolution) {
-    double min = DBL_MAX, max = 0.0;
-    for ( int j = 0; j < Np; ++j ) {
-        double z = 1.0/points[j].z;
-        if ( z < min ) min = z;
-        if ( z > max ) max = z;
-    }
-    min /= 1.5;
-    max *= 2.0;
-
     vector<double> ret(resolution);
-    double zmax = 1.0/min, zmin = 1.0/max;
+    double zmax = 1.5 * max_element(points.begin(), points.end(), z_inv_compare)->z;
+    double zmin = 0.5 * min_element(points.begin(), points.end(), z_inv_compare)->z;
 
-    ret[0] = max;
+    ret[0] = 1.0/zmin;
     for ( int i = 1; i < resolution; ++i ) {
         ret[i] = 1.0/((i-1)*(zmax-zmin)/(double)(resolution-1) + zmin);
     }
@@ -296,7 +267,13 @@ vector<double> BundleAdjustment::Solver::depth_variation(int resolution) {
 }
 
 
-// 単体の関数ここから
+/**
+   Numerical computation of equations.
+   Extracted to make code simple, and use inline
+   since these methods are called frequentry.
+*/
+
+/// reporjection of point pt with camera cam
 inline Point3d ba_reproject3d( Point3d pt, Camera cam) {
     Point3d ret;
     ret.x = ( pt.x - cam.rot.z * pt.y + cam.rot.y ) / pt.z + cam.t.x;
@@ -305,106 +282,111 @@ inline Point3d ba_reproject3d( Point3d pt, Camera cam) {
     return ret;
 }
 
+/// reporjection of point pt with camera cam to the camera plane
 inline Point2d ba_reproject( Point3d pt, Camera cam) {
     Point3d ret = ba_reproject3d(pt, cam);
     return Point2d( ret.x / ret.z, ret.y / ret.z );
 }
 
+/// Kronecker delta
 inline double delta(int i, int j) { return i == j ? 1.0 : 0.0; }
 
+/// x component of gradient of reporjection equation
 inline double ba_get_reproject_gradient_x( BundleAdjustment::Solver &s, int i, int j, int k) {
     Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
-    if ( k < s.Nc ) // Txでの微分
+    if ( k < s.Nc ) // differential of Tx
         return delta(i,k);
 
-    else if ( k < 2*s.Nc ) // Tyでの微分
+    else if ( k < 2*s.Nc ) // differential of Ty
         return 0;
 
-    else if ( k < 3*s.Nc ) // Tzでの微分
+    else if ( k < 3*s.Nc ) // differential of Tz
         return 0;
 
-    else if ( k < 4*s.Nc ) // pose_xでの微分
+    else if ( k < 4*s.Nc ) // differential of pose_x
         return 0;
 
-    else if ( k < 5*s.Nc ) // pose_yでの微分
+    else if ( k < 5*s.Nc ) // differential of pose_y
         return delta(i,k -4*s.Nc) / pt.z;
 
-    else if ( k < 6*s.Nc ) // pose_zでの微分
+    else if ( k < 6*s.Nc ) // differential of pose_z
         return -delta(i,k-5*s.Nc) * pt.y / pt.z;
 
-    else if ( k < 6*s.Nc + s.Np ) // point_xでの微分
+    else if ( k < 6*s.Nc + s.Np ) // differential of point_x
         return delta(j,k-6*s.Nc) / pt.z;
 
-    else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
+    else if ( k < 6*s.Nc + 2 * s.Np ) // differential of point_y
         return - delta(j, k - 6*s.Nc - s.Np) * cam_rot.z / pt.z;
 
-    else // point_zでの微分
+    else // differential of point_z
         return -delta(j, k - 6*s.Nc - 2*s.Np) *  ( pt.x - cam_rot.z * pt.y + cam_rot.y ) / ( pt.z*pt.z );
 
 }
 
+/// y component of gradient of reporjection equation
 inline double ba_get_reproject_gradient_y( BundleAdjustment::Solver &s, int i, int j, int k) {
     Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
-    if ( k < s.Nc ) // Txでの微分
+    if ( k < s.Nc ) // differential of Tx
         return 0;
 
-    else if ( k < 2*s.Nc ) // Tyでの微分
+    else if ( k < 2*s.Nc ) // differential of Ty
         return delta(i, k - s.Nc );
 
-    else if ( k < 3*s.Nc ) // Tzでの微分
+    else if ( k < 3*s.Nc ) // differential of Tz
         return 0;
 
-    else if ( k < 4*s.Nc ) // pose_xでの微分
+    else if ( k < 4*s.Nc ) // differential of pose_x
         return -delta(i, k - 3*s.Nc) / pt.z;
 
-    else if ( k < 5*s.Nc ) // pose_yでの微分
+    else if ( k < 5*s.Nc ) // differential of pose_y
         return 0.0;
 
-    else if ( k < 6*s.Nc ) // pose_zでの微分
+    else if ( k < 6*s.Nc ) // differential of pose_z
         return delta(i, k - 5*s.Nc) * pt.x / pt.z;
 
-    else if ( k < 6*s.Nc + s.Np ) // point_xでの微分
+    else if ( k < 6*s.Nc + s.Np ) // differential of point_x
         return delta(j, k - 6*s.Nc) * cam_rot.z / pt.z;
 
-    else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
+    else if ( k < 6*s.Nc + 2 * s.Np ) // differential of point_y
         return delta(j, k - 6*s.Nc - s.Np) / pt.z;
 
-    else // point_zでの微分
+    else // differential of point_z
         return -delta(j, k - 6*s.Nc - 2*s.Np) * ( cam_rot.z*pt.x + pt.y - cam_rot.x) / (pt.z*pt.z);
 
 }
 
 
+/// z component of gradient of reporjection equation
 inline double ba_get_reproject_gradient_z( BundleAdjustment::Solver &s, int i, int j, int k) {
     Point3d pt = s.points[j], cam_rot = s.camera_params[i].rot;
 
-    if ( k < s.Nc ) // Txでの微分
+    if ( k < s.Nc ) // differential of Tx
         return 0;
 
-    else if ( k < 2*s.Nc ) // Tyでの微分
+    else if ( k < 2*s.Nc ) // differential of Ty
         return 0;
 
-    else if ( k < 3*s.Nc ) // Tzでの微分
+    else if ( k < 3*s.Nc ) // differential of Tz
         return delta(i, k - 2*s.Nc);
 
-    else if ( k < 4*s.Nc ) // pose_xでの微分
+    else if ( k < 4*s.Nc ) // differential of pose_x
         return delta(i, k - 3*s.Nc) * pt.y / pt.z;
 
-    else if ( k < 5*s.Nc ) // pose_yでの微分
+    else if ( k < 5*s.Nc ) // differential of pose_y
         return -delta(i, k - 4*s.Nc) * pt.x / pt.z;
 
-    else if ( k < 6*s.Nc ) // pose_zでの微分
+    else if ( k < 6*s.Nc ) // differential of pose_z
         return 0;
 
-    else if ( k < 6*s.Nc + s.Np ) // point_xでの微分
+    else if ( k < 6*s.Nc + s.Np ) // point_x
         return - delta(j, k - 6*s.Nc) * cam_rot.y / pt.z;
 
-    else if ( k < 6*s.Nc + 2 * s.Np ) // point_yでの微分
+    else if ( k < 6*s.Nc + 2 * s.Np ) // point_y
         return delta(j, k - 6*s.Nc - s.Np) * cam_rot.x / pt.z;
 
-    else // point_zでの微分
+    else // differential of point_z
         return -delta(j, k - 6*s.Nc - 2*s.Np) * ( -cam_rot.y*pt.x + cam_rot.x*pt.y + 1.0 ) / (pt.z*pt.z);
 
 }
