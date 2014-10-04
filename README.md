@@ -1,10 +1,20 @@
-### メモ
+## Depth From Sequence
+Handy depth estimation softwear from image sequences.
 
-テスト実行用コマンド
+![Whats this](https://raw.githubusercontent.com/ginrou/DepthFromSequence/master/whats_this.gif)
+
+### System Requierments
+* CMake and OpenCV
+ * Mac OSX, Linux(probably)
+* iOS
+
+### How To Use
+
 ```
-$ cd lib
+$ git clone git@github.com:ginrou/DepthFromSequence.git
+$ cd sample
 $ cmake .
-$ make
-$ ./main.out ../sample_data/0XX-*.jpg output.png
+$ ./main.out ./data/*.jpg
 ```
 
+Then, raw depth map, smooth depth map, and color depth map is outputed.
